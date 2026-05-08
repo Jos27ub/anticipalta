@@ -1,10 +1,1004 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AnticipAlta — Sistema de Predicción de Palta</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --verde-oscuro: #1a3a1f;
+      --verde-medio: #2d6a35;
+      --verde-claro: #4a9e56;
+      --verde-suave: #e8f5e9;
+      --verde-borde: #b8dbb8;
+      --dorado: #c9a84c;
+      --dorado-claro: #f0d78a;
+      --crema: #faf8f2;
+      --texto: #1a1a18;
+      --texto-suave: #5a6b5a;
+      --blanco: #ffffff;
+      --sombra: 0 4px 24px rgba(26,58,31,0.10);
+      --sombra-hover: 0 8px 40px rgba(26,58,31,0.18);
+    }
+
+    html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--crema); color: var(--texto); }
+
+    /* ── PANTALLAS ── */
+    .pantalla { display: none; min-height: 100vh; }
+    .pantalla.activa { display: flex; }
+
+    /* ══════════════════════════════
+       LOGIN
+    ══════════════════════════════ */
+    #login {
+      align-items: stretch;
+    }
+
+    .login-izq {
+      flex: 1;
+      background: var(--verde-oscuro);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 60px 64px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-izq::before {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(74,158,86,0.18) 0%, transparent 70%);
+      top: -100px; right: -100px;
+    }
+    .login-izq::after {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+      bottom: -60px; left: 40px;
+    }
+
+    .logo-wrap { display: flex; align-items: center; gap: 14px; margin-bottom: 56px; position: relative; z-index: 1; }
+    .logo-icono {
+      width: 48px; height: 48px;
+      background: var(--dorado);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+    .logo-nombre { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--blanco); letter-spacing: -0.3px; }
+    .logo-nombre span { color: var(--dorado-claro); }
+
+    .login-titulo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 42px;
+      line-height: 1.15;
+      color: var(--blanco);
+      margin-bottom: 20px;
+      position: relative; z-index: 1;
+    }
+    .login-titulo em { color: var(--dorado-claro); font-style: italic; }
+
+    .login-desc {
+      font-size: 16px;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.7;
+      max-width: 340px;
+      position: relative; z-index: 1;
+      margin-bottom: 48px;
+    }
+
+    .stats-row { display: flex; gap: 32px; position: relative; z-index: 1; }
+    .stat { }
+    .stat-num { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--dorado-claro); }
+    .stat-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; letter-spacing: 0.5px; }
+
+    .login-der {
+      width: 460px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 56px;
+      background: var(--blanco);
+    }
+
+    .form-titulo { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--texto); margin-bottom: 6px; }
+    .form-subtitulo { font-size: 14px; color: var(--texto-suave); margin-bottom: 36px; }
+
+    .campo { margin-bottom: 20px; }
+    .campo label { display: block; font-size: 13px; font-weight: 500; color: var(--texto-suave); margin-bottom: 8px; letter-spacing: 0.3px; }
+    .campo input {
+      width: 100%;
+      padding: 13px 16px;
+      border: 1.5px solid var(--verde-borde);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--texto);
+      background: var(--crema);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    .campo input:focus {
+      border-color: var(--verde-claro);
+      box-shadow: 0 0 0 3px rgba(74,158,86,0.12);
+      background: var(--blanco);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: var(--verde-medio);
+      color: var(--blanco);
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      margin-top: 8px;
+      letter-spacing: 0.2px;
+    }
+    .btn-primary:hover { background: var(--verde-oscuro); box-shadow: var(--sombra-hover); }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .login-error {
+      background: #fdecea;
+      border: 1px solid #f5c6c6;
+      color: #c0392b;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* ══════════════════════════════
+       LAYOUT PRINCIPAL (post-login)
+    ══════════════════════════════ */
+    #app {
+      flex-direction: row;
+      background: #f2f5f2;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px;
+      background: var(--verde-oscuro);
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      flex-shrink: 0;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px;
+      display: flex; align-items: center; gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .sidebar-logo-icono {
+      width: 36px; height: 36px;
+      background: var(--dorado);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .sidebar-logo-texto { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--blanco); }
+    .sidebar-logo-texto span { color: var(--dorado-claro); }
+
+    .sidebar-usuario {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .sidebar-usuario-nombre { font-size: 13px; font-weight: 600; color: var(--blanco); }
+    .sidebar-usuario-rol { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+
+    .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+    .nav-seccion { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); letter-spacing: 1px; padding: 16px 20px 6px; text-transform: uppercase; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 20px;
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.06); color: var(--blanco); }
+    .nav-item.activo { background: rgba(74,158,86,0.2); color: var(--blanco); border-left-color: var(--verde-claro); }
+    .nav-item .nav-icon { font-size: 18px; width: 22px; text-align: center; }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn-logout {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { background: rgba(255,80,80,0.15); color: #ff8080; border-color: rgba(255,80,80,0.3); }
+
+    /* CONTENIDO */
+    .contenido {
+      margin-left: 240px;
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      background: var(--blanco);
+      border-bottom: 1px solid #e8ede8;
+      padding: 0 32px;
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-titulo { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--texto); }
+    .topbar-acciones { display: flex; align-items: center; gap: 12px; }
+
+    .pagina { display: none; padding: 32px; flex: 1; }
+    .pagina.activa { display: block; }
+
+    /* ══════════════════════════════
+       DASHBOARD
+    ══════════════════════════════ */
+    .bienvenida { margin-bottom: 28px; }
+    .bienvenida h2 { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--texto); }
+    .bienvenida p { font-size: 14px; color: var(--texto-suave); margin-top: 4px; }
+
+    .cards-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+    .card-stat {
+      background: var(--blanco);
+      border-radius: 14px;
+      padding: 22px 20px;
+      box-shadow: var(--sombra);
+      border: 1px solid #eef2ee;
+    }
+    .card-stat-label { font-size: 12px; color: var(--texto-suave); font-weight: 500; letter-spacing: 0.3px; margin-bottom: 8px; }
+    .card-stat-num { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--texto); }
+    .card-stat-sub { font-size: 12px; color: var(--verde-claro); margin-top: 4px; }
+    .card-stat-icono { font-size: 28px; margin-bottom: 10px; }
+
+    .cards-2col { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    .card {
+      background: var(--blanco);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: var(--sombra);
+      border: 1px solid #eef2ee;
+    }
+    .card-titulo { font-size: 15px; font-weight: 600; color: var(--texto); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+    .pred-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f4f0;
+    }
+    .pred-item:last-child { border-bottom: none; }
+    .pred-item-info {}
+    .pred-item-fundo { font-size: 14px; font-weight: 500; color: var(--texto); }
+    .pred-item-fecha { font-size: 12px; color: var(--texto-suave); margin-top: 2px; }
+    .pred-item-valor { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--verde-medio); }
+    .pred-item-unidad { font-size: 11px; color: var(--texto-suave); }
+
+    .actividad-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f4f0; }
+    .actividad-item:last-child { border-bottom: none; }
+    .actividad-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--verde-claro); margin-top: 5px; flex-shrink: 0; }
+    .actividad-texto { font-size: 13px; color: var(--texto); }
+    .actividad-tiempo { font-size: 11px; color: var(--texto-suave); margin-top: 2px; }
+
+    /* ══════════════════════════════
+       PREDICCIÓN
+    ══════════════════════════════ */
+    .pred-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .pred-form-full { grid-column: 1 / -1; }
+
+    .seccion-titulo {
+      font-size: 13px; font-weight: 600; color: var(--texto-suave);
+      text-transform: uppercase; letter-spacing: 0.8px;
+      margin-bottom: 16px; margin-top: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e8ede8;
+    }
+
+    .form-campo { margin-bottom: 18px; }
+    .form-campo label { display: block; font-size: 13px; font-weight: 500; color: var(--texto-suave); margin-bottom: 7px; }
+    .form-campo input, .form-campo select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--verde-borde);
+      border-radius: 9px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--texto);
+      background: var(--crema);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-campo input:focus, .form-campo select:focus {
+      border-color: var(--verde-claro);
+      box-shadow: 0 0 0 3px rgba(74,158,86,0.10);
+      background: var(--blanco);
+    }
+
+    .btn-verde {
+      padding: 12px 28px;
+      background: var(--verde-medio);
+      color: var(--blanco);
+      border: none; border-radius: 9px;
+      font-size: 14px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .btn-verde:hover { background: var(--verde-oscuro); box-shadow: var(--sombra); }
+
+    .resultado-box {
+      background: linear-gradient(135deg, var(--verde-oscuro) 0%, var(--verde-medio) 100%);
+      border-radius: 14px;
+      padding: 28px 32px;
+      color: var(--blanco);
+      margin-top: 24px;
+      display: none;
+    }
+    .resultado-box.visible { display: block; animation: fadeIn 0.4s ease; }
+    .resultado-label { font-size: 13px; color: rgba(255,255,255,0.65); margin-bottom: 6px; }
+    .resultado-valor { font-family: 'DM Serif Display', serif; font-size: 52px; color: var(--dorado-claro); }
+    .resultado-unidad { font-size: 18px; color: rgba(255,255,255,0.7); margin-left: 8px; }
+    .resultado-detalle { margin-top: 16px; font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.7; }
+
+    /* ══════════════════════════════
+       HISTORIAL
+    ══════════════════════════════ */
+    .tabla-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead tr { background: var(--verde-suave); }
+    th { padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 13px 16px; border-bottom: 1px solid #f0f4f0; color: var(--texto); }
+    tr:hover td { background: #f7faf7; }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-verde { background: #d4edda; color: #1a5c2a; }
+    .badge-dorado { background: #fff3cd; color: #7d5a00; }
+
+    /* ══════════════════════════════
+       PERFIL
+    ══════════════════════════════ */
+    .perfil-card {
+      max-width: 560px;
+      background: var(--blanco);
+      border-radius: 16px;
+      padding: 36px;
+      box-shadow: var(--sombra);
+    }
+    .perfil-avatar {
+      width: 72px; height: 72px;
+      background: var(--verde-suave);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; margin-bottom: 20px;
+      border: 3px solid var(--verde-borde);
+    }
+    .perfil-nombre { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--texto); }
+    .perfil-rol { font-size: 13px; color: var(--texto-suave); margin-top: 4px; margin-bottom: 24px; }
+    .perfil-fila { display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid #f0f4f0; }
+    .perfil-fila:last-child { border-bottom: none; }
+    .perfil-fila-label { font-size: 13px; color: var(--texto-suave); }
+    .perfil-fila-valor { font-size: 13px; font-weight: 500; color: var(--texto); }
+
+    /* ══════════════════════════════
+       LOADING
+    ══════════════════════════════ */
+    .spinner {
+      display: inline-block; width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: var(--blanco);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle; margin-right: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ══════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════ */
+    @media (max-width: 900px) {
+      .login-izq { display: none; }
+      .login-der { width: 100%; }
+      .cards-row { grid-template-columns: 1fr 1fr; }
+      .cards-2col { grid-template-columns: 1fr; }
+      .pred-form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
+<!-- ══════════════════════════════
+     PANTALLA: LOGIN
+══════════════════════════════ -->
+<div id="login" class="pantalla activa">
+  <div class="login-izq">
+    <div class="logo-wrap">
+      <div class="logo-icono">🥑</div>
+      <div class="logo-nombre">Anticip<span>Alta</span></div>
+    </div>
+    <h1 class="login-titulo">
+      Predice tu<br/>
+      <em>cosecha</em><br/>
+      con precisión
+    </h1>
+    <p class="login-desc">
+      Sistema inteligente de predicción de producción de palta basado en machine learning y datos agroclimáticos.
+    </p>
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-num">94%</div>
+        <div class="stat-label">Precisión del modelo</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">+200</div>
+        <div class="stat-label">Fundos registrados</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Regiones cubiertas</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-der">
+    <h2 class="form-titulo">Bienvenido</h2>
+    <p class="form-subtitulo">Ingresa tus credenciales para continuar</p>
+
+    <div class="campo">
+      <label>Correo electrónico</label>
+      <input type="email" id="inp-correo" placeholder="correo@ejemplo.com"/>
+    </div>
+    <div class="campo">
+      <label>Contraseña</label>
+      <input type="password" id="inp-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter') iniciarSesion()"/>
+    </div>
+
+    <button class="btn-primary" onclick="iniciarSesion()" id="btn-login">
+      Ingresar al sistema
+    </button>
+    <div class="login-error" id="login-error">Correo o contraseña incorrectos. Intenta nuevamente.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PANTALLA: APP
+══════════════════════════════ -->
+<div id="app" class="pantalla">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icono">🥑</div>
+      <div class="sidebar-logo-texto">Anticip<span>Alta</span></div>
+    </div>
+    <div class="sidebar-usuario">
+      <div class="sidebar-usuario-nombre" id="sidebar-nombre">Cargando...</div>
+      <div class="sidebar-usuario-rol" id="sidebar-rol">—</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-seccion">Principal</div>
+      <div class="nav-item activo" onclick="irA('dashboard', this)">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="irA('prediccion', this)">
+        <span class="nav-icon">🔮</span> Nueva predicción
+      </div>
+      <div class="nav-item" onclick="irA('historial', this)">
+        <span class="nav-icon">📋</span> Historial
+      </div>
+      <div class="nav-seccion">Datos</div>
+      <div class="nav-item" onclick="irA('fundos', this)">
+        <span class="nav-icon">🌱</span> Mis fundos
+      </div>
+      <div class="nav-item" onclick="irA('perfil', this)">
+        <span class="nav-icon">👤</span> Mi perfil
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="cerrarSesion()">⬅ Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <!-- CONTENIDO -->
+  <div class="contenido">
+    <div class="topbar">
+      <div class="topbar-titulo" id="topbar-titulo">Dashboard</div>
+      <div class="topbar-acciones">
+        <span style="font-size:13px; color:var(--texto-suave);" id="topbar-fecha"></span>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="pag-dashboard" class="pagina activa">
+      <div class="bienvenida">
+        <h2 id="bienvenida-nombre">Buen día 👋</h2>
+        <p>Aquí tienes un resumen de tu actividad en AnticipAlta</p>
+      </div>
+
+      <div class="cards-row">
+        <div class="card-stat">
+          <div class="card-stat-icono">🔮</div>
+          <div class="card-stat-label">PREDICCIONES</div>
+          <div class="card-stat-num" id="stat-predicciones">—</div>
+          <div class="card-stat-sub">Total registradas</div>
+        </div>
+        <div class="card-stat">
+          <div class="card-stat-icono">🌱</div>
+          <div class="card-stat-label">FUNDOS</div>
+          <div class="card-stat-num" id="stat-fundos">—</div>
+          <div class="card-stat-sub">Registrados</div>
+        </div>
+        <div class="card-stat">
+          <div class="card-stat-icono">📍</div>
+          <div class="card-stat-label">PROVINCIAS</div>
+          <div class="card-stat-num" id="stat-provincias">—</div>
+          <div class="card-stat-sub">Disponibles</div>
+        </div>
+        <div class="card-stat">
+          <div class="card-stat-icono">🤖</div>
+          <div class="card-stat-label">MODELOS ML</div>
+          <div class="card-stat-num" id="stat-modelos">—</div>
+          <div class="card-stat-sub">Activos</div>
+        </div>
+      </div>
+
+      <div class="cards-2col">
+        <div class="card">
+          <div class="card-titulo">📋 Últimas predicciones</div>
+          <div id="lista-predicciones">
+            <div style="color:var(--texto-suave); font-size:13px; text-align:center; padding:24px 0;">
+              Cargando predicciones...
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-titulo">⚡ Actividad reciente</div>
+          <div class="actividad-item">
+            <div class="actividad-dot"></div>
+            <div>
+              <div class="actividad-texto">Sistema iniciado correctamente</div>
+              <div class="actividad-tiempo">Hace un momento</div>
+            </div>
+          </div>
+          <div class="actividad-item">
+            <div class="actividad-dot" style="background:var(--dorado);"></div>
+            <div>
+              <div class="actividad-texto">Conexión con Supabase activa</div>
+              <div class="actividad-tiempo">Hace un momento</div>
+            </div>
+          </div>
+          <div class="actividad-item">
+            <div class="actividad-dot" style="background:#4a90d9;"></div>
+            <div>
+              <div class="actividad-texto">Microservicio ML disponible</div>
+              <div class="actividad-tiempo">anticipalta.onrender.com</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREDICCIÓN -->
+    <div id="pag-prediccion" class="pagina">
+      <div class="card" style="max-width:820px;">
+        <p class="seccion-titulo">Datos del fundo</p>
+        <div class="pred-form-grid">
+          <div class="form-campo">
+            <label>Fundo</label>
+            <select id="pred-fundo"><option value="">Seleccionar fundo...</option></select>
+          </div>
+          <div class="form-campo">
+            <label>Modelo ML</label>
+            <select id="pred-modelo"><option value="">Seleccionar modelo...</option></select>
+          </div>
+        </div>
+
+        <p class="seccion-titulo">Parámetros del cultivo</p>
+        <div class="pred-form-grid">
+          <div class="form-campo">
+            <label>Área (ha)</label>
+            <input type="number" id="pred-area" placeholder="Ej: 2.5" step="0.1"/>
+          </div>
+          <div class="form-campo">
+            <label>Edad del cultivo (años)</label>
+            <input type="number" id="pred-edad" placeholder="Ej: 5"/>
+          </div>
+          <div class="form-campo">
+            <label>Tipo de suelo</label>
+            <select id="pred-suelo"><option value="">Seleccionar tipo...</option></select>
+          </div>
+          <div class="form-campo">
+            <label>pH del suelo</label>
+            <input type="number" id="pred-ph" placeholder="Ej: 6.5" step="0.1" min="0" max="14"/>
+          </div>
+        </div>
+
+        <p class="seccion-titulo">Datos climáticos</p>
+        <div class="pred-form-grid">
+          <div class="form-campo">
+            <label>Temperatura promedio (°C)</label>
+            <input type="number" id="pred-temp" placeholder="Ej: 20.5" step="0.1"/>
+          </div>
+          <div class="form-campo">
+            <label>Precipitación (mm)</label>
+            <input type="number" id="pred-precip" placeholder="Ej: 450" step="0.1"/>
+          </div>
+          <div class="form-campo pred-form-full">
+            <label>Radiación solar</label>
+            <input type="number" id="pred-rad" placeholder="Ej: 18.5" step="0.1"/>
+          </div>
+        </div>
+
+        <button class="btn-verde" onclick="generarPrediccion()" id="btn-predecir">
+          🔮 Generar predicción
+        </button>
+
+        <div class="resultado-box" id="resultado-box">
+          <div class="resultado-label">RENDIMIENTO ESTIMADO</div>
+          <div>
+            <span class="resultado-valor" id="resultado-valor">—</span>
+            <span class="resultado-unidad">t/ha</span>
+          </div>
+          <div class="resultado-detalle" id="resultado-detalle"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div id="pag-historial" class="pagina">
+      <div class="card">
+        <div class="card-titulo">📋 Historial de predicciones</div>
+        <div class="tabla-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Fundo</th>
+                <th>Área (ha)</th>
+                <th>Temp (°C)</th>
+                <th>Resultado (t/ha)</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-historial">
+              <tr><td colspan="7" style="text-align:center; color:var(--texto-suave); padding:24px;">Cargando historial...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FUNDOS -->
+    <div id="pag-fundos" class="pagina">
+      <div class="card">
+        <div class="card-titulo" style="justify-content:space-between;">
+          <span>🌱 Mis fundos</span>
+          <button class="btn-verde" style="padding:8px 16px; font-size:13px;">+ Nuevo fundo</button>
+        </div>
+        <div class="tabla-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Ubicación</th>
+                <th>Provincia</th>
+                <th>Usuario</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-fundos">
+              <tr><td colspan="5" style="text-align:center; color:var(--texto-suave); padding:24px;">Cargando fundos...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERFIL -->
+    <div id="pag-perfil" class="pagina">
+      <div class="perfil-card">
+        <div class="perfil-avatar">👤</div>
+        <div class="perfil-nombre" id="perfil-nombre">—</div>
+        <div class="perfil-rol" id="perfil-rol">—</div>
+        <div class="perfil-fila">
+          <span class="perfil-fila-label">Correo</span>
+          <span class="perfil-fila-valor" id="perfil-correo">—</span>
+        </div>
+        <div class="perfil-fila">
+          <span class="perfil-fila-label">Estado</span>
+          <span class="perfil-fila-valor"><span class="badge badge-verde">Activo</span></span>
+        </div>
+        <div class="perfil-fila">
+          <span class="perfil-fila-label">Fecha registro</span>
+          <span class="perfil-fila-valor" id="perfil-fecha">—</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /contenido -->
+</div><!-- /app -->
+
+<script>
+  const API = 'http://localhost:8080/api';
+  let usuarioActual = null;
+
+  // ── FECHA TOPBAR ──
+  const hoy = new Date();
+  document.getElementById('topbar-fecha').textContent =
+    hoy.toLocaleDateString('es-PE', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // ── LOGIN ──
+  async function iniciarSesion() {
+    const correo = document.getElementById('inp-correo').value.trim();
+    const pass   = document.getElementById('inp-pass').value;
+    const errDiv = document.getElementById('login-error');
+    const btn    = document.getElementById('btn-login');
+    errDiv.style.display = 'none';
+
+    if (!correo || !pass) {
+      errDiv.textContent = 'Por favor ingresa correo y contraseña.';
+      errDiv.style.display = 'block'; return;
+    }
+
+    btn.innerHTML = '<span class="spinner"></span>Ingresando...';
+    btn.disabled = true;
+
+    try {
+      const res  = await fetch(`${API}/usuarios`);
+      const usuarios = await res.json();
+      const usuario = usuarios.find(u => u.correo === correo && u.contrasena === pass);
+
+      if (!usuario) throw new Error('No encontrado');
+
+      usuarioActual = usuario;
+      iniciarApp();
+    } catch(e) {
+      errDiv.style.display = 'block';
+      btn.innerHTML = 'Ingresar al sistema';
+      btn.disabled = false;
+    }
+  }
+
+  function iniciarApp() {
+    document.getElementById('login').classList.remove('activa');
+    document.getElementById('app').classList.add('activa');
+
+    // Datos usuario en sidebar
+    document.getElementById('sidebar-nombre').textContent = usuarioActual.nombreCompleto;
+    document.getElementById('sidebar-rol').textContent = usuarioActual.rol?.tipo || 'Usuario';
+    document.getElementById('bienvenida-nombre').textContent =
+      `Buen día, ${usuarioActual.nombreCompleto.split(' ')[0]} 👋`;
+
+    // Perfil
+    document.getElementById('perfil-nombre').textContent = usuarioActual.nombreCompleto;
+    document.getElementById('perfil-rol').textContent = usuarioActual.rol?.tipo || '—';
+    document.getElementById('perfil-correo').textContent = usuarioActual.correo;
+    document.getElementById('perfil-fecha').textContent = usuarioActual.fechaRegistro || '—';
+
+    cargarDashboard();
+    cargarSelects();
+  }
+
+  // ── NAVEGACIÓN ──
+  const titulos = {
+    dashboard: 'Dashboard', prediccion: 'Nueva predicción',
+    historial: 'Historial', fundos: 'Mis fundos', perfil: 'Mi perfil'
+  };
+
+  function irA(pagina, elem) {
+    document.querySelectorAll('.pagina').forEach(p => p.classList.remove('activa'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('activo'));
+    document.getElementById('pag-' + pagina).classList.add('activa');
+    if (elem) elem.classList.add('activo');
+    document.getElementById('topbar-titulo').textContent = titulos[pagina] || pagina;
+
+    if (pagina === 'historial') cargarHistorial();
+    if (pagina === 'fundos')    cargarFundos();
+  }
+
+  // ── DASHBOARD ──
+  async function cargarDashboard() {
+    try {
+      const [preds, fundos, provs, modelos] = await Promise.all([
+        fetch(`${API}/predicciones`).then(r => r.json()),
+        fetch(`${API}/fundos`).then(r => r.json()),
+        fetch(`${API}/provincias`).then(r => r.json()),
+        fetch(`${API}/modelos-ml`).then(r => r.json()),
+      ]);
+
+      document.getElementById('stat-predicciones').textContent = preds.length;
+      document.getElementById('stat-fundos').textContent       = fundos.length;
+      document.getElementById('stat-provincias').textContent   = provs.length;
+      document.getElementById('stat-modelos').textContent      = modelos.length;
+
+      const lista = document.getElementById('lista-predicciones');
+      if (preds.length === 0) {
+        lista.innerHTML = '<div style="color:var(--texto-suave);font-size:13px;text-align:center;padding:24px 0;">Sin predicciones aún.<br/><small>Usa "Nueva predicción" para empezar.</small></div>';
+      } else {
+        lista.innerHTML = preds.slice(-5).reverse().map(p => `
+          <div class="pred-item">
+            <div class="pred-item-info">
+              <div class="pred-item-fundo">Predicción #${p.idPrediccion}</div>
+              <div class="pred-item-fecha">${p.fechaEjecucion ? new Date(p.fechaEjecucion).toLocaleDateString('es-PE') : '—'}</div>
+            </div>
+            <div>
+              <div class="pred-item-valor">${p.rendimientoEstimado ?? '—'}</div>
+              <div class="pred-item-unidad">t/ha</div>
+            </div>
+          </div>`).join('');
+      }
+    } catch(e) {
+      console.error('Error cargando dashboard:', e);
+    }
+  }
+
+  // ── SELECTS DE PREDICCIÓN ──
+  async function cargarSelects() {
+    try {
+      const [fundos, modelos, suelos] = await Promise.all([
+        fetch(`${API}/fundos`).then(r => r.json()),
+        fetch(`${API}/modelos-ml`).then(r => r.json()),
+        fetch(`${API}/tipos-suelo`).then(r => r.json()),
+      ]);
+
+      const selFundo = document.getElementById('pred-fundo');
+      fundos.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f.idFundo;
+        opt.textContent = f.nombreFundo;
+        selFundo.appendChild(opt);
+      });
+
+      const selModelo = document.getElementById('pred-modelo');
+      modelos.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.idModelo;
+        opt.textContent = m.nombreModelo;
+        selModelo.appendChild(opt);
+      });
+
+      const selSuelo = document.getElementById('pred-suelo');
+      suelos.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.idTipoSuelo;
+        opt.textContent = s.descripcion;
+        selSuelo.appendChild(opt);
+      });
+    } catch(e) {
+      console.error('Error cargando selects:', e);
+    }
+  }
+
+  // ── GENERAR PREDICCIÓN ──
+  async function generarPrediccion() {
+    const datos = {
+      area_ha:      parseFloat(document.getElementById('pred-area').value),
+      edad_anios:   parseInt(document.getElementById('pred-edad').value),
+      temp_prom:    parseFloat(document.getElementById('pred-temp').value),
+      precip_mm:    parseFloat(document.getElementById('pred-precip').value),
+      rad_solar:    parseFloat(document.getElementById('pred-rad').value),
+      ph_suelo:     parseFloat(document.getElementById('pred-ph').value),
+      id_tipo_suelo: parseInt(document.getElementById('pred-suelo').value),
+    };
+
+    if (Object.values(datos).some(v => isNaN(v))) {
+      alert('Por favor completa todos los campos numéricos.'); return;
+    }
+
+    const btn = document.getElementById('btn-predecir');
+    btn.innerHTML = '<span class="spinner"></span>Procesando...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(`${API}/predicciones/predecir`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+      });
+      const resultado = await res.json();
+
+      const box = document.getElementById('resultado-box');
+      document.getElementById('resultado-valor').textContent =
+        resultado.rendimiento_estimado ?? resultado.prediccion ?? JSON.stringify(resultado);
+      document.getElementById('resultado-detalle').textContent =
+        `Área: ${datos.area_ha} ha · Temperatura: ${datos.temp_prom}°C · Precipitación: ${datos.precip_mm} mm`;
+      box.classList.add('visible');
+    } catch(e) {
+      alert('Error al conectar con el microservicio ML. Verifica que esté activo.');
+    } finally {
+      btn.innerHTML = '🔮 Generar predicción';
+      btn.disabled = false;
+    }
+  }
+
+  // ── HISTORIAL ──
+  async function cargarHistorial() {
+    try {
+      const preds = await fetch(`${API}/predicciones`).then(r => r.json());
+      const tbody = document.getElementById('tabla-historial');
+      if (preds.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--texto-suave);padding:24px;">Sin predicciones registradas aún.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = preds.reverse().map(p => `
+        <tr>
+          <td>#${p.idPrediccion}</td>
+          <td>${p.fechaEjecucion ? new Date(p.fechaEjecucion).toLocaleDateString('es-PE') : '—'}</td>
+          <td>${p.fundo?.nombreFundo ?? '—'}</td>
+          <td>${p.areaHa ?? '—'}</td>
+          <td>${p.tempProm ?? '—'}</td>
+          <td><strong>${p.rendimientoEstimado ?? '—'}</strong></td>
+          <td><span class="badge badge-verde">Completada</span></td>
+        </tr>`).join('');
+    } catch(e) {
+      console.error('Error cargando historial:', e);
+    }
+  }
+
+  // ── FUNDOS ──
+  async function cargarFundos() {
+    try {
+      const fundos = await fetch(`${API}/fundos`).then(r => r.json());
+      const tbody  = document.getElementById('tabla-fundos');
+      if (fundos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--texto-suave);padding:24px;">Sin fundos registrados.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = fundos.map(f => `
+        <tr>
+          <td>#${f.idFundo}</td>
+          <td><strong>${f.nombreFundo}</strong></td>
+          <td>${f.ubicacion ?? '—'}</td>
+          <td>${f.provincia?.nombreProvincia ?? '—'}</td>
+          <td>${f.usuario?.nombreCompleto ?? '—'}</td>
+        </tr>`).join('');
+    } catch(e) {
+      console.error('Error cargando fundos:', e);
+    }
+  }
+
+  // ── CERRAR SESIÓN ──
+  function cerrarSesion() {
+    usuarioActual = null;
+    document.getElementById('app').classList.remove('activa');
+    document.getElementById('login').classList.add('activa');
+    document.getElementById('inp-correo').value = '';
+    document.getElementById('inp-pass').value = '';
+    document.getElementById('resultado-box').classList.remove('visible');
+  }
+</script>
 </body>
 </html>
