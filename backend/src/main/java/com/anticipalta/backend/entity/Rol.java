@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "Rol")
+@Table(name = "rol")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Rol {
 

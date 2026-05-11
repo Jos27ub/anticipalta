@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "Modelo_ML")
+@Table(name = "modelo_ml")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ModeloML {
 
