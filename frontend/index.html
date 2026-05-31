@@ -352,7 +352,12 @@
         <div class="card-t">📋 Historial de predicciones</div>
         <div class="tabla-w">
           <table>
-            <thead><tr><th>ID</th><th>Fecha</th><th>Año</th><th>Área (ha)</th><th>Temp (°C)</th><th>Resultado (t)</th><th>Estado</th></tr></thead>
+            <thead>
+            <tr>
+              <th>ID</th><th>Fecha</th><th>Año</th><th>Área (ha)</th>
+              <th>Temp (°C)</th><th>Resultado (t)</th><th>Estado</th><th>Acciones</th>
+            </tr>
+            </thead>
             <tbody id="tabla-hist"><tr><td colspan="7" style="text-align:center;color:var(--txt2);padding:22px">Cargando historial...</td></tr></tbody>
           </table>
         </div>
@@ -556,9 +561,11 @@
   async function cargarHistorial() {
     try {
       const preds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
-      document.getElementById('st-pred').textContent = preds.length; // ← agrega esto
+      document.getElementById('st-pred').textContent = preds.length;
       const tb = document.getElementById('tabla-hist');
-      if (!preds.length) { tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones aún.</td></tr>'; return; }
+      if (!preds.length) {
+        tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones aún.</td></tr>'; return;
+      }
       tb.innerHTML=preds.reverse().map(p=>`
       <tr>
         <td>#${p.idPrediccion}</td>
@@ -568,9 +575,25 @@
         <td>${p.tempC??'—'}</td>
         <td><strong>${p.rendimientoEstimado??'—'}</strong></td>
         <td><span class="badge b-v">Completada</span></td>
+        <td>
+          <button onclick="eliminarPrediccion(${p.idPrediccion})"
+            style="padding:5px 12px;background:#fdecea;border:1px solid #f5c6c6;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;color:#c0392b">
+            🗑️ Eliminar
+          </button>
+        </td>
       </tr>`).join('');
     } catch(e){ console.error(e) }
   }
+  async function eliminarPrediccion(id) {
+    if (!confirm('¿Eliminar esta predicción? Esta acción no se puede deshacer.')) return;
+    try {
+      await fetch(`${API}/api/predicciones/${id}`, { method:'DELETE' });
+      cargarHistorial();
+    } catch(e) {
+      alert('Error al eliminar. Intenta nuevamente.');
+    }
+  }
+
 
   // ── FUNDOS ──
   async function cargarFundos() {
@@ -732,18 +755,18 @@
   // Promedios climáticos históricos por provincia (basados en dataset SENAMHI)
   const CLIMA_REFERENCIA = {
     "Chincha": {
-      2022: { temp_c: 21.8, prec_mm: 16.2, rad_solar: 6.4, hum_rel: 73.5 },
-      2023: { temp_c: 22.3, prec_mm: 18.1, rad_solar: 6.6, hum_rel: 72.8 },
-      2024: { temp_c: 21.5, prec_mm: 17.4, rad_solar: 6.3, hum_rel: 74.1 },
-      2025: { temp_c: 22.0, prec_mm: 18.5, rad_solar: 6.5, hum_rel: 73.2 },
-      2026: { temp_c: 22.1, prec_mm: 18.0, rad_solar: 6.5, hum_rel: 73.5 },
+      2022: { temp_c: 21.5, prec_mm: 8.5,  rad_solar: 6.2, hum_rel: 74.0 },
+      2023: { temp_c: 22.0, prec_mm: 10.2, rad_solar: 6.4, hum_rel: 73.5 },
+      2024: { temp_c: 21.8, prec_mm: 9.0,  rad_solar: 6.3, hum_rel: 74.2 },
+      2025: { temp_c: 22.1, prec_mm: 9.5,  rad_solar: 6.3, hum_rel: 73.8 },
+      2026: { temp_c: 22.0, prec_mm: 9.5,  rad_solar: 6.3, hum_rel: 74.0 },
     },
     "Yauyos (Catahuasi)": {
-      2022: { temp_c: 16.4, prec_mm: 420.0, rad_solar: 5.1, hum_rel: 68.2 },
-      2023: { temp_c: 17.1, prec_mm: 395.5, rad_solar: 5.3, hum_rel: 67.5 },
-      2024: { temp_c: 16.8, prec_mm: 410.2, rad_solar: 5.0, hum_rel: 69.1 },
-      2025: { temp_c: 17.0, prec_mm: 405.0, rad_solar: 5.2, hum_rel: 68.5 },
-      2026: { temp_c: 17.0, prec_mm: 408.0, rad_solar: 5.2, hum_rel: 68.7 },
+      2022: { temp_c: 14.2, prec_mm: 420.0, rad_solar: 5.0, hum_rel: 62.0 },
+      2023: { temp_c: 14.8, prec_mm: 390.5, rad_solar: 5.2, hum_rel: 61.5 },
+      2024: { temp_c: 14.5, prec_mm: 405.0, rad_solar: 5.1, hum_rel: 62.5 },
+      2025: { temp_c: 14.6, prec_mm: 400.0, rad_solar: 5.1, hum_rel: 62.0 },
+      2026: { temp_c: 14.6, prec_mm: 400.0, rad_solar: 5.1, hum_rel: 62.0 },
     }
   };
 
@@ -767,6 +790,9 @@
       aviso.style.display = 'block';
       aviso.innerHTML = `⚠️ No hay datos históricos para ${provincia} ${anio}. Ingresa los valores manualmente.`;
     }
+    <div style="font-size:10px;color:var(--txt3);margin-top:4px">
+      Fuente: SENAMHI · Weather Atlas · DePeru.com — Promedios históricos anuales
+    </div>
   }
 
 
