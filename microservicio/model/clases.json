@@ -1,1 +1,1 @@
-{"provincias": ["Cañete", "Chincha", "Huaral", "Ica", "Pisco"], "tipos_suelo": ["Arcilloso", "Arenoso", "Fértil"], "features": ["Provincia", "Area_Ha", "Edad_Anios", "Prec_mm", "Rad_Solar", "Tipo_Suelo", "pH_Suelo", "Temp_C", "Hum_Rel"]}
+{"provincias": ["Chincha", "Yauyos (Catahuasi)"], "tipos_suelo": ["Arcilloso", "Arenoso", "Franco", "Franco-Arenoso"], "features": ["Anio", "Provincia", "Area_Ha", "Edad_Anios", "Prec_mm", "Rad_Solar", "Tipo_Suelo", "pH_Suelo", "Temp_C", "Hum_Rel"], "mejores_modelos": ["XGBoost", "Random Forest", "Gradient Boosting", "Ridge Regression"]}
