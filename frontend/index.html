@@ -332,6 +332,7 @@
     </div>
 
     <!-- FUNDOS -->
+
     <div id="pag-fundos" class="pagina">
       <div class="card">
         <div class="card-t" style="justify-content:space-between">
@@ -340,12 +341,13 @@
         </div>
         <div class="tabla-w">
           <table>
-            <thead><tr><th>ID</th><th>Nombre</th><th>Ubicación</th><th>Provincia</th><th>Usuario</th></tr></thead>
-            <tbody id="tabla-fundos"><tr><td colspan="5" style="text-align:center;color:var(--txt2);padding:22px">Cargando fundos...</td></tr></tbody>
+            <thead><tr><th>ID</th><th>Nombre</th><th>Ubicación</th><th>Provincia</th><th>Usuario</th><th>Acciones</th></tr></thead>
+            <tbody id="tabla-fundos"><tr><td colspan="6" style="text-align:center;color:var(--txt2);padding:22px">Cargando fundos...</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
+
 
     <!-- PERFIL -->
     <div id="pag-perfil" class="pagina">
@@ -357,31 +359,6 @@
         <div class="p-fila"><span class="p-l">Estado</span><span class="p-v"><span class="badge b-v">Activo</span></span></div>
         <div class="p-fila"><span class="p-l">Fecha registro</span><span class="p-v" id="p-fecha">—</span></div>
         <div class="p-fila"><span class="p-l">Modelo activo</span><span class="p-v">XGBoost v2 · R²=0.9533</span></div>
-      </div>
-    </div>
-
-    <!-- MODAL NUEVO FUNDO -->
-    <div id="modal-fundo" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
-      <div class="card" style="width:400px; padding:30px; animation: fadeIn 0.3s ease;">
-        <h3 class="form-h" style="font-size:22px; margin-bottom:20px;">🌱 Registrar Nuevo Fundo</h3>
-        <div class="fc">
-          <label>Nombre del Fundo</label>
-          <input type="text" id="fun-nombre" placeholder="Ej: Fundo La Esperanza">
-        </div>
-        <div class="fc">
-          <label>Ubicación / Dirección</label>
-          <input type="text" id="fun-ubica" placeholder="Ej: Valle de Chincha">
-        </div>
-        <div class="fc">
-          <label>Provincia</label>
-          <select id="fun-prov-select">
-            <option value="">Seleccionar...</option>
-          </select>
-        </div>
-        <div style="display:flex; gap:10px; margin-top:20px;">
-          <button class="btn-v" onclick="guardarFundo()" id="btn-save-fundo" style="flex:1">Guardar</button>
-          <button class="btn-out" onclick="cerrarModalFundo()" style="flex:1; color:var(--txt); border:1px solid var(--v6)">Cancelar</button>
-        </div>
       </div>
     </div>
 
@@ -445,36 +422,27 @@
   // ── DASHBOARD ──
   async function cargarDashboard() {
     try {
-      const [predsRes, fundosRes, provsRes, modsRes] = await Promise.allSettled([
-        fetch(`${API}/api/predicciones`).then(r => r.ok ? r.json() : Promise.reject()),
-        fetch(`${API}/api/fundos`).then(r => r.ok ? r.json() : Promise.reject()),
-        fetch(`${API}/api/provincias`).then(r => r.ok ? r.json() : Promise.reject()),
-        fetch(`${API}/api/modelos-ml`).then(r => r.ok ? r.json() : Promise.reject()),
+      const [preds,fundos,provs,mods] = await Promise.all([
+        fetch(`${API}/api/predicciones`).then(r=>r.json()),
+        fetch(`${API}/api/fundos`).then(r=>r.json()),
+        fetch(`${API}/api/provincias`).then(r=>r.json()),
+        fetch(`${API}/api/modelos-ml`).then(r=>r.json()),
       ]);
-
-      const preds = predsRes.status === 'fulfilled' ? predsRes.value : [];
-      const fundos = fundosRes.status === 'fulfilled' ? fundosRes.value : [];
-      const provs = provsRes.status === 'fulfilled' ? provsRes.value : [];
-      const mods = modsRes.status === 'fulfilled' ? modsRes.value : [];
-
       document.getElementById('st-pred').textContent = preds.length;
       document.getElementById('st-fund').textContent = fundos.length;
       document.getElementById('st-prov').textContent = provs.length;
       document.getElementById('st-mod').textContent  = mods.length;
-
       const lista = document.getElementById('lista-preds');
-      if (predsRes.status === 'rejected') {
-        lista.innerHTML = '<div style="color:#c0392b;font-size:12px;text-align:center;padding:15px">⚠️ Error 500 al cargar últimas predicciones.</div>';
-      } else if (!preds.length) {
-        lista.innerHTML = '<div style="color:var(--txt2);font-size:13px;text-align:center;padding:22px 0">Sin predicciones aún.</div>';
+      if (!preds.length) {
+        lista.innerHTML='<div style="color:var(--txt2);font-size:13px;text-align:center;padding:22px 0">Sin predicciones aún.<br/><small>Usa "Nueva predicción" para empezar.</small></div>';
       } else {
-        lista.innerHTML = preds.slice(-5).reverse().map(p=>`
+        lista.innerHTML=preds.slice(-5).reverse().map(p=>`
         <div class="pred-i">
           <div><div class="pred-f">Predicción #${p.idPrediccion}</div><div class="pred-d">${p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—'}</div></div>
           <div><div class="pred-v">${p.rendimientoEstimado??'—'}</div><div class="pred-u">toneladas</div></div>
         </div>`).join('');
       }
-    } catch(e){ console.error('Dashboard Error:',e) }
+    } catch(e){ console.error('Dashboard:',e) }
   }
 
   // ── SELECTS ──
@@ -486,15 +454,12 @@
         fetch(`${API}/api/tipos-suelo`).then(r=>r.json()),
       ]);
       const sf = document.getElementById('pred-fundo');
-      sf.innerHTML = '<option value="">Seleccionar fundo...</option>';
       fundos.forEach(f=>{ const o=document.createElement('option'); o.value=f.idFundo; o.textContent=f.nombreFundo; sf.appendChild(o); });
       const sm = document.getElementById('pred-modelo');
-      sm.innerHTML = '<option value="">Seleccionar modelo...</option>';
       mods.forEach(m=>{ const o=document.createElement('option'); o.value=m.idModelo; o.textContent=m.nombreModelo+' (R²='+m.precision+')'; sm.appendChild(o); });
       const ss = document.getElementById('pred-suelo');
-      ss.innerHTML = '<option value="">Seleccionar tipo...</option>';
       suelos.forEach(s=>{ const o=document.createElement('option'); o.value=s.descripcion; o.textContent=s.descripcion; ss.appendChild(o); });
-    } catch(e){ console.error('Selects Error:',e) }
+    } catch(e){ console.error('Selects:',e) }
   }
 
   // ── PREDICCIÓN ──
@@ -550,24 +515,18 @@
         }).catch(()=>{});
       }
     } catch(e) {
-      alert('Error al conectar con el microservicio ML.');
+      alert('Error al conectar con el microservicio ML. Verifica que esté activo.');
     } finally {
       btn.innerHTML='🔮 Generar predicción'; btn.disabled=false;
     }
   }
 
-  // ── HISTORIAL (Corregido con manejo de Error 500) ──
+  // ── HISTORIAL ──
   async function cargarHistorial() {
-    const tb = document.getElementById('tabla-hist');
     try {
-      const res = await fetch(`${API}/api/predicciones`);
-      if (!res.ok) throw new Error(`Error: ${res.status}`);
-
-      const preds = await res.json();
-      if (!preds || !preds.length) {
-        tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones aún.</td></tr>';
-        return;
-      }
+      const preds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      const tb = document.getElementById('tabla-hist');
+      if (!preds.length) { tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones aún.</td></tr>'; return; }
       tb.innerHTML=preds.reverse().map(p=>`
       <tr>
         <td>#${p.idPrediccion}</td>
@@ -578,18 +537,14 @@
         <td><strong>${p.rendimientoEstimado??'—'}</strong></td>
         <td><span class="badge b-v">Completada</span></td>
       </tr>`).join('');
-    } catch(e){
-      console.error('Historial Error:', e);
-      tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#c0392b;padding:22px">⚠️ Error al cargar el historial (500). El backend ha fallado.</td></tr>';
-    }
+    } catch(e){ console.error(e) }
   }
 
   // ── FUNDOS ──
   async function cargarFundos() {
-    const tb = document.getElementById('tabla-fundos');
     try {
-      const res = await fetch(`${API}/api/fundos`);
-      const fundos = await res.json();
+      const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
+      const tb = document.getElementById('tabla-fundos');
       if (!fundos.length) { tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--txt2);padding:22px">Sin fundos registrados.</td></tr>'; return; }
       tb.innerHTML=fundos.map(f=>`
       <tr>
@@ -602,54 +557,6 @@
     } catch(e){ console.error(e) }
   }
 
-  async function abrirNuevoFundo() {
-    document.getElementById('modal-fundo').style.display = 'flex';
-    const sel = document.getElementById('fun-prov-select');
-    sel.innerHTML = '<option value="">Cargando...</option>';
-    try {
-      const res = await fetch(`${API}/api/provincias`);
-      const provs = await res.json();
-      sel.innerHTML = '<option value="">Selecciona provincia...</option>';
-      provs.forEach(p => {
-        const o = document.createElement('option');
-        o.value = p.idProvincia;
-        o.textContent = p.nombreProvincia;
-        sel.appendChild(o);
-      });
-    } catch(e) { sel.innerHTML = '<option>Error</option>'; }
-  }
-
-  function cerrarModalFundo() {
-    document.getElementById('modal-fundo').style.display = 'none';
-    document.getElementById('fun-nombre').value = '';
-    document.getElementById('fun-ubica').value = '';
-  }
-
-  async function guardarFundo() {
-    const nombre = document.getElementById('fun-nombre').value.trim();
-    const ubica = document.getElementById('fun-ubica').value.trim();
-    const idProv = document.getElementById('fun-prov-select').value;
-    const btn = document.getElementById('btn-save-fundo');
-    if (!nombre || !ubica || !idProv) { alert('Completa todos los campos'); return; }
-    btn.innerHTML = '<span class="spin"></span>'; btn.disabled = true;
-    const data = {
-      nombreFundo: nombre,
-      ubicacion: ubica,
-      provincia: { idProvincia: parseInt(idProv) },
-      usuario: { idUsuario: usuarioActual.idUsuario }
-    };
-    try {
-      const res = await fetch(`${API}/api/fundos`, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(data)
-      });
-      if (res.ok) {
-        cerrarModalFundo(); cargarFundos(); cargarSelects(); cargarDashboard();
-      } else { alert('Error al guardar'); }
-    } catch(e) { alert('Error de conexión'); }
-    finally { btn.innerHTML = 'Guardar'; btn.disabled = false; }
-  }
-
   // ── LOGOUT ──
   function cerrarSesion() {
     usuarioActual=null;
@@ -659,6 +566,43 @@
     document.getElementById('inp-pass').value='';
     document.getElementById('res-box').classList.remove('vis');
   }
+
+
+
+
 </script>
+<!-- MODAL NUEVO FUNDO -->
+<!-- MODAL FUNDO -->
+<div id="modal-fundo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center">
+  <div style="background:var(--blanco);border-radius:16px;padding:32px;width:480px;max-width:95vw;box-shadow:var(--sombra2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+      <h3 id="modal-fundo-titulo" style="font-family:'DM Serif Display',serif;font-size:20px">Nuevo fundo</h3>
+      <button onclick="cerrarModalFundo()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--txt2)">✕</button>
+    </div>
+    <div class="fc"><label>Nombre del fundo</label><input type="text" id="nf-nombre" placeholder="Ej: Fundo San José"/></div>
+    <div class="fc"><label>Ubicación</label><input type="text" id="nf-ubicacion" placeholder="Ej: Valle de Chincha"/></div>
+    <div class="fc"><label>Provincia</label>
+      <select id="nf-provincia"><option value="">Seleccionar...</option></select>
+    </div>
+    <div id="nf-error" style="color:#c0392b;font-size:13px;margin-bottom:12px;display:none"></div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px">
+      <button onclick="cerrarModalFundo()" style="padding:10px 20px;background:none;border:1.5px solid var(--v6);border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px">Cancelar</button>
+      <button onclick="guardarFundo()" id="btn-guardar-fundo" class="btn-v" style="padding:10px 22px">Guardar fundo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINAR -->
+<div id="modal-eliminar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center">
+  <div style="background:var(--blanco);border-radius:16px;padding:32px;width:400px;max-width:95vw;box-shadow:var(--sombra2);text-align:center">
+    <div style="font-size:40px;margin-bottom:16px">⚠️</div>
+    <h3 style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:10px">¿Eliminar fundo?</h3>
+    <p style="font-size:13px;color:var(--txt2);margin-bottom:24px">Esta acción no se puede deshacer.</p>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button onclick="cerrarModalEliminar()" style="padding:10px 20px;background:none;border:1.5px solid var(--v6);border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px">Cancelar</button>
+      <button onclick="confirmarEliminar()" id="btn-confirmar-eliminar" style="padding:10px 22px;background:#e74c3c;color:white;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

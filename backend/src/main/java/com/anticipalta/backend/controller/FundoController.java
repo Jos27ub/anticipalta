@@ -23,4 +23,9 @@ public class FundoController {
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) { service.delete(id); }
+    @PutMapping("/{id}")
+    public Fundo update(@PathVariable Long id, @RequestBody Fundo fundo) {
+        fundo.setIdFundo(id);
+        return service.save(fundo);
+    }
 }
