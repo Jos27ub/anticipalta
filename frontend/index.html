@@ -545,15 +545,13 @@
     try {
       const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
       const tb = document.getElementById('tabla-fundos');
-      if (!fundos.length) { tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--txt2);padding:22px">Sin fundos registrados.</td></tr>'; return; }
-      tb.innerHTML=fundos.map(f=>`
-      <tr>
-        <td>#${f.idFundo}</td>
-        <td><strong>${f.nombreFundo}</strong></td>
-        <td>${f.ubicacion??'—'}</td>
-        <td>${f.provincia?.nombreProvincia??'—'}</td>
-        <td>${f.usuario?.nombreCompleto??'—'}</td>
-      </tr>`).join('');
+      if (!fundos.length) {
+        tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--txt2);padding:22px">Sin fundos registrados.</td></tr>';
+        document.getElementById('st-fund').textContent = 0;
+        return;
+      }
+      tb.innerHTML=fundos.map(f=>`...`).join('');
+      document.getElementById('st-fund').textContent = fundos.length; // ← agrega esto
     } catch(e){ console.error(e) }
   }
 
