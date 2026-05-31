@@ -1,198 +1,198 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AnticipAlta — Predicción de Cosecha de Palta</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --v1:#0f2414;--v2:#1e4a27;--v3:#2d6a35;--v4:#4a9e56;--v5:#7ec88a;--v6:#b8dbb8;--v7:#e8f5e9;
-  --d1:#c9a84c;--d2:#f0d78a;
-  --crema:#faf8f2;--blanco:#ffffff;--txt:#1a1a18;--txt2:#5a6b5a;--txt3:#8a9b8a;
-  --sombra:0 2px 16px rgba(15,36,20,.08);--sombra2:0 8px 40px rgba(15,36,20,.15);
-  --r:12px;--rb:8px;
-}
-html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--crema);color:var(--txt);font-size:15px}
-.pantalla{display:none;min-height:100vh}
-.pantalla.activa{display:flex}
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AnticipAlta — Predicción de Cosecha de Palta</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --v1:#0f2414;--v2:#1e4a27;--v3:#2d6a35;--v4:#4a9e56;--v5:#7ec88a;--v6:#b8dbb8;--v7:#e8f5e9;
+      --d1:#c9a84c;--d2:#f0d78a;
+      --crema:#faf8f2;--blanco:#ffffff;--txt:#1a1a18;--txt2:#5a6b5a;--txt3:#8a9b8a;
+      --sombra:0 2px 16px rgba(15,36,20,.08);--sombra2:0 8px 40px rgba(15,36,20,.15);
+      --r:12px;--rb:8px;
+    }
+    html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--crema);color:var(--txt);font-size:15px}
+    .pantalla{display:none;min-height:100vh}
+    .pantalla.activa{display:flex}
 
-/* LOGIN */
-#login{align-items:stretch}
-.login-l{
-  flex:1;background:var(--v1);display:flex;flex-direction:column;justify-content:center;
-  align-items:flex-start;padding:64px;position:relative;overflow:hidden;
-}
-.login-l::before{
-  content:'';position:absolute;width:600px;height:600px;border-radius:50%;
-  background:radial-gradient(circle,rgba(74,158,86,.14) 0%,transparent 65%);
-  top:-150px;right:-120px;pointer-events:none;
-}
-.login-l::after{
-  content:'';position:absolute;width:320px;height:320px;border-radius:50%;
-  background:radial-gradient(circle,rgba(201,168,76,.10) 0%,transparent 65%);
-  bottom:-80px;left:40px;pointer-events:none;
-}
-.logo-wrap{display:flex;align-items:center;gap:14px;margin-bottom:56px;position:relative;z-index:1}
-.logo-ico{width:48px;height:48px;background:var(--d1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
-.logo-txt{font-family:'DM Serif Display',serif;font-size:21px;color:var(--blanco)}
-.logo-txt span{color:var(--d2)}
-.login-h{font-family:'DM Serif Display',serif;font-size:44px;line-height:1.12;color:var(--blanco);margin-bottom:20px;position:relative;z-index:1}
-.login-h em{color:var(--d2);font-style:italic}
-.login-desc{font-size:15px;color:rgba(255,255,255,.6);line-height:1.75;max-width:360px;position:relative;z-index:1;margin-bottom:52px}
-.stats{display:flex;gap:36px;position:relative;z-index:1}
-.stat-n{font-family:'DM Serif Display',serif;font-size:30px;color:var(--d2)}
-.stat-l{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px;letter-spacing:.6px;text-transform:uppercase}
+    /* LOGIN */
+    #login{align-items:stretch}
+    .login-l{
+      flex:1;background:var(--v1);display:flex;flex-direction:column;justify-content:center;
+      align-items:flex-start;padding:64px;position:relative;overflow:hidden;
+    }
+    .login-l::before{
+      content:'';position:absolute;width:600px;height:600px;border-radius:50%;
+      background:radial-gradient(circle,rgba(74,158,86,.14) 0%,transparent 65%);
+      top:-150px;right:-120px;pointer-events:none;
+    }
+    .login-l::after{
+      content:'';position:absolute;width:320px;height:320px;border-radius:50%;
+      background:radial-gradient(circle,rgba(201,168,76,.10) 0%,transparent 65%);
+      bottom:-80px;left:40px;pointer-events:none;
+    }
+    .logo-wrap{display:flex;align-items:center;gap:14px;margin-bottom:56px;position:relative;z-index:1}
+    .logo-ico{width:48px;height:48px;background:var(--d1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+    .logo-txt{font-family:'DM Serif Display',serif;font-size:21px;color:var(--blanco)}
+    .logo-txt span{color:var(--d2)}
+    .login-h{font-family:'DM Serif Display',serif;font-size:44px;line-height:1.12;color:var(--blanco);margin-bottom:20px;position:relative;z-index:1}
+    .login-h em{color:var(--d2);font-style:italic}
+    .login-desc{font-size:15px;color:rgba(255,255,255,.6);line-height:1.75;max-width:360px;position:relative;z-index:1;margin-bottom:52px}
+    .stats{display:flex;gap:36px;position:relative;z-index:1}
+    .stat-n{font-family:'DM Serif Display',serif;font-size:30px;color:var(--d2)}
+    .stat-l{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px;letter-spacing:.6px;text-transform:uppercase}
 
-.login-r{width:480px;display:flex;flex-direction:column;justify-content:center;padding:64px 56px;background:var(--blanco)}
-.form-h{font-family:'DM Serif Display',serif;font-size:28px;color:var(--txt);margin-bottom:6px}
-.form-sub{font-size:13px;color:var(--txt2);margin-bottom:36px}
-.campo{margin-bottom:20px}
-.campo label{display:block;font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px;letter-spacing:.4px;text-transform:uppercase}
-.campo input{
-  width:100%;padding:13px 16px;border:1.5px solid var(--v6);border-radius:10px;
-  font-size:15px;font-family:'DM Sans',sans-serif;color:var(--txt);background:var(--crema);
-  outline:none;transition:border-color .2s,box-shadow .2s;
-}
-.campo input:focus{border-color:var(--v4);box-shadow:0 0 0 3px rgba(74,158,86,.12);background:var(--blanco)}
-.btn-p{
-  width:100%;padding:14px;background:var(--v3);color:var(--blanco);border:none;border-radius:10px;
-  font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;
-  transition:background .2s,transform .1s,box-shadow .2s;margin-top:8px;
-}
-.btn-p:hover{background:var(--v1);box-shadow:var(--sombra2)}
-.btn-p:active{transform:scale(.98)}
-.login-err{background:#fdecea;border:1px solid #f5c6c6;color:#c0392b;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;display:none}
+    .login-r{width:480px;display:flex;flex-direction:column;justify-content:center;padding:64px 56px;background:var(--blanco)}
+    .form-h{font-family:'DM Serif Display',serif;font-size:28px;color:var(--txt);margin-bottom:6px}
+    .form-sub{font-size:13px;color:var(--txt2);margin-bottom:36px}
+    .campo{margin-bottom:20px}
+    .campo label{display:block;font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:8px;letter-spacing:.4px;text-transform:uppercase}
+    .campo input{
+      width:100%;padding:13px 16px;border:1.5px solid var(--v6);border-radius:10px;
+      font-size:15px;font-family:'DM Sans',sans-serif;color:var(--txt);background:var(--crema);
+      outline:none;transition:border-color .2s,box-shadow .2s;
+    }
+    .campo input:focus{border-color:var(--v4);box-shadow:0 0 0 3px rgba(74,158,86,.12);background:var(--blanco)}
+    .btn-p{
+      width:100%;padding:14px;background:var(--v3);color:var(--blanco);border:none;border-radius:10px;
+      font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;
+      transition:background .2s,transform .1s,box-shadow .2s;margin-top:8px;
+    }
+    .btn-p:hover{background:var(--v1);box-shadow:var(--sombra2)}
+    .btn-p:active{transform:scale(.98)}
+    .login-err{background:#fdecea;border:1px solid #f5c6c6;color:#c0392b;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;display:none}
 
-/* APP */
-#app{flex-direction:row;background:#f0f4f0}
-.sidebar{
-  width:248px;background:var(--v1);display:flex;flex-direction:column;
-  flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:100;
-}
-.sb-logo{padding:22px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.07)}
-.sb-logo-ico{width:34px;height:34px;background:var(--d1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.sb-logo-txt{font-family:'DM Serif Display',serif;font-size:16px;color:var(--blanco)}
-.sb-logo-txt span{color:var(--d2)}
-.sb-user{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.07)}
-.sb-user-n{font-size:13px;font-weight:600;color:var(--blanco)}
-.sb-user-r{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
-.sb-nav{flex:1;padding:10px 0;overflow-y:auto}
-.nav-sec{font-size:9px;font-weight:700;color:rgba(255,255,255,.25);letter-spacing:1.2px;padding:16px 20px 5px;text-transform:uppercase}
-.nav-i{
-  display:flex;align-items:center;gap:12px;padding:10px 20px;
-  color:rgba(255,255,255,.55);font-size:13px;cursor:pointer;
-  transition:all .15s;border-left:3px solid transparent;
-}
-.nav-i:hover{background:rgba(255,255,255,.05);color:var(--blanco)}
-.nav-i.activo{background:rgba(74,158,86,.18);color:var(--blanco);border-left-color:var(--v4)}
-.nav-ico{font-size:17px;width:20px;text-align:center}
-.sb-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.07)}
-.btn-out{
-  width:100%;padding:9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
-  border-radius:7px;color:rgba(255,255,255,.55);font-size:13px;font-family:'DM Sans',sans-serif;
-  cursor:pointer;transition:all .2s;
-}
-.btn-out:hover{background:rgba(255,80,80,.12);color:#ff8080;border-color:rgba(255,80,80,.25)}
+    /* APP */
+    #app{flex-direction:row;background:#f0f4f0}
+    .sidebar{
+      width:248px;background:var(--v1);display:flex;flex-direction:column;
+      flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:100;
+    }
+    .sb-logo{padding:22px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.07)}
+    .sb-logo-ico{width:34px;height:34px;background:var(--d1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .sb-logo-txt{font-family:'DM Serif Display',serif;font-size:16px;color:var(--blanco)}
+    .sb-logo-txt span{color:var(--d2)}
+    .sb-user{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.07)}
+    .sb-user-n{font-size:13px;font-weight:600;color:var(--blanco)}
+    .sb-user-r{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
+    .sb-nav{flex:1;padding:10px 0;overflow-y:auto}
+    .nav-sec{font-size:9px;font-weight:700;color:rgba(255,255,255,.25);letter-spacing:1.2px;padding:16px 20px 5px;text-transform:uppercase}
+    .nav-i{
+      display:flex;align-items:center;gap:12px;padding:10px 20px;
+      color:rgba(255,255,255,.55);font-size:13px;cursor:pointer;
+      transition:all .15s;border-left:3px solid transparent;
+    }
+    .nav-i:hover{background:rgba(255,255,255,.05);color:var(--blanco)}
+    .nav-i.activo{background:rgba(74,158,86,.18);color:var(--blanco);border-left-color:var(--v4)}
+    .nav-ico{font-size:17px;width:20px;text-align:center}
+    .sb-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.07)}
+    .btn-out{
+      width:100%;padding:9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+      border-radius:7px;color:rgba(255,255,255,.55);font-size:13px;font-family:'DM Sans',sans-serif;
+      cursor:pointer;transition:all .2s;
+    }
+    .btn-out:hover{background:rgba(255,80,80,.12);color:#ff8080;border-color:rgba(255,80,80,.25)}
 
-.contenido{margin-left:248px;flex:1;min-height:100vh;display:flex;flex-direction:column}
-.topbar{
-  background:var(--blanco);border-bottom:1px solid #e4eae4;padding:0 32px;height:58px;
-  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;
-}
-.topbar-t{font-family:'DM Serif Display',serif;font-size:19px;color:var(--txt)}
-.pagina{display:none;padding:32px;flex:1}
-.pagina.activa{display:block}
+    .contenido{margin-left:248px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+    .topbar{
+      background:var(--blanco);border-bottom:1px solid #e4eae4;padding:0 32px;height:58px;
+      display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;
+    }
+    .topbar-t{font-family:'DM Serif Display',serif;font-size:19px;color:var(--txt)}
+    .pagina{display:none;padding:32px;flex:1}
+    .pagina.activa{display:block}
 
-/* DASHBOARD */
-.bienvenida{margin-bottom:28px}
-.bienvenida h2{font-family:'DM Serif Display',serif;font-size:25px;color:var(--txt)}
-.bienvenida p{font-size:13px;color:var(--txt2);margin-top:4px}
-.cards-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
-.cstat{background:var(--blanco);border-radius:var(--r);padding:20px;box-shadow:var(--sombra);border:1px solid #edf2ed}
-.cstat-ico{font-size:24px;margin-bottom:10px}
-.cstat-l{font-size:11px;color:var(--txt2);font-weight:600;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px}
-.cstat-n{font-family:'DM Serif Display',serif;font-size:30px;color:var(--txt)}
-.cstat-s{font-size:11px;color:var(--v4);margin-top:3px}
-.cards-2{display:grid;grid-template-columns:2fr 1fr;gap:18px}
-.card{background:var(--blanco);border-radius:var(--r);padding:22px;box-shadow:var(--sombra);border:1px solid #edf2ed}
-.card-t{font-size:14px;font-weight:600;color:var(--txt);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.pred-i{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f0f4f0}
-.pred-i:last-child{border-bottom:none}
-.pred-f{font-size:13px;font-weight:500;color:var(--txt)}
-.pred-d{font-size:11px;color:var(--txt2);margin-top:2px}
-.pred-v{font-family:'DM Serif Display',serif;font-size:19px;color:var(--v3)}
-.pred-u{font-size:10px;color:var(--txt3)}
-.act-i{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid #f0f4f0}
-.act-i:last-child{border-bottom:none}
-.act-dot{width:7px;height:7px;border-radius:50%;background:var(--v4);margin-top:5px;flex-shrink:0}
-.act-txt{font-size:12px;color:var(--txt)}
-.act-t{font-size:11px;color:var(--txt3);margin-top:2px}
+    /* DASHBOARD */
+    .bienvenida{margin-bottom:28px}
+    .bienvenida h2{font-family:'DM Serif Display',serif;font-size:25px;color:var(--txt)}
+    .bienvenida p{font-size:13px;color:var(--txt2);margin-top:4px}
+    .cards-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+    .cstat{background:var(--blanco);border-radius:var(--r);padding:20px;box-shadow:var(--sombra);border:1px solid #edf2ed}
+    .cstat-ico{font-size:24px;margin-bottom:10px}
+    .cstat-l{font-size:11px;color:var(--txt2);font-weight:600;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px}
+    .cstat-n{font-family:'DM Serif Display',serif;font-size:30px;color:var(--txt)}
+    .cstat-s{font-size:11px;color:var(--v4);margin-top:3px}
+    .cards-2{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+    .card{background:var(--blanco);border-radius:var(--r);padding:22px;box-shadow:var(--sombra);border:1px solid #edf2ed}
+    .card-t{font-size:14px;font-weight:600;color:var(--txt);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .pred-i{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f0f4f0}
+    .pred-i:last-child{border-bottom:none}
+    .pred-f{font-size:13px;font-weight:500;color:var(--txt)}
+    .pred-d{font-size:11px;color:var(--txt2);margin-top:2px}
+    .pred-v{font-family:'DM Serif Display',serif;font-size:19px;color:var(--v3)}
+    .pred-u{font-size:10px;color:var(--txt3)}
+    .act-i{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid #f0f4f0}
+    .act-i:last-child{border-bottom:none}
+    .act-dot{width:7px;height:7px;border-radius:50%;background:var(--v4);margin-top:5px;flex-shrink:0}
+    .act-txt{font-size:12px;color:var(--txt)}
+    .act-t{font-size:11px;color:var(--txt3);margin-top:2px}
 
-/* PREDICCIÓN */
-.pred-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.pred-full{grid-column:1/-1}
-.sec-t{
-  font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.9px;
-  margin-bottom:14px;margin-top:6px;padding-bottom:8px;border-bottom:1px solid #e4eae4;
-}
-.fc{margin-bottom:16px}
-.fc label{display:block;font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:6px;letter-spacing:.3px}
-.fc input,.fc select{
-  width:100%;padding:10px 13px;border:1.5px solid var(--v6);border-radius:var(--rb);
-  font-size:14px;font-family:'DM Sans',sans-serif;color:var(--txt);background:var(--crema);
-  outline:none;transition:border-color .2s,box-shadow .2s;
-}
-.fc input:focus,.fc select:focus{border-color:var(--v4);box-shadow:0 0 0 3px rgba(74,158,86,.10);background:var(--blanco)}
-.btn-v{
-  padding:11px 26px;background:var(--v3);color:var(--blanco);border:none;border-radius:var(--rb);
-  font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .2s,box-shadow .2s;
-}
-.btn-v:hover{background:var(--v1);box-shadow:var(--sombra)}
-.res-box{
-  background:linear-gradient(135deg,var(--v1) 0%,var(--v2) 100%);
-  border-radius:var(--r);padding:26px 30px;color:var(--blanco);margin-top:22px;display:none;
-}
-.res-box.vis{display:block;animation:fadeIn .4s ease}
-.res-l{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:5px}
-.res-v{font-family:'DM Serif Display',serif;font-size:50px;color:var(--d2)}
-.res-u{font-size:17px;color:rgba(255,255,255,.65);margin-left:6px}
-.res-d{margin-top:14px;font-size:12px;color:rgba(255,255,255,.55);line-height:1.75}
+    /* PREDICCIÓN */
+    .pred-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .pred-full{grid-column:1/-1}
+    .sec-t{
+      font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.9px;
+      margin-bottom:14px;margin-top:6px;padding-bottom:8px;border-bottom:1px solid #e4eae4;
+    }
+    .fc{margin-bottom:16px}
+    .fc label{display:block;font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:6px;letter-spacing:.3px}
+    .fc input,.fc select{
+      width:100%;padding:10px 13px;border:1.5px solid var(--v6);border-radius:var(--rb);
+      font-size:14px;font-family:'DM Sans',sans-serif;color:var(--txt);background:var(--crema);
+      outline:none;transition:border-color .2s,box-shadow .2s;
+    }
+    .fc input:focus,.fc select:focus{border-color:var(--v4);box-shadow:0 0 0 3px rgba(74,158,86,.10);background:var(--blanco)}
+    .btn-v{
+      padding:11px 26px;background:var(--v3);color:var(--blanco);border:none;border-radius:var(--rb);
+      font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .2s,box-shadow .2s;
+    }
+    .btn-v:hover{background:var(--v1);box-shadow:var(--sombra)}
+    .res-box{
+      background:linear-gradient(135deg,var(--v1) 0%,var(--v2) 100%);
+      border-radius:var(--r);padding:26px 30px;color:var(--blanco);margin-top:22px;display:none;
+    }
+    .res-box.vis{display:block;animation:fadeIn .4s ease}
+    .res-l{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:5px}
+    .res-v{font-family:'DM Serif Display',serif;font-size:50px;color:var(--d2)}
+    .res-u{font-size:17px;color:rgba(255,255,255,.65);margin-left:6px}
+    .res-d{margin-top:14px;font-size:12px;color:rgba(255,255,255,.55);line-height:1.75}
 
-/* TABLA */
-.tabla-w{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px}
-thead tr{background:var(--v7)}
-th{padding:11px 15px;text-align:left;font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
-td{padding:12px 15px;border-bottom:1px solid #f0f4f0;color:var(--txt)}
-tr:hover td{background:#f6faf6}
-.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
-.b-v{background:#d4edda;color:#1a5c2a}
-.b-d{background:#fff3cd;color:#7d5a00}
+    /* TABLA */
+    .tabla-w{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    thead tr{background:var(--v7)}
+    th{padding:11px 15px;text-align:left;font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
+    td{padding:12px 15px;border-bottom:1px solid #f0f4f0;color:var(--txt)}
+    tr:hover td{background:#f6faf6}
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+    .b-v{background:#d4edda;color:#1a5c2a}
+    .b-d{background:#fff3cd;color:#7d5a00}
 
-/* PERFIL */
-.perfil-card{max-width:540px;background:var(--blanco);border-radius:16px;padding:34px;box-shadow:var(--sombra)}
-.p-avatar{width:68px;height:68px;background:var(--v7);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px;border:3px solid var(--v6)}
-.p-nombre{font-family:'DM Serif Display',serif;font-size:21px;color:var(--txt)}
-.p-rol{font-size:12px;color:var(--txt2);margin-top:3px;margin-bottom:22px}
-.p-fila{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f0f4f0}
-.p-fila:last-child{border-bottom:none}
-.p-l{font-size:12px;color:var(--txt2)}
-.p-v{font-size:13px;font-weight:500;color:var(--txt)}
+    /* PERFIL */
+    .perfil-card{max-width:540px;background:var(--blanco);border-radius:16px;padding:34px;box-shadow:var(--sombra)}
+    .p-avatar{width:68px;height:68px;background:var(--v7);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px;border:3px solid var(--v6)}
+    .p-nombre{font-family:'DM Serif Display',serif;font-size:21px;color:var(--txt)}
+    .p-rol{font-size:12px;color:var(--txt2);margin-top:3px;margin-bottom:22px}
+    .p-fila{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f0f4f0}
+    .p-fila:last-child{border-bottom:none}
+    .p-l{font-size:12px;color:var(--txt2)}
+    .p-v{font-size:13px;font-weight:500;color:var(--txt)}
 
-/* SPINNER */
-.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:var(--blanco);border-radius:50%;animation:giro .7s linear infinite;vertical-align:middle;margin-right:7px}
-@keyframes giro{to{transform:rotate(360deg)}}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    /* SPINNER */
+    .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:var(--blanco);border-radius:50%;animation:giro .7s linear infinite;vertical-align:middle;margin-right:7px}
+    @keyframes giro{to{transform:rotate(360deg)}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* RESPONSIVE */
-@media(max-width:900px){
-  .login-l{display:none}.login-r{width:100%}
-  .cards-4{grid-template-columns:1fr 1fr}.cards-2{grid-template-columns:1fr}
-  .pred-grid{grid-template-columns:1fr}
-}
-</style>
+    /* RESPONSIVE */
+    @media(max-width:900px){
+      .login-l{display:none}.login-r{width:100%}
+      .cards-4{grid-template-columns:1fr 1fr}.cards-2{grid-template-columns:1fr}
+      .pred-grid{grid-template-columns:1fr}
+    }
+  </style>
 </head>
 <body>
 
@@ -360,172 +360,215 @@ tr:hover td{background:#f6faf6}
       </div>
     </div>
 
+    <!-- MODAL NUEVO FUNDO -->
+    <div id="modal-fundo" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+      <div class="card" style="width:400px; padding:30px; animation: fadeIn 0.3s ease;">
+        <h3 class="form-h" style="font-size:22px; margin-bottom:20px;">🌱 Registrar Nuevo Fundo</h3>
+        <div class="fc">
+          <label>Nombre del Fundo</label>
+          <input type="text" id="fun-nombre" placeholder="Ej: Fundo La Esperanza">
+        </div>
+        <div class="fc">
+          <label>Ubicación / Dirección</label>
+          <input type="text" id="fun-ubica" placeholder="Ej: Valle de Chincha">
+        </div>
+        <div class="fc">
+          <label>Provincia</label>
+          <select id="fun-prov-select">
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button class="btn-v" onclick="guardarFundo()" id="btn-save-fundo" style="flex:1">Guardar</button>
+          <button class="btn-out" onclick="cerrarModalFundo()" style="flex:1; color:var(--txt); border:1px solid var(--v6)">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <script>
-const API = 'https://anticipalta-backend.onrender.com';
-let usuarioActual = null;
+  const API = 'https://anticipalta-backend.onrender.com';
+  let usuarioActual = null;
 
-document.getElementById('topbar-fecha').textContent =
-  new Date().toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('topbar-fecha').textContent =
+          new Date().toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
-// ── LOGIN ──
-async function iniciarSesion() {
-  const correo = document.getElementById('inp-correo').value.trim();
-  const pass   = document.getElementById('inp-pass').value;
-  const err    = document.getElementById('login-err');
-  const btn    = document.getElementById('btn-login');
-  err.style.display = 'none';
-  if (!correo || !pass) { err.textContent='Por favor ingresa correo y contraseña.'; err.style.display='block'; return; }
-  btn.innerHTML = '<span class="spin"></span>Ingresando...'; btn.disabled = true;
-  try {
-    const res = await fetch(`${API}/api/usuarios`);
-    if (!res.ok) throw new Error('backend');
-    const usuarios = await res.json();
-    const u = usuarios.find(u => u.correo===correo && u.contrasena===pass);
-    if (!u) throw new Error('credenciales');
-    usuarioActual = u; iniciarApp();
-  } catch(e) {
-    err.style.display = 'block';
-    btn.innerHTML = 'Ingresar al sistema'; btn.disabled = false;
+  // ── LOGIN ──
+  async function iniciarSesion() {
+    const correo = document.getElementById('inp-correo').value.trim();
+    const pass   = document.getElementById('inp-pass').value;
+    const err    = document.getElementById('login-err');
+    const btn    = document.getElementById('btn-login');
+    err.style.display = 'none';
+    if (!correo || !pass) { err.textContent='Por favor ingresa correo y contraseña.'; err.style.display='block'; return; }
+    btn.innerHTML = '<span class="spin"></span>Ingresando...'; btn.disabled = true;
+    try {
+      const res = await fetch(`${API}/api/usuarios`);
+      if (!res.ok) throw new Error('backend');
+      const usuarios = await res.json();
+      const u = usuarios.find(u => u.correo===correo && u.contrasena===pass);
+      if (!u) throw new Error('credenciales');
+      usuarioActual = u; iniciarApp();
+    } catch(e) {
+      err.style.display = 'block';
+      btn.innerHTML = 'Ingresar al sistema'; btn.disabled = false;
+    }
   }
-}
 
-function iniciarApp() {
-  document.getElementById('login').classList.remove('activa');
-  document.getElementById('app').classList.add('activa');
-  document.getElementById('sb-nombre').textContent = usuarioActual.nombreCompleto;
-  document.getElementById('sb-rol').textContent    = usuarioActual.rol?.tipo || 'Usuario';
-  document.getElementById('bienvenida-n').textContent = `Buen día, ${usuarioActual.nombreCompleto.split(' ')[0]} 👋`;
-  document.getElementById('p-nombre').textContent  = usuarioActual.nombreCompleto;
-  document.getElementById('p-rol').textContent     = usuarioActual.rol?.tipo || '—';
-  document.getElementById('p-correo').textContent  = usuarioActual.correo;
-  document.getElementById('p-fecha').textContent   = usuarioActual.fechaRegistro || '—';
-  cargarDashboard(); cargarSelects();
-}
+  function iniciarApp() {
+    document.getElementById('login').classList.remove('activa');
+    document.getElementById('app').classList.add('activa');
+    document.getElementById('sb-nombre').textContent = usuarioActual.nombreCompleto;
+    document.getElementById('sb-rol').textContent    = usuarioActual.rol?.tipo || 'Usuario';
+    document.getElementById('bienvenida-n').textContent = `Buen día, ${usuarioActual.nombreCompleto.split(' ')[0]} 👋`;
+    document.getElementById('p-nombre').textContent  = usuarioActual.nombreCompleto;
+    document.getElementById('p-rol').textContent     = usuarioActual.rol?.tipo || '—';
+    document.getElementById('p-correo').textContent  = usuarioActual.correo;
+    document.getElementById('p-fecha').textContent   = usuarioActual.fechaRegistro || '—';
+    cargarDashboard(); cargarSelects();
+  }
 
-// ── NAVEGACIÓN ──
-const titulos = {dashboard:'Dashboard',prediccion:'Nueva predicción',historial:'Historial',fundos:'Mis fundos',perfil:'Mi perfil'};
-function irA(p,el) {
-  document.querySelectorAll('.pagina').forEach(x=>x.classList.remove('activa'));
-  document.querySelectorAll('.nav-i').forEach(x=>x.classList.remove('activo'));
-  document.getElementById('pag-'+p).classList.add('activa');
-  if(el) el.classList.add('activo');
-  document.getElementById('topbar-t').textContent = titulos[p]||p;
-  if(p==='historial') cargarHistorial();
-  if(p==='fundos')    cargarFundos();
-}
+  // ── NAVEGACIÓN ──
+  const titulos = {dashboard:'Dashboard',prediccion:'Nueva predicción',historial:'Historial',fundos:'Mis fundos',perfil:'Mi perfil'};
+  function irA(p,el) {
+    document.querySelectorAll('.pagina').forEach(x=>x.classList.remove('activa'));
+    document.querySelectorAll('.nav-i').forEach(x=>x.classList.remove('activo'));
+    document.getElementById('pag-'+p).classList.add('activa');
+    if(el) el.classList.add('activo');
+    document.getElementById('topbar-t').textContent = titulos[p]||p;
+    if(p==='historial') cargarHistorial();
+    if(p==='fundos')    cargarFundos();
+  }
 
-// ── DASHBOARD ──
-async function cargarDashboard() {
-  try {
-    const [preds,fundos,provs,mods] = await Promise.all([
-      fetch(`${API}/api/predicciones`).then(r=>r.json()),
-      fetch(`${API}/api/fundos`).then(r=>r.json()),
-      fetch(`${API}/api/provincias`).then(r=>r.json()),
-      fetch(`${API}/api/modelos-ml`).then(r=>r.json()),
-    ]);
-    document.getElementById('st-pred').textContent = preds.length;
-    document.getElementById('st-fund').textContent = fundos.length;
-    document.getElementById('st-prov').textContent = provs.length;
-    document.getElementById('st-mod').textContent  = mods.length;
-    const lista = document.getElementById('lista-preds');
-    if (!preds.length) {
-      lista.innerHTML='<div style="color:var(--txt2);font-size:13px;text-align:center;padding:22px 0">Sin predicciones aún.<br/><small>Usa "Nueva predicción" para empezar.</small></div>';
-    } else {
-      lista.innerHTML=preds.slice(-5).reverse().map(p=>`
+  // ── DASHBOARD ──
+  async function cargarDashboard() {
+    try {
+      const [predsRes, fundosRes, provsRes, modsRes] = await Promise.allSettled([
+        fetch(`${API}/api/predicciones`).then(r => r.ok ? r.json() : Promise.reject()),
+        fetch(`${API}/api/fundos`).then(r => r.ok ? r.json() : Promise.reject()),
+        fetch(`${API}/api/provincias`).then(r => r.ok ? r.json() : Promise.reject()),
+        fetch(`${API}/api/modelos-ml`).then(r => r.ok ? r.json() : Promise.reject()),
+      ]);
+
+      const preds = predsRes.status === 'fulfilled' ? predsRes.value : [];
+      const fundos = fundosRes.status === 'fulfilled' ? fundosRes.value : [];
+      const provs = provsRes.status === 'fulfilled' ? provsRes.value : [];
+      const mods = modsRes.status === 'fulfilled' ? modsRes.value : [];
+
+      document.getElementById('st-pred').textContent = preds.length;
+      document.getElementById('st-fund').textContent = fundos.length;
+      document.getElementById('st-prov').textContent = provs.length;
+      document.getElementById('st-mod').textContent  = mods.length;
+
+      const lista = document.getElementById('lista-preds');
+      if (predsRes.status === 'rejected') {
+        lista.innerHTML = '<div style="color:#c0392b;font-size:12px;text-align:center;padding:15px">⚠️ Error 500 al cargar últimas predicciones.</div>';
+      } else if (!preds.length) {
+        lista.innerHTML = '<div style="color:var(--txt2);font-size:13px;text-align:center;padding:22px 0">Sin predicciones aún.</div>';
+      } else {
+        lista.innerHTML = preds.slice(-5).reverse().map(p=>`
         <div class="pred-i">
           <div><div class="pred-f">Predicción #${p.idPrediccion}</div><div class="pred-d">${p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—'}</div></div>
           <div><div class="pred-v">${p.rendimientoEstimado??'—'}</div><div class="pred-u">toneladas</div></div>
         </div>`).join('');
-    }
-  } catch(e){ console.error('Dashboard:',e) }
-}
-
-// ── SELECTS ──
-async function cargarSelects() {
-  try {
-    const [fundos,mods,suelos] = await Promise.all([
-      fetch(`${API}/api/fundos`).then(r=>r.json()),
-      fetch(`${API}/api/modelos-ml`).then(r=>r.json()),
-      fetch(`${API}/api/tipos-suelo`).then(r=>r.json()),
-    ]);
-    const sf = document.getElementById('pred-fundo');
-    fundos.forEach(f=>{ const o=document.createElement('option'); o.value=f.idFundo; o.textContent=f.nombreFundo; sf.appendChild(o); });
-    const sm = document.getElementById('pred-modelo');
-    mods.forEach(m=>{ const o=document.createElement('option'); o.value=m.idModelo; o.textContent=m.nombreModelo+' (R²='+m.precision+')'; sm.appendChild(o); });
-    const ss = document.getElementById('pred-suelo');
-    suelos.forEach(s=>{ const o=document.createElement('option'); o.value=s.descripcion; o.textContent=s.descripcion; ss.appendChild(o); });
-  } catch(e){ console.error('Selects:',e) }
-}
-
-// ── PREDICCIÓN ──
-async function generarPrediccion() {
-  const provincia  = document.getElementById('pred-provincia').value;
-  const tipo_suelo = document.getElementById('pred-suelo').value;
-  const anio       = parseInt(document.getElementById('pred-anio').value);
-  const area_ha    = parseFloat(document.getElementById('pred-area').value);
-  const edad_anios = parseInt(document.getElementById('pred-edad').value);
-  const ph_suelo   = parseFloat(document.getElementById('pred-ph').value);
-  const temp_c     = parseFloat(document.getElementById('pred-temp').value);
-  const prec_mm    = parseFloat(document.getElementById('pred-precip').value);
-  const rad_solar  = parseFloat(document.getElementById('pred-rad').value);
-  const hum_rel    = parseFloat(document.getElementById('pred-hum').value);
-
-  if (!provincia||!tipo_suelo||[anio,area_ha,edad_anios,ph_suelo,temp_c,prec_mm,rad_solar,hum_rel].some(v=>isNaN(v))) {
-    alert('Por favor completa todos los campos.'); return;
+      }
+    } catch(e){ console.error('Dashboard Error:',e) }
   }
 
-  const btn = document.getElementById('btn-pred');
-  btn.innerHTML='<span class="spin"></span>Procesando...'; btn.disabled=true;
+  // ── SELECTS ──
+  async function cargarSelects() {
+    try {
+      const [fundos,mods,suelos] = await Promise.all([
+        fetch(`${API}/api/fundos`).then(r=>r.json()),
+        fetch(`${API}/api/modelos-ml`).then(r=>r.json()),
+        fetch(`${API}/api/tipos-suelo`).then(r=>r.json()),
+      ]);
+      const sf = document.getElementById('pred-fundo');
+      sf.innerHTML = '<option value="">Seleccionar fundo...</option>';
+      fundos.forEach(f=>{ const o=document.createElement('option'); o.value=f.idFundo; o.textContent=f.nombreFundo; sf.appendChild(o); });
+      const sm = document.getElementById('pred-modelo');
+      sm.innerHTML = '<option value="">Seleccionar modelo...</option>';
+      mods.forEach(m=>{ const o=document.createElement('option'); o.value=m.idModelo; o.textContent=m.nombreModelo+' (R²='+m.precision+')'; sm.appendChild(o); });
+      const ss = document.getElementById('pred-suelo');
+      ss.innerHTML = '<option value="">Seleccionar tipo...</option>';
+      suelos.forEach(s=>{ const o=document.createElement('option'); o.value=s.descripcion; o.textContent=s.descripcion; ss.appendChild(o); });
+    } catch(e){ console.error('Selects Error:',e) }
+  }
 
-  try {
-    const res = await fetch('https://anticipalta.onrender.com/predecir', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({anio,provincia,area_ha,edad_anios,prec_mm,rad_solar,tipo_suelo,ph_suelo,temp_c,hum_rel})
-    });
-    const r = await res.json();
-    const toneladas = r.rendimiento_toneladas;
+  // ── PREDICCIÓN ──
+  async function generarPrediccion() {
+    const provincia  = document.getElementById('pred-provincia').value;
+    const tipo_suelo = document.getElementById('pred-suelo').value;
+    const anio       = parseInt(document.getElementById('pred-anio').value);
+    const area_ha    = parseFloat(document.getElementById('pred-area').value);
+    const edad_anios = parseInt(document.getElementById('pred-edad').value);
+    const ph_suelo   = parseFloat(document.getElementById('pred-ph').value);
+    const temp_c     = parseFloat(document.getElementById('pred-temp').value);
+    const prec_mm    = parseFloat(document.getElementById('pred-precip').value);
+    const rad_solar  = parseFloat(document.getElementById('pred-rad').value);
+    const hum_rel    = parseFloat(document.getElementById('pred-hum').value);
 
-    document.getElementById('res-v').textContent = toneladas;
-    document.getElementById('res-d').textContent =
-      `Provincia: ${provincia} · Año: ${anio} · Área: ${area_ha} ha · Suelo: ${tipo_suelo} · Temp: ${temp_c}°C · Precip: ${prec_mm} mm`;
-    document.getElementById('res-box').classList.add('vis');
+    if (!provincia||!tipo_suelo||[anio,area_ha,edad_anios,ph_suelo,temp_c,prec_mm,rad_solar,hum_rel].some(v=>isNaN(v))) {
+      alert('Por favor completa todos los campos.'); return;
+    }
 
-    // Guardar en BD via backend
-    const idFundo  = document.getElementById('pred-fundo').value;
-    const idModelo = document.getElementById('pred-modelo').value;
-    if (idFundo && idModelo && usuarioActual) {
-      const idSuelo = (await fetch(`${API}/api/tipos-suelo`).then(r=>r.json()))
-        .find(s=>s.descripcion===tipo_suelo)?.idTipoSuelo;
-      await fetch(`${API}/api/predicciones`, {
+    const btn = document.getElementById('btn-pred');
+    btn.innerHTML='<span class="spin"></span>Procesando...'; btn.disabled=true;
+
+    try {
+      const res = await fetch('https://anticipalta.onrender.com/predecir', {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          anio, areaHa:area_ha, edadAnios:edad_anios, tempC:temp_c,
-          precipMm:prec_mm, radSolar:rad_solar, phSuelo:ph_suelo,
-          humRel:hum_rel, rendimientoEstimado:toneladas,
-          usuario:{idUsuario:usuarioActual.idUsuario},
-          fundo:{idFundo:parseInt(idFundo)},
-          modelo:{idModelo:parseInt(idModelo)},
-          tipoSuelo:{idTipoSuelo:idSuelo}
-        })
-      }).catch(()=>{});
-    }
-  } catch(e) {
-    alert('Error al conectar con el microservicio ML. Verifica que esté activo.');
-  } finally {
-    btn.innerHTML='🔮 Generar predicción'; btn.disabled=false;
-  }
-}
+        body: JSON.stringify({anio,provincia,area_ha,edad_anios,prec_mm,rad_solar,tipo_suelo,ph_suelo,temp_c,hum_rel})
+      });
+      const r = await res.json();
+      const toneladas = r.rendimiento_toneladas;
 
-// ── HISTORIAL ──
-async function cargarHistorial() {
-  try {
-    const preds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      document.getElementById('res-v').textContent = toneladas;
+      document.getElementById('res-d').textContent =
+              `Provincia: ${provincia} · Año: ${anio} · Área: ${area_ha} ha · Suelo: ${tipo_suelo} · Temp: ${temp_c}°C · Precip: ${prec_mm} mm`;
+      document.getElementById('res-box').classList.add('vis');
+
+      // Guardar en BD via backend
+      const idFundo  = document.getElementById('pred-fundo').value;
+      const idModelo = document.getElementById('pred-modelo').value;
+      if (idFundo && idModelo && usuarioActual) {
+        const idSuelo = (await fetch(`${API}/api/tipos-suelo`).then(r=>r.json()))
+                .find(s=>s.descripcion===tipo_suelo)?.idTipoSuelo;
+        await fetch(`${API}/api/predicciones`, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            anio, areaHa:area_ha, edadAnios:edad_anios, tempC:temp_c,
+            precipMm:prec_mm, radSolar:rad_solar, phSuelo:ph_suelo,
+            humRel:hum_rel, rendimientoEstimado:toneladas,
+            usuario:{idUsuario:usuarioActual.idUsuario},
+            fundo:{idFundo:parseInt(idFundo)},
+            modelo:{idModelo:parseInt(idModelo)},
+            tipoSuelo:{idTipoSuelo:idSuelo}
+          })
+        }).catch(()=>{});
+      }
+    } catch(e) {
+      alert('Error al conectar con el microservicio ML.');
+    } finally {
+      btn.innerHTML='🔮 Generar predicción'; btn.disabled=false;
+    }
+  }
+
+  // ── HISTORIAL (Corregido con manejo de Error 500) ──
+  async function cargarHistorial() {
     const tb = document.getElementById('tabla-hist');
-    if (!preds.length) { tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones aún.</td></tr>'; return; }
-    tb.innerHTML=preds.reverse().map(p=>`
+    try {
+      const res = await fetch(`${API}/api/predicciones`);
+      if (!res.ok) throw new Error(`Error: ${res.status}`);
+
+      const preds = await res.json();
+      if (!preds || !preds.length) {
+        tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones aún.</td></tr>';
+        return;
+      }
+      tb.innerHTML=preds.reverse().map(p=>`
       <tr>
         <td>#${p.idPrediccion}</td>
         <td>${p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—'}</td>
@@ -535,16 +578,20 @@ async function cargarHistorial() {
         <td><strong>${p.rendimientoEstimado??'—'}</strong></td>
         <td><span class="badge b-v">Completada</span></td>
       </tr>`).join('');
-  } catch(e){ console.error(e) }
-}
+    } catch(e){
+      console.error('Historial Error:', e);
+      tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#c0392b;padding:22px">⚠️ Error al cargar el historial (500). El backend ha fallado.</td></tr>';
+    }
+  }
 
-// ── FUNDOS ──
-async function cargarFundos() {
-  try {
-    const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
+  // ── FUNDOS ──
+  async function cargarFundos() {
     const tb = document.getElementById('tabla-fundos');
-    if (!fundos.length) { tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--txt2);padding:22px">Sin fundos registrados.</td></tr>'; return; }
-    tb.innerHTML=fundos.map(f=>`
+    try {
+      const res = await fetch(`${API}/api/fundos`);
+      const fundos = await res.json();
+      if (!fundos.length) { tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--txt2);padding:22px">Sin fundos registrados.</td></tr>'; return; }
+      tb.innerHTML=fundos.map(f=>`
       <tr>
         <td>#${f.idFundo}</td>
         <td><strong>${f.nombreFundo}</strong></td>
@@ -552,20 +599,66 @@ async function cargarFundos() {
         <td>${f.provincia?.nombreProvincia??'—'}</td>
         <td>${f.usuario?.nombreCompleto??'—'}</td>
       </tr>`).join('');
-  } catch(e){ console.error(e) }
-}
+    } catch(e){ console.error(e) }
+  }
 
-function abrirNuevoFundo() { alert('Funcionalidad próximamente disponible.') }
+  async function abrirNuevoFundo() {
+    document.getElementById('modal-fundo').style.display = 'flex';
+    const sel = document.getElementById('fun-prov-select');
+    sel.innerHTML = '<option value="">Cargando...</option>';
+    try {
+      const res = await fetch(`${API}/api/provincias`);
+      const provs = await res.json();
+      sel.innerHTML = '<option value="">Selecciona provincia...</option>';
+      provs.forEach(p => {
+        const o = document.createElement('option');
+        o.value = p.idProvincia;
+        o.textContent = p.nombreProvincia;
+        sel.appendChild(o);
+      });
+    } catch(e) { sel.innerHTML = '<option>Error</option>'; }
+  }
 
-// ── LOGOUT ──
-function cerrarSesion() {
-  usuarioActual=null;
-  document.getElementById('app').classList.remove('activa');
-  document.getElementById('login').classList.add('activa');
-  document.getElementById('inp-correo').value='';
-  document.getElementById('inp-pass').value='';
-  document.getElementById('res-box').classList.remove('vis');
-}
+  function cerrarModalFundo() {
+    document.getElementById('modal-fundo').style.display = 'none';
+    document.getElementById('fun-nombre').value = '';
+    document.getElementById('fun-ubica').value = '';
+  }
+
+  async function guardarFundo() {
+    const nombre = document.getElementById('fun-nombre').value.trim();
+    const ubica = document.getElementById('fun-ubica').value.trim();
+    const idProv = document.getElementById('fun-prov-select').value;
+    const btn = document.getElementById('btn-save-fundo');
+    if (!nombre || !ubica || !idProv) { alert('Completa todos los campos'); return; }
+    btn.innerHTML = '<span class="spin"></span>'; btn.disabled = true;
+    const data = {
+      nombreFundo: nombre,
+      ubicacion: ubica,
+      provincia: { idProvincia: parseInt(idProv) },
+      usuario: { idUsuario: usuarioActual.idUsuario }
+    };
+    try {
+      const res = await fetch(`${API}/api/fundos`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        cerrarModalFundo(); cargarFundos(); cargarSelects(); cargarDashboard();
+      } else { alert('Error al guardar'); }
+    } catch(e) { alert('Error de conexión'); }
+    finally { btn.innerHTML = 'Guardar'; btn.disabled = false; }
+  }
+
+  // ── LOGOUT ──
+  function cerrarSesion() {
+    usuarioActual=null;
+    document.getElementById('app').classList.remove('activa');
+    document.getElementById('login').classList.add('activa');
+    document.getElementById('inp-correo').value='';
+    document.getElementById('inp-pass').value='';
+    document.getElementById('res-box').classList.remove('vis');
+  }
 </script>
 </body>
 </html>
