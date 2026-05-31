@@ -519,12 +519,16 @@
     } finally {
       btn.innerHTML='🔮 Generar predicción'; btn.disabled=false;
     }
+    const totalPreds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+    document.getElementById('st-pred').textContent = totalPreds.length;
+
   }
 
   // ── HISTORIAL ──
   async function cargarHistorial() {
     try {
       const preds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      document.getElementById('st-pred').textContent = preds.length; // ← agrega esto
       const tb = document.getElementById('tabla-hist');
       if (!preds.length) { tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones aún.</td></tr>'; return; }
       tb.innerHTML=preds.reverse().map(p=>`
