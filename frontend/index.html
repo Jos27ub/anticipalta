@@ -566,7 +566,138 @@
     document.getElementById('inp-pass').value='';
     document.getElementById('res-box').classList.remove('vis');
   }
+  let fundoEditandoId = null;
+  let fundoEliminandoId = null;
 
+  async function abrirNuevoFundo() {
+    fundoEditandoId = null;
+    document.getElementById('modal-fundo-titulo').textContent = 'Nuevo fundo';
+    document.getElementById('nf-nombre').value = '';
+    document.getElementById('nf-ubicacion').value = '';
+    document.getElementById('nf-error').style.display = 'none';
+    document.getElementById('btn-guardar-fundo').textContent = 'Guardar fundo';
+    await cargarProvinciasModal();
+    document.getElementById('modal-fundo').style.display = 'flex';
+  }
+
+  async function abrirEditarFundo(id, nombre, ubicacion, idProvincia) {
+    fundoEditandoId = id;
+    document.getElementById('modal-fundo-titulo').textContent = 'Editar fundo';
+    document.getElementById('nf-nombre').value = nombre;
+    document.getElementById('nf-ubicacion').value = ubicacion || '';
+    document.getElementById('nf-error').style.display = 'none';
+    document.getElementById('btn-guardar-fundo').textContent = 'Actualizar fundo';
+    await cargarProvinciasModal();
+    document.getElementById('nf-provincia').value = idProvincia;
+    document.getElementById('modal-fundo').style.display = 'flex';
+  }
+
+  async function cargarProvinciasModal() {
+    const sel = document.getElementById('nf-provincia');
+    sel.innerHTML = '<option value="">Seleccionar...</option>';
+    const provs = await fetch(`${API}/api/provincias`).then(r=>r.json());
+    provs.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p.idProvincia;
+      o.textContent = p.nombreProvincia;
+      sel.appendChild(o);
+    });
+  }
+
+  function cerrarModalFundo() {
+    document.getElementById('modal-fundo').style.display = 'none';
+  }
+
+  async function guardarFundo() {
+    const nombre    = document.getElementById('nf-nombre').value.trim();
+    const ubicacion = document.getElementById('nf-ubicacion').value.trim();
+    const idProv    = document.getElementById('nf-provincia').value;
+    const errDiv    = document.getElementById('nf-error');
+    errDiv.style.display = 'none';
+
+    if (!nombre || !idProv) {
+      errDiv.textContent = 'Nombre y provincia son obligatorios.';
+      errDiv.style.display = 'block'; return;
+    }
+
+    const btn = document.getElementById('btn-guardar-fundo');
+    btn.innerHTML = '<span class="spin"></span>Guardando...'; btn.disabled = true;
+
+    const body = JSON.stringify({
+      nombreFundo: nombre,
+      ubicacion: ubicacion || null,
+      provincia: { idProvincia: parseInt(idProv) },
+      usuario: { idUsuario: usuarioActual.idUsuario }
+    });
+
+    try {
+      const url    = fundoEditandoId ? `${API}/api/fundos/${fundoEditandoId}` : `${API}/api/fundos`;
+      const method = fundoEditandoId ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers:{'Content-Type':'application/json'}, body });
+      if (!res.ok) throw new Error();
+      cerrarModalFundo();
+      cargarFundos();
+      // Recargar selects de predicción
+      const sf = document.getElementById('pred-fundo');
+      sf.innerHTML = '<option value="">Seleccionar fundo...</option>';
+      const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
+      fundos.forEach(f=>{ const o=document.createElement('option'); o.value=f.idFundo; o.textContent=f.nombreFundo; sf.appendChild(o); });
+    } catch(e) {
+      errDiv.textContent = 'Error al guardar. Intenta nuevamente.';
+      errDiv.style.display = 'block';
+    } finally {
+      btn.innerHTML = fundoEditandoId ? 'Actualizar fundo' : 'Guardar fundo';
+      btn.disabled = false;
+    }
+  }
+
+  function abrirEliminarFundo(id) {
+    fundoEliminandoId = id;
+    document.getElementById('modal-eliminar').style.display = 'flex';
+  }
+
+  function cerrarModalEliminar() {
+    document.getElementById('modal-eliminar').style.display = 'none';
+    fundoEliminandoId = null;
+  }
+
+  async function confirmarEliminar() {
+    const btn = document.getElementById('btn-confirmar-eliminar');
+    btn.textContent = 'Eliminando...'; btn.disabled = true;
+    try {
+      await fetch(`${API}/api/fundos/${fundoEliminandoId}`, { method:'DELETE' });
+      cerrarModalEliminar();
+      cargarFundos();
+    } catch(e) {
+      alert('Error al eliminar. Intenta nuevamente.');
+    } finally {
+      btn.textContent = 'Sí, eliminar'; btn.disabled = false;
+    }
+  }
+
+  async function cargarFundos() {
+    try {
+      const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
+      const tb = document.getElementById('tabla-fundos');
+      if (!fundos.length) {
+        tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--txt2);padding:22px">Sin fundos registrados.</td></tr>'; return;
+      }
+      tb.innerHTML=fundos.map(f=>`
+      <tr>
+        <td>#${f.idFundo}</td>
+        <td><strong>${f.nombreFundo}</strong></td>
+        <td>${f.ubicacion??'—'}</td>
+        <td>${f.provincia?.nombreProvincia??'—'}</td>
+        <td>${f.usuario?.nombreCompleto??'—'}</td>
+        <td style="display:flex;gap:8px">
+          <button onclick="abrirEditarFundo(${f.idFundo},'${f.nombreFundo}','${f.ubicacion??''}',${f.provincia?.idProvincia})"
+            style="padding:5px 12px;background:var(--v7);border:1px solid var(--v6);border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif">✏️ Editar</button>
+          <button onclick="abrirEliminarFundo(${f.idFundo})"
+            style="padding:5px 12px;background:#fdecea;border:1px solid #f5c6c6;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;color:#c0392b">🗑️ Eliminar</button>
+        </td>
+      </tr>`).join('');
+    } catch(e){ console.error(e) }
+  }
 
 
 
