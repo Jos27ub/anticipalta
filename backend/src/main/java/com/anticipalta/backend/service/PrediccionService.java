@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class PrediccionService {
@@ -24,6 +25,19 @@ public class PrediccionService {
     public void delete(Long id) { repo.deleteById(id); }
 
     public Map predecir(Map<String, Object> datos) {
-        return restTemplate.postForObject(ML_URL, datos, Map.class);
+        // Construir payload con los campos exactos que espera el modelo XGBoost
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("Anio",       datos.get("Anio"));
+        payload.put("Provincia",  datos.get("Provincia"));
+        payload.put("Area_Ha",    datos.get("Area_Ha"));
+        payload.put("Edad_Anios", datos.get("Edad_Anios"));
+        payload.put("Prec_mm",    datos.get("Prec_mm"));
+        payload.put("Rad_Solar",  datos.get("Rad_Solar"));
+        payload.put("Tipo_Suelo", datos.get("Tipo_Suelo"));
+        payload.put("pH_Suelo",   datos.get("pH_Suelo"));
+        payload.put("Temp_C",     datos.get("Temp_C"));
+        payload.put("Hum_Rel",    datos.get("Hum_Rel"));
+
+        return restTemplate.postForObject(ML_URL, payload, Map.class);
     }
 }

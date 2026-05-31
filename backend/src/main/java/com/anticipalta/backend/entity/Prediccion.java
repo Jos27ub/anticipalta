@@ -32,20 +32,26 @@ public class Prediccion {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private ModeloML modelo;
 
+    @Column(name = "anio")
+    private Integer anio;
+
     @Column(name = "area_ha")
     private Double areaHa;
 
     @Column(name = "edad_anios")
     private Integer edadAnios;
 
-    @Column(name = "temp_prom")
-    private Double tempProm;
+    @Column(name = "temp_c")
+    private Double tempC;
 
     @Column(name = "precip_mm")
     private Double precipMm;
 
     @Column(name = "rad_solar")
     private Double radSolar;
+
+    @Column(name = "hum_rel")
+    private Double humRel;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_tipo_suelo", nullable = false)
@@ -70,16 +76,20 @@ public class Prediccion {
     public void setFundo(Fundo fundo) { this.fundo = fundo; }
     public ModeloML getModelo() { return modelo; }
     public void setModelo(ModeloML modelo) { this.modelo = modelo; }
+    public Integer getAnio() { return anio; }
+    public void setAnio(Integer anio) { this.anio = anio; }
     public Double getAreaHa() { return areaHa; }
     public void setAreaHa(Double areaHa) { this.areaHa = areaHa; }
     public Integer getEdadAnios() { return edadAnios; }
     public void setEdadAnios(Integer edadAnios) { this.edadAnios = edadAnios; }
-    public Double getTempProm() { return tempProm; }
-    public void setTempProm(Double tempProm) { this.tempProm = tempProm; }
+    public Double getTempC() { return tempC; }
+    public void setTempC(Double tempC) { this.tempC = tempC; }
     public Double getPrecipMm() { return precipMm; }
     public void setPrecipMm(Double precipMm) { this.precipMm = precipMm; }
     public Double getRadSolar() { return radSolar; }
     public void setRadSolar(Double radSolar) { this.radSolar = radSolar; }
+    public Double getHumRel() { return humRel; }
+    public void setHumRel(Double humRel) { this.humRel = humRel; }
     public TipoSuelo getTipoSuelo() { return tipoSuelo; }
     public void setTipoSuelo(TipoSuelo tipoSuelo) { this.tipoSuelo = tipoSuelo; }
     public Double getPhSuelo() { return phSuelo; }
