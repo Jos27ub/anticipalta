@@ -630,19 +630,37 @@
   let modeloSeleccionado = 'xgboost';
   let fundoEditandoId = null;
   let fundoEliminandoId = null;
+  let fundosCache = [];
+  let predsCache = [];
+  let prediccionRealId = null;
+  let chartMes = null, chartFundo = null, chartSuelo = null, chartAnual = null, chartScatter = null;
 
-  // Modelos disponibles con sus PKL y métricas
   const MODELOS = {
-    xgboost:          { nombre: 'XGBoost',          r2: 0.8376, mae: 20.89, pkl: 'model_xgboost.pkl' },
-    gradient_boosting:{ nombre: 'Gradient Boosting', r2: 0.8312, mae: 21.14, pkl: 'model_gradient_boosting.pkl' },
-    random_forest:    { nombre: 'Random Forest',     r2: 0.7975, mae: 22.88, pkl: 'model_random_forest.pkl' },
-    ridge_regression: { nombre: 'Ridge Regression',  r2: 0.7360, mae: 27.75, pkl: 'model_ridge_regression.pkl' },
+    xgboost:          { nombre: 'XGBoost',          r2: 0.8376, mae: 20.89 },
+    gradient_boosting:{ nombre: 'Gradient Boosting', r2: 0.8312, mae: 21.14 },
+    random_forest:    { nombre: 'Random Forest',     r2: 0.7975, mae: 22.88 },
+    ridge_regression: { nombre: 'Ridge Regression',  r2: 0.7360, mae: 27.75 },
+  };
+
+  const CLIMA = {
+    "Chincha": {
+      2022:{temp_c:21.5,prec_mm:8.5,rad_solar:6.2,hum_rel:74.0},
+      2023:{temp_c:22.0,prec_mm:10.2,rad_solar:6.4,hum_rel:73.5},
+      2024:{temp_c:21.8,prec_mm:9.0,rad_solar:6.3,hum_rel:74.2},
+      2025:{temp_c:22.1,prec_mm:9.5,rad_solar:6.3,hum_rel:73.8},
+      2026:{temp_c:22.0,prec_mm:9.5,rad_solar:6.3,hum_rel:74.0},
+    },
+    "Yauyos (Catahuasi)": {
+      2022:{temp_c:14.2,prec_mm:420.0,rad_solar:5.0,hum_rel:62.0},
+      2023:{temp_c:14.8,prec_mm:390.5,rad_solar:5.2,hum_rel:61.5},
+      2024:{temp_c:14.5,prec_mm:405.0,rad_solar:5.1,hum_rel:62.5},
+      2025:{temp_c:14.6,prec_mm:400.0,rad_solar:5.1,hum_rel:62.0},
+      2026:{temp_c:14.6,prec_mm:400.0,rad_solar:5.1,hum_rel:62.0},
+    }
   };
 
   document.getElementById('topbar-fecha').textContent =
           new Date().toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-
-
 
   // ── LOGIN ──
   async function iniciarSesion() {
@@ -680,7 +698,6 @@
     cargarDashboard(); cargarSelectFundos();
   }
 
-  //FUNCION DE REGISTRO DE USUARIO
   function cambiarTab(tab) {
     const esLogin = tab === 'login';
     document.getElementById('form-login').style.display    = esLogin ? 'block' : 'none';
@@ -699,55 +716,29 @@
     const pass2    = document.getElementById('reg-pass2').value;
     const errDiv   = document.getElementById('registro-err');
     const okDiv    = document.getElementById('registro-ok');
-    errDiv.style.display = 'none';
-    okDiv.style.display  = 'none';
-
-    if (!nombre || !fechaNac || !correo || !pass || !pass2) {
-      errDiv.textContent = 'Por favor completa todos los campos.'; errDiv.style.display = 'block'; return;
-    }
-    if (pass !== pass2) {
-      errDiv.textContent = 'Las contraseñas no coinciden.'; errDiv.style.display = 'block'; return;
-    }
-    if (pass.length < 6) {
-      errDiv.textContent = 'La contraseña debe tener al menos 6 caracteres.'; errDiv.style.display = 'block'; return;
-    }
-
+    errDiv.style.display = 'none'; okDiv.style.display = 'none';
+    if (!nombre || !fechaNac || !correo || !pass || !pass2) { errDiv.textContent='Por favor completa todos los campos.'; errDiv.style.display='block'; return; }
+    if (pass !== pass2) { errDiv.textContent='Las contraseñas no coinciden.'; errDiv.style.display='block'; return; }
+    if (pass.length < 6) { errDiv.textContent='La contraseña debe tener al menos 6 caracteres.'; errDiv.style.display='block'; return; }
     const btn = document.getElementById('btn-registro');
     btn.innerHTML = '<span class="spin"></span>Registrando...'; btn.disabled = true;
-
     try {
       const res = await fetch(`${API}/api/usuarios`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombreCompleto: nombre,
-          fechaNac:       fechaNac,
-          correo:         correo,
-          contrasena:     pass,
-          estado:         true,
-          fechaRegistro:  new Date().toISOString().split('T')[0],
-          rol:            { idRol: 2 }   // rol por defecto: usuario normal
-        })
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ nombreCompleto:nombre, fechaNac, correo, contrasena:pass, estado:true, fechaRegistro:new Date().toISOString().split('T')[0], rol:{idRol:2} })
       });
       if (!res.ok) throw new Error();
       okDiv.textContent = '✅ Cuenta creada exitosamente. Ya puedes iniciar sesión.';
       okDiv.style.display = 'block';
-      document.getElementById('reg-nombre').value    = '';
-      document.getElementById('reg-fecha-nac').value = '';
-      document.getElementById('reg-correo').value    = '';
-      document.getElementById('reg-pass').value      = '';
-      document.getElementById('reg-pass2').value     = '';
+      ['reg-nombre','reg-fecha-nac','reg-correo','reg-pass','reg-pass2'].forEach(id => document.getElementById(id).value = '');
       setTimeout(() => cambiarTab('login'), 2000);
     } catch(e) {
-      errDiv.textContent = 'Error al registrar. Verifica que el correo no esté en uso.';
-      errDiv.style.display = 'block';
-    } finally {
-      btn.innerHTML = 'Crear cuenta'; btn.disabled = false;
-    }
+      errDiv.textContent = 'Error al registrar. Verifica que el correo no esté en uso.'; errDiv.style.display = 'block';
+    } finally { btn.innerHTML = 'Crear cuenta'; btn.disabled = false; }
   }
 
   // ── NAVEGACIÓN ──
-  const titulos = {dashboard:'Dashboard', prediccion:'Nueva predicción', historial:'Historial', reportes:'Reportes', fundos:'Mis fundos', perfil:'Mi perfil'};
+  const titulos = {dashboard:'Dashboard',prediccion:'Nueva predicción',historial:'Historial',reportes:'Reportes',fundos:'Mis fundos',perfil:'Mi perfil'};
   function irA(p,el) {
     document.querySelectorAll('.pagina').forEach(x=>x.classList.remove('activa'));
     document.querySelectorAll('.nav-i').forEach(x=>x.classList.remove('activo'));
@@ -756,14 +747,14 @@
     document.getElementById('topbar-t').textContent = titulos[p]||p;
     if(p==='historial') cargarHistorial();
     if(p==='fundos')    cargarFundos();
-    if(p==='reportes') cargarReportes();
-    if (p === 'perfil') cargarEstadisticasPerfil();
+    if(p==='reportes')  cargarReportes();
+    if(p==='perfil')    cargarEstadisticasPerfil();
   }
 
   // ── DASHBOARD ──
   async function cargarDashboard() {
     try {
-      const [preds,fundos,provs,mods] = await Promise.all([
+      const [preds,fundos,provs] = await Promise.all([
         fetch(`${API}/api/predicciones`).then(r=>r.json()),
         fetch(`${API}/api/fundos`).then(r=>r.json()),
         fetch(`${API}/api/provincias`).then(r=>r.json()),
@@ -771,11 +762,11 @@
       document.getElementById('st-pred').textContent = preds.length;
       document.getElementById('st-fund').textContent = fundos.length;
       document.getElementById('st-prov').textContent = provs.length;
-      const rendProm = preds.length ? (preds.reduce((a,b) => a + (b.rendimientoEstimado||0), 0) / preds.length).toFixed(1) : '—';
+      const rendProm = preds.length ? (preds.reduce((a,b)=>a+(b.rendimientoEstimado||0),0)/preds.length).toFixed(1) : '—';
       document.getElementById('st-rend').textContent = rendProm;
       const lista = document.getElementById('lista-preds');
       if (!preds.length) {
-        lista.innerHTML='<div style="color:var(--txt2);font-size:13px;text-align:center;padding:22px 0">Sin predicciones aún.<br/><small>Usa "Nueva predicción" para empezar.</small></div>';
+        lista.innerHTML='<div style="color:var(--txt2);font-size:13px;text-align:center;padding:22px 0">Sin predicciones aún.</div>';
       } else {
         lista.innerHTML=preds.slice(-5).reverse().map(p=>`
         <div class="pred-i">
@@ -790,10 +781,42 @@
   async function cargarSelectFundos() {
     try {
       const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
+      fundosCache = fundos;
       const sf = document.getElementById('pred-fundo');
       sf.innerHTML = '<option value="">Seleccionar fundo...</option>';
       fundos.forEach(f=>{ const o=document.createElement('option'); o.value=f.idFundo; o.textContent=f.nombreFundo; sf.appendChild(o); });
     } catch(e){ console.error('Selects:',e) }
+  }
+
+  function onFundoChange() {
+    const idFundo = document.getElementById('pred-fundo').value;
+    const fundo = fundosCache.find(f => f.idFundo == idFundo);
+    if (fundo?.provincia?.nombreProvincia) {
+      document.getElementById('pred-provincia').value = fundo.provincia.nombreProvincia;
+      precargarClima();
+    } else {
+      document.getElementById('pred-provincia').value = '';
+      document.getElementById('aviso-clima').style.display = 'none';
+    }
+  }
+
+  function precargarClima() {
+    const provincia = document.getElementById('pred-provincia').value;
+    const anio      = parseInt(document.getElementById('pred-anio').value);
+    const aviso     = document.getElementById('aviso-clima');
+    if (!provincia || !anio) return;
+    const datos = CLIMA[provincia]?.[anio];
+    if (datos) {
+      document.getElementById('pred-temp').value   = datos.temp_c;
+      document.getElementById('pred-precip').value = datos.prec_mm;
+      document.getElementById('pred-rad').value    = datos.rad_solar;
+      document.getElementById('pred-hum').value    = datos.hum_rel;
+      aviso.style.display='block';
+      aviso.innerHTML=`✅ Datos climáticos precargados para <strong>${provincia} ${anio}</strong> — puedes ajustarlos si tienes datos más precisos.`;
+    } else {
+      aviso.style.display='block';
+      aviso.innerHTML=`⚠️ No hay datos históricos para ${provincia} ${anio}. Ingresa los valores manualmente.`;
+    }
   }
 
   // ── PREDICCIÓN ──
@@ -815,7 +838,6 @@
       alert('Por favor completa todos los campos.'); return;
     }
 
-    // Obtener nombre del fundo
     let fundoNombre = '';
     if (idFundo) {
       const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
@@ -830,12 +852,12 @@
       const res = await fetch(mlUrl, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
-          Anio: anio, Mes: mes, Fundo: fundoNombre||'Fundo San Fernando',
-          Lote: 'Lote_01', Provincia: provincia,
-          Area_Ha: area_ha, Edad_Anios: edad_anios,
-          Prec_mm: prec_mm, Rad_Solar: rad_solar,
-          Tipo_Suelo: tipo_suelo, pH_Suelo: ph_suelo,
-          Temp_C: temp_c, Hum_Rel: hum_rel
+          Anio:anio, Mes:mes, Fundo:fundoNombre||'Fundo San Fernando',
+          Lote:'Lote_01', Provincia:provincia,
+          Area_Ha:area_ha, Edad_Anios:edad_anios,
+          Prec_mm:prec_mm, Rad_Solar:rad_solar,
+          Tipo_Suelo:tipo_suelo, pH_Suelo:ph_suelo,
+          Temp_C:temp_c, Hum_Rel:hum_rel
         })
       });
       const r = await res.json();
@@ -843,446 +865,72 @@
       const modelo = MODELOS[modeloSeleccionado];
 
       document.getElementById('res-v').textContent = toneladas;
-      document.getElementById('res-d').textContent =
-              `Provincia: ${provincia} · Año: ${anio} · Mes: ${mes} · Área: ${area_ha} ha · Suelo: ${tipo_suelo} · Temp: ${temp_c}°C · Precip: ${prec_mm} mm`;
-      document.getElementById('res-modelo').textContent =
-              `Modelo: ${modelo.nombre} · R²=${modelo.r2} · MAE=${modelo.mae} t`;
+      document.getElementById('res-d').textContent = `Provincia: ${provincia} · Año: ${anio} · Mes: ${mes} · Área: ${area_ha} ha · Suelo: ${tipo_suelo} · Temp: ${temp_c}°C · Precip: ${prec_mm} mm`;
+      document.getElementById('res-modelo').textContent = `Modelo: ${modelo.nombre} · R²=${modelo.r2} · MAE=${modelo.mae} t`;
       document.getElementById('res-box').classList.add('vis');
 
-      // Indicador
+      // Indicador de confianza
+      const confianza = await calcularConfianza(fundoNombre, toneladas);
+      const confDiv = document.getElementById('res-confianza');
+      if (confianza) {
+        confDiv.style.display='block'; confDiv.style.background=confianza.bg;
+        confDiv.style.color=confianza.color; confDiv.textContent=confianza.texto;
+      } else { confDiv.style.display='none'; }
+
+      // Guardar en BD
+      if (idFundo && usuarioActual) {
+        const mods = await fetch(`${API}/api/modelos-ml`).then(r=>r.json());
+        const idModelo = mods[0]?.idModelo;
+        const idSuelo  = await obtenerIdTipoSuelo(tipo_suelo);
+        await fetch(`${API}/api/predicciones`, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            anio, mes, areaHa:area_ha, edadAnios:edad_anios,
+            tempC:temp_c, precMm:prec_mm, radSolar:rad_solar,
+            phSuelo:ph_suelo, humRel:hum_rel,
+            rendimientoEstimado:toneladas,
+            modeloNombre:MODELOS[modeloSeleccionado].nombre,
+            fechaEjecucion:new Date().toISOString(),
+            usuario:{idUsuario:usuarioActual.idUsuario},
+            fundo:{idFundo:parseInt(idFundo)},
+            modelo:{idModelo},
+            tipoSuelo:{idTipoSuelo:idSuelo}
+          })
+        }).catch(()=>{});
+      }
+
+      const totalPreds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      document.getElementById('st-pred').textContent = totalPreds.length;
+
+    } catch(e) {
+      console.error(e);
+      alert('Error al conectar con el microservicio ML.');
+    } finally {
+      btn.innerHTML='🔮 Generar predicción'; btn.disabled=false;
+    }
+  }
+
   async function obtenerIdTipoSuelo(descripcion) {
     const suelos = await fetch(`${API}/api/tipos-suelo`).then(r=>r.json());
     return suelos.find(s=>s.descripcion===descripcion)?.idTipoSuelo || null;
   }
 
-
-  async function eliminarPrediccion(id) {
-    if (!confirm('¿Eliminar esta predicción?')) return;
+  async function calcularConfianza(fundoNombre, rendimiento) {
     try {
-      await fetch(`${API}/api/predicciones/${id}`, { method:'DELETE' });
-      cargarHistorial();
-    } catch(e) { alert('Error al eliminar.'); }
+      const preds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      const delFundo = preds.filter(p=>p.fundo?.nombreFundo===fundoNombre && p.rendimientoEstimado).map(p=>p.rendimientoEstimado);
+      if (delFundo.length < 3) return null;
+      const prom = delFundo.reduce((a,b)=>a+b,0)/delFundo.length;
+      const std  = Math.sqrt(delFundo.reduce((a,b)=>a+(b-prom)**2,0)/delFundo.length);
+      const min  = prom - 2*std;
+      const max  = prom + 2*std;
+      if (rendimiento >= min && rendimiento <= max) return { nivel:'normal', color:'#1a5c2a', bg:'#d4edda', texto:`✅ Resultado dentro del rango histórico normal (${min.toFixed(1)}–${max.toFixed(1)} t)` };
+      if (rendimiento < min) return { nivel:'bajo', color:'#7d5a00', bg:'#fff3cd', texto:`⚠️ Resultado por debajo del rango histórico normal (mín. ${min.toFixed(1)} t)` };
+      return { nivel:'alto', color:'#1a5c2a', bg:'#d4edda', texto:`🚀 Resultado por encima del rango histórico (máx. ${max.toFixed(1)} t)` };
+    } catch(e) { return null; }
   }
 
-  // ── FUNDOS ──
-  async function cargarFundos() {
-    try {
-      const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
-      const tb = document.getElementById('tabla-fundos');
-      document.getElementById('st-fund').textContent = fundos.length;
-      if (!fundos.length) {
-        tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--txt2);padding:22px">Sin fundos registrados.</td></tr>'; return;
-      }
-      tb.innerHTML=fundos.map(f=>`
-      <tr>
-        <td>#${f.idFundo}</td>
-        <td><strong>${f.nombreFundo}</strong></td>
-        <td>${f.ubicacion??'—'}</td>
-        <td>${f.provincia?.nombreProvincia??'—'}</td>
-        <td>${f.usuario?.nombreCompleto??'—'}</td>
-        <td style="display:flex;gap:8px">
-          <button onclick="abrirEditarFundo(${f.idFundo},'${f.nombreFundo}','${f.ubicacion??''}',${f.provincia?.idProvincia})"
-            style="padding:5px 12px;background:var(--v7);border:1px solid var(--v6);border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif">✏️ Editar</button>
-          <button onclick="abrirEliminarFundo(${f.idFundo})"
-            style="padding:5px 12px;background:#fdecea;border:1px solid #f5c6c6;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;color:#c0392b">🗑️ Eliminar</button>
-        </td>
-      </tr>`).join('');
-    } catch(e){ console.error(e) }
-  }
-
-  async function abrirNuevoFundo() {
-    fundoEditandoId = null;
-    document.getElementById('modal-fundo-titulo').textContent = 'Nuevo fundo';
-    document.getElementById('nf-nombre').value = '';
-    document.getElementById('nf-ubicacion').value = '';
-    document.getElementById('nf-error').style.display = 'none';
-    document.getElementById('btn-guardar-fundo').textContent = 'Guardar fundo';
-    await cargarProvinciasModal();
-    document.getElementById('modal-fundo').style.display = 'flex';
-  }
-
-  async function abrirEditarFundo(id, nombre, ubicacion, idProvincia) {
-    fundoEditandoId = id;
-    document.getElementById('modal-fundo-titulo').textContent = 'Editar fundo';
-    document.getElementById('nf-nombre').value = nombre;
-    document.getElementById('nf-ubicacion').value = ubicacion || '';
-    document.getElementById('nf-error').style.display = 'none';
-    document.getElementById('btn-guardar-fundo').textContent = 'Actualizar fundo';
-    await cargarProvinciasModal();
-    document.getElementById('nf-provincia').value = idProvincia;
-    document.getElementById('modal-fundo').style.display = 'flex';
-  }
-
-  async function cargarProvinciasModal() {
-    const sel = document.getElementById('nf-provincia');
-    sel.innerHTML = '<option value="">Seleccionar...</option>';
-    const provs = await fetch(`${API}/api/provincias`).then(r=>r.json());
-    provs.forEach(p => {
-      const o = document.createElement('option');
-      o.value = p.idProvincia; o.textContent = p.nombreProvincia;
-      sel.appendChild(o);
-    });
-  }
-
-  function cerrarModalFundo() { document.getElementById('modal-fundo').style.display = 'none'; }
-
-  async function guardarFundo() {
-    const nombre    = document.getElementById('nf-nombre').value.trim();
-    const ubicacion = document.getElementById('nf-ubicacion').value.trim();
-    const idProv    = document.getElementById('nf-provincia').value;
-    const errDiv    = document.getElementById('nf-error');
-    errDiv.style.display = 'none';
-    if (!nombre || !idProv) { errDiv.textContent='Nombre y provincia son obligatorios.'; errDiv.style.display='block'; return; }
-    const btn = document.getElementById('btn-guardar-fundo');
-    btn.innerHTML = '<span class="spin"></span>Guardando...'; btn.disabled = true;
-    try {
-      const url    = fundoEditandoId ? `${API}/api/fundos/${fundoEditandoId}` : `${API}/api/fundos`;
-      const method = fundoEditandoId ? 'PUT' : 'POST';
-      const res = await fetch(url, {
-        method, headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ nombreFundo:nombre, ubicacion:ubicacion||null, provincia:{idProvincia:parseInt(idProv)}, usuario:{idUsuario:usuarioActual.idUsuario} })
-      });
-      if (!res.ok) throw new Error();
-      cerrarModalFundo(); cargarFundos(); cargarSelectFundos();
-    } catch(e) {
-      errDiv.textContent='Error al guardar. Intenta nuevamente.'; errDiv.style.display='block';
-    } finally {
-      btn.innerHTML = fundoEditandoId ? 'Actualizar fundo' : 'Guardar fundo'; btn.disabled = false;
-    }
-  }
-
-  async function cargarEstadisticasPerfil() {
-    try {
-      const preds = await fetch(`${API}/api/predicciones`).then(r => r.json());
-      const misPreds = preds.filter(p => p.usuario?.idUsuario === usuarioActual.idUsuario);
-
-      document.getElementById('p-total-preds').textContent = misPreds.length || '0';
-
-      if (misPreds.length) {
-        const vals = misPreds.map(p => p.rendimientoEstimado).filter(v => v != null);
-        const prom = vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1) : '—';
-        const max  = vals.length ? Math.max(...vals).toFixed(1) : '—';
-        const ultima = misPreds.at(-1);
-        const fechaUltima = ultima?.fechaEjecucion
-                ? new Date(ultima.fechaEjecucion).toLocaleDateString('es-PE', { day:'2-digit', month:'short', year:'numeric' })
-                : '—';
-        document.getElementById('p-rend-prom').textContent  = prom;
-        document.getElementById('p-rend-max').textContent   = max;
-        document.getElementById('p-ultima-pred').textContent = fechaUltima;
-      } else {
-        document.getElementById('p-rend-prom').textContent  = '—';
-        document.getElementById('p-rend-max').textContent   = '—';
-        document.getElementById('p-ultima-pred').textContent = 'Sin predicciones';
-      }
-    } catch(e) { console.error('Perfil stats:', e); }
-  }
-
-  function abrirEliminarFundo(id) { fundoEliminandoId=id; document.getElementById('modal-eliminar').style.display='flex'; }
-  function cerrarModalEliminar() { document.getElementById('modal-eliminar').style.display='none'; fundoEliminandoId=null; }
-
-  async function confirmarEliminar() {
-    const btn = document.getElementById('btn-confirmar-eliminar');
-    btn.textContent='Eliminando...'; btn.disabled=true;
-    try {
-      await fetch(`${API}/api/fundos/${fundoEliminandoId}`, { method:'DELETE' });
-      cerrarModalEliminar(); cargarFundos();
-    } catch(e) { alert('Error al eliminar.'); }
-    finally { btn.textContent='Sí, eliminar'; btn.disabled=false; }
-  }
-
-  // ── CLIMA REFERENCIA ──
-  const CLIMA = {
-    "Chincha": {
-      2022:{temp_c:21.5,prec_mm:8.5,rad_solar:6.2,hum_rel:74.0},
-      2023:{temp_c:22.0,prec_mm:10.2,rad_solar:6.4,hum_rel:73.5},
-      2024:{temp_c:21.8,prec_mm:9.0,rad_solar:6.3,hum_rel:74.2},
-      2025:{temp_c:22.1,prec_mm:9.5,rad_solar:6.3,hum_rel:73.8},
-      2026:{temp_c:22.0,prec_mm:9.5,rad_solar:6.3,hum_rel:74.0},
-    },
-    "Yauyos (Catahuasi)": {
-      2022:{temp_c:14.2,prec_mm:420.0,rad_solar:5.0,hum_rel:62.0},
-      2023:{temp_c:14.8,prec_mm:390.5,rad_solar:5.2,hum_rel:61.5},
-      2024:{temp_c:14.5,prec_mm:405.0,rad_solar:5.1,hum_rel:62.5},
-      2025:{temp_c:14.6,prec_mm:400.0,rad_solar:5.1,hum_rel:62.0},
-      2026:{temp_c:14.6,prec_mm:400.0,rad_solar:5.1,hum_rel:62.0},
-    }
-  };
-
-  function precargarClima() {
-    const provincia = document.getElementById('pred-provincia').value; // igual, no cambia
-    const anio      = parseInt(document.getElementById('pred-anio').value);
-    const mes       = parseInt(document.getElementById('pred-mes').value);
-    const aviso     = document.getElementById('aviso-clima');
-    if (!provincia || !anio) return;
-    const datos = CLIMA[provincia]?.[anio];
-    if (datos) {
-      document.getElementById('pred-temp').value   = datos.temp_c;
-      document.getElementById('pred-precip').value = datos.prec_mm;
-      document.getElementById('pred-rad').value    = datos.rad_solar;
-      document.getElementById('pred-hum').value    = datos.hum_rel;
-      aviso.style.display='block';
-      aviso.innerHTML=`✅ Datos climáticos precargados para <strong>${provincia} ${anio}</strong> — puedes ajustarlos si tienes datos más precisos.`;
-    } else {
-      aviso.style.display='block';
-      aviso.innerHTML=`⚠️ No hay datos históricos para ${provincia} ${anio}. Ingresa los valores manualmente.`;
-    }
-  }
-
-  // ── LOGOUT ──
-  function cerrarSesion() {
-    usuarioActual=null;
-    document.getElementById('app').classList.remove('activa');
-    document.getElementById('login').classList.add('activa');
-    document.getElementById('inp-correo').value='';
-    document.getElementById('inp-pass').value='';
-    document.getElementById('res-box').classList.remove('vis');
-  }
-
-  let fundosCache = [];
-
-  async function cargarSelectFundos() {
-    try {
-      const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
-      fundosCache = fundos;
-      const sf = document.getElementById('pred-fundo');
-      sf.innerHTML = '<option value="">Seleccionar fundo...</option>';
-      fundos.forEach(f=>{
-        const o = document.createElement('option');
-        o.value = f.idFundo;
-        o.textContent = f.nombreFundo;
-        sf.appendChild(o);
-      });
-    } catch(e){ console.error('Selects:',e) }
-  }
-
-  function onFundoChange() {
-    const idFundo = document.getElementById('pred-fundo').value;
-    const fundo = fundosCache.find(f => f.idFundo == idFundo);
-
-    if (fundo?.provincia?.nombreProvincia) {
-      document.getElementById('pred-provincia').value = fundo.provincia.nombreProvincia;
-      precargarClima();
-    } else {
-      document.getElementById('pred-provincia').value = '';
-      document.getElementById('aviso-clima').style.display = 'none';
-    }
-  }
-
-
-  let chartMes = null, chartFundo = null, chartSuelo = null, chartAnual = null, chartScatter = null;
-
-  async function cargarReportes() {
-    try {
-      const preds = await fetch(`${API}/api/predicciones`).then(r => r.json());
-      if (!preds.length) return;
-
-      const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-
-      // ── 1. Rendimiento promedio por mes ──
-      const porMes = {};
-      for (let m = 1; m <= 12; m++) porMes[m] = [];
-      preds.forEach(p => { if (p.mes && p.rendimientoEstimado) porMes[p.mes].push(p.rendimientoEstimado); });
-      const promediosMes = Object.values(porMes).map(arr => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2) : 0);
-      if (chartMes) chartMes.destroy();
-      chartMes = new Chart(document.getElementById('chart-mes'), {
-        type: 'line',
-        data: {
-          labels: meses,
-          datasets: [{ label: 'Rend. promedio (t)', data: promediosMes,
-            borderColor:'#2d6a35', backgroundColor:'rgba(74,158,86,0.1)',
-            borderWidth:2, fill:true, tension:0.4, pointBackgroundColor:'#2d6a35' }]
-        },
-        options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:false } } }
-      });
-
-      // ── 2. Donut tipo de suelo ──
-      const porSuelo = {};
-      preds.forEach(p => {
-        const s = p.tipoSuelo?.descripcion || p.tipoSuelo || 'Sin datos';
-        porSuelo[s] = (porSuelo[s] || 0) + 1;
-      });
-      if (chartSuelo) chartSuelo.destroy();
-      chartSuelo = new Chart(document.getElementById('chart-suelo'), {
-        type: 'doughnut',
-        data: {
-          labels: Object.keys(porSuelo),
-          datasets: [{ data: Object.values(porSuelo),
-            backgroundColor: ['#2d6a35','#4a9e56','#c9a84c','#1e4a27','#7ec88a'],
-            borderWidth: 2, borderColor: '#fff' }]
-        },
-        options: { responsive:true, plugins:{ legend:{ position:'bottom', labels:{ font:{ size:12 } } } } }
-      });
-
-      // ── 3. Evolución anual acumulada ──
-      const porAnio = {};
-      preds.forEach(p => {
-        if (p.anio && p.rendimientoEstimado) {
-          if (!porAnio[p.anio]) porAnio[p.anio] = { suma:0, count:0 };
-          porAnio[p.anio].suma  += p.rendimientoEstimado;
-          porAnio[p.anio].count += 1;
-        }
-      });
-      const anios = Object.keys(porAnio).sort();
-      const rendAnual = anios.map(a => porAnio[a].suma.toFixed(2));
-      if (chartAnual) chartAnual.destroy();
-      chartAnual = new Chart(document.getElementById('chart-anual'), {
-        type: 'line',
-        data: {
-          labels: anios,
-          datasets: [{ label: 'Rend. acumulado (t)', data: rendAnual,
-            borderColor:'#c9a84c', backgroundColor:'rgba(201,168,76,0.12)',
-            borderWidth:2, fill:true, tension:0.3, pointBackgroundColor:'#c9a84c',
-            pointRadius:5 }]
-        },
-        options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:false } } }
-      });
-
-      // ── 4. Dispersión rendimiento vs temperatura ──
-      const scatterData = preds
-              .filter(p => p.tempC != null && p.rendimientoEstimado != null)
-              .map(p => ({ x: p.tempC, y: p.rendimientoEstimado }));
-      if (chartScatter) chartScatter.destroy();
-      chartScatter = new Chart(document.getElementById('chart-scatter'), {
-        type: 'scatter',
-        data: {
-          datasets: [{ label: 'Predicciones', data: scatterData,
-            backgroundColor:'rgba(45,106,53,0.55)', borderColor:'#2d6a35',
-            pointRadius:5, pointHoverRadius:7 }]
-        },
-        options: {
-          responsive:true,
-          plugins:{ legend:{ display:false } },
-          scales: {
-            x:{ title:{ display:true, text:'Temperatura (°C)', font:{ size:11 } } },
-            y:{ title:{ display:true, text:'Rendimiento (t)',  font:{ size:11 } }, beginAtZero:false }
-          }
-        }
-      });
-
-      // ── 5. Heatmap mes × fundo ──
-      const fundosSet  = [...new Set(preds.map(p => p.fundo?.nombreFundo || 'Sin fundo'))];
-      const heatData   = {};
-      fundosSet.forEach(f => { heatData[f] = {}; for(let m=1;m<=12;m++) heatData[f][m] = []; });
-      preds.forEach(p => {
-        const f = p.fundo?.nombreFundo || 'Sin fundo';
-        if (p.mes && p.rendimientoEstimado) heatData[f][p.mes].push(p.rendimientoEstimado);
-      });
-
-      // Calcular min/max global para escala de color
-      let gMin = Infinity, gMax = -Infinity;
-      fundosSet.forEach(f => {
-        for(let m=1;m<=12;m++) {
-          const arr = heatData[f][m];
-          if (arr.length) { const v = arr.reduce((a,b)=>a+b,0)/arr.length; if(v<gMin)gMin=v; if(v>gMax)gMax=v; }
-        }
-      });
-
-      function heatColor(val) {
-        if (val === null) return '#f0f4f0';
-        const t = gMax > gMin ? (val - gMin) / (gMax - gMin) : 0.5;
-        const r = Math.round(232 - t * (232 - 30));
-        const g = Math.round(245 - t * (245 - 106));
-        const b = Math.round(233 - t * (233 - 53));
-        return `rgb(${r},${g},${b})`;
-      }
-
-      let html = `<table style="width:100%;border-collapse:collapse;font-size:11px">
-      <thead><tr><th style="padding:7px 10px;text-align:left;color:var(--txt2)">Fundo</th>
-      ${meses.map(m=>`<th style="padding:7px 6px;text-align:center;color:var(--txt2)">${m}</th>`).join('')}
-      </tr></thead><tbody>`;
-      fundosSet.forEach(f => {
-        html += `<tr><td style="padding:7px 10px;font-weight:600;white-space:nowrap;color:var(--txt)">${f}</td>`;
-        for(let m=1;m<=12;m++) {
-          const arr = heatData[f][m];
-          const val = arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
-          const bg  = heatColor(val);
-          const txt = val !== null ? val.toFixed(1) : '—';
-          html += `<td style="padding:7px 6px;text-align:center;background:${bg};border-radius:4px;font-weight:500">${txt}</td>`;
-        }
-        html += '</tr>';
-      });
-      html += '</tbody></table>';
-      document.getElementById('heatmap-wrap').innerHTML = html;
-
-      // ── 6. Barras por fundo ──
-      const porFundo = {};
-      preds.forEach(p => {
-        const n = p.fundo?.nombreFundo || 'Sin fundo';
-        if (!porFundo[n]) porFundo[n] = [];
-        if (p.rendimientoEstimado) porFundo[n].push(p.rendimientoEstimado);
-      });
-      const fundoNombres   = Object.keys(porFundo);
-      const promediosFundo = fundoNombres.map(f => (porFundo[f].reduce((a,b)=>a+b,0)/porFundo[f].length).toFixed(2));
-      if (chartFundo) chartFundo.destroy();
-      chartFundo = new Chart(document.getElementById('chart-fundo'), {
-        type: 'bar',
-        data: {
-          labels: fundoNombres,
-          datasets: [{ label: 'Rend. promedio (t)', data: promediosFundo,
-            backgroundColor:['#2d6a35','#4a9e56','#c9a84c','#1e4a27','#7ec88a'],
-            borderRadius:6 }]
-        },
-        options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:false } } }
-      });
-
-      // ── 7. Tabla resumen ──
-      document.getElementById('tabla-resumen').innerHTML = fundoNombres.map(f => {
-        const vals = porFundo[f];
-        const prom = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);
-        return `<tr>
-        <td><strong>${f}</strong></td>
-        <td>${vals.length}</td>
-        <td>${prom}</td>
-        <td>${Math.max(...vals).toFixed(2)}</td>
-        <td>${Math.min(...vals).toFixed(2)}</td>
-      </tr>`;
-      }).join('');
-
-    } catch(e){ console.error('Reportes:',e) }
-  }
-  let prediccionRealId = null;
-
-  function abrirIngresarReal(id) {
-    prediccionRealId = id;
-    document.getElementById('inp-real').value = '';
-    document.getElementById('inp-notas').value = '';
-    document.getElementById('real-error').style.display = 'none';
-    document.getElementById('modal-real').style.display = 'flex';
-  }
-
-  function cerrarModalReal() {
-    document.getElementById('modal-real').style.display = 'none';
-    prediccionRealId = null;
-  }
-
-  async function guardarReal() {
-    const real  = parseFloat(document.getElementById('inp-real').value);
-    const notas = document.getElementById('inp-notas').value.trim();
-    const errDiv = document.getElementById('real-error');
-    errDiv.style.display = 'none';
-    if (isNaN(real) || real <= 0) {
-      errDiv.textContent = 'Ingresa un valor válido mayor a 0.';
-      errDiv.style.display = 'block'; return;
-    }
-    const btn = document.getElementById('btn-guardar-real');
-    btn.innerHTML = '<span class="spin"></span>Guardando...'; btn.disabled = true;
-    try {
-      const res = await fetch(`${API}/api/predicciones/${prediccionRealId}`, {
-        method: 'PUT', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ rendimientoReal: real, notas: notas || null })
-      });
-      if (!res.ok) throw new Error();
-      cerrarModalReal();
-      cargarHistorial();
-    } catch(e) {
-      errDiv.textContent = 'Error al guardar.';
-      errDiv.style.display = 'block';
-    } finally {
-      btn.innerHTML = 'Guardar'; btn.disabled = false;
-    }
-  }
-  let predsCache = [];
-
+  // ── HISTORIAL ──
   async function cargarHistorial() {
     try {
       const preds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
@@ -1297,7 +945,6 @@
     const mes    = document.getElementById('fil-mes').value;
     const fundo  = document.getElementById('fil-fundo').value;
     const estado = document.getElementById('fil-estado').value;
-
     let filtrados = predsCache.filter(p => {
       if (anio   && String(p.anio) !== anio) return false;
       if (mes    && String(p.mes)  !== mes)  return false;
@@ -1306,152 +953,250 @@
       if (estado === 'en_curso'   &&  p.rendimientoReal) return false;
       return true;
     });
-
     const resDiv = document.getElementById('fil-resultado');
     if (anio || mes || fundo || estado) {
-      resDiv.style.display = 'block';
-      resDiv.textContent = `Mostrando ${filtrados.length} de ${predsCache.length} predicciones`;
-    } else {
-      resDiv.style.display = 'none';
-    }
-
+      resDiv.style.display='block';
+      resDiv.textContent=`Mostrando ${filtrados.length} de ${predsCache.length} predicciones`;
+    } else { resDiv.style.display='none'; }
     renderTablaHistorial(filtrados);
   }
 
   function limpiarFiltros() {
-    document.getElementById('fil-anio').value   = '';
-    document.getElementById('fil-mes').value    = '';
-    document.getElementById('fil-fundo').value  = '';
-    document.getElementById('fil-estado').value = '';
-    document.getElementById('fil-resultado').style.display = 'none';
+    ['fil-anio','fil-mes','fil-fundo','fil-estado'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('fil-resultado').style.display='none';
     renderTablaHistorial(predsCache);
   }
 
   function renderTablaHistorial(preds) {
     const tb = document.getElementById('tabla-hist');
-    if (!preds.length) {
-      tb.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones para los filtros seleccionados.</td></tr>'; return;
-    }
+    if (!preds.length) { tb.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones para los filtros seleccionados.</td></tr>'; return; }
     tb.innerHTML = preds.map(p => {
       const predicho = p.rendimientoEstimado;
       const real     = p.rendimientoReal;
-      const error    = (predicho && real) ? Math.abs((predicho - real) / real * 100).toFixed(1) : null;
-
-      const botonReal = real
-              ? real
-              : `<button onclick="abrirIngresarReal(${p.idPrediccion})"
-          style="padding:4px 10px;background:var(--v7);border:1px solid var(--v6);border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:var(--v3)">
-          + Ingresar
-        </button>`;
-
-      const errorTexto = error
-              ? `<span class="badge ${parseFloat(error) <= 10 ? 'b-v' : 'b-d'}">${error}%</span>`
-              : `<span style="color:var(--txt3);font-size:12px">—</span>`;
-
-      const estadoBadge = real
-              ? `<span class="badge b-v">Completada</span>`
-              : `<span class="badge b-d">En curso</span>`;
-
+      const error    = (predicho && real) ? Math.abs((predicho-real)/real*100).toFixed(1) : null;
+      const botonReal = real ? real : `<button onclick="abrirIngresarReal(${p.idPrediccion})" style="padding:4px 10px;background:var(--v7);border:1px solid var(--v6);border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:var(--v3)">+ Ingresar</button>`;
+      const errorTexto = error ? `<span class="badge ${parseFloat(error)<=10?'b-v':'b-d'}">${error}%</span>` : `<span style="color:var(--txt3);font-size:12px">—</span>`;
+      const estadoBadge = real ? `<span class="badge b-v">Completada</span>` : `<span class="badge b-d">En curso</span>`;
       return `<tr>
       <td>#${p.idPrediccion}</td>
       <td>${p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—'}</td>
-      <td>${p.anio??'—'}</td>
-      <td>${p.mes??'—'}</td>
+      <td>${p.anio??'—'}</td><td>${p.mes??'—'}</td>
       <td>${p.fundo?.nombreFundo??'—'}</td>
-      <td>${p.areaHa??'—'}</td>
-      <td>${p.tempC??'—'}</td>
+      <td>${p.areaHa??'—'}</td><td>${p.tempC??'—'}</td>
       <td><strong>${predicho??'—'}</strong></td>
-      <td>${botonReal}</td>
-      <td>${errorTexto}</td>
-      <td>${estadoBadge}</td>
-      <td style="display:flex;gap:6px">
-        <button onclick="eliminarPrediccion(${p.idPrediccion})"
-          style="padding:5px 10px;background:#fdecea;border:1px solid #f5c6c6;border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:#c0392b">
-          🗑️
-        </button>
-      </td>
+      <td>${botonReal}</td><td>${errorTexto}</td><td>${estadoBadge}</td>
+      <td><button onclick="eliminarPrediccion(${p.idPrediccion})" style="padding:5px 10px;background:#fdecea;border:1px solid #f5c6c6;border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:#c0392b">🗑️</button></td>
     </tr>`;
     }).join('');
   }
+
+  async function eliminarPrediccion(id) {
+    if (!confirm('¿Eliminar esta predicción?')) return;
+    try { await fetch(`${API}/api/predicciones/${id}`,{method:'DELETE'}); cargarHistorial(); }
+    catch(e){ alert('Error al eliminar.'); }
+  }
+
+  function abrirIngresarReal(id) {
+    prediccionRealId = id;
+    document.getElementById('inp-real').value='';
+    document.getElementById('inp-notas').value='';
+    document.getElementById('real-error').style.display='none';
+    document.getElementById('modal-real').style.display='flex';
+  }
+
+  function cerrarModalReal() { document.getElementById('modal-real').style.display='none'; prediccionRealId=null; }
+
+  async function guardarReal() {
+    const real  = parseFloat(document.getElementById('inp-real').value);
+    const notas = document.getElementById('inp-notas').value.trim();
+    const errDiv = document.getElementById('real-error');
+    errDiv.style.display='none';
+    if (isNaN(real)||real<=0) { errDiv.textContent='Ingresa un valor válido mayor a 0.'; errDiv.style.display='block'; return; }
+    const btn = document.getElementById('btn-guardar-real');
+    btn.innerHTML='<span class="spin"></span>Guardando...'; btn.disabled=true;
+    try {
+      const res = await fetch(`${API}/api/predicciones/${prediccionRealId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({rendimientoReal:real,notas:notas||null})});
+      if (!res.ok) throw new Error();
+      cerrarModalReal(); cargarHistorial();
+    } catch(e){ errDiv.textContent='Error al guardar.'; errDiv.style.display='block'; }
+    finally { btn.innerHTML='Guardar'; btn.disabled=false; }
+  }
+
   function exportarPDF() {
-    const { jsPDF } = window.jspdf;
+    const {jsPDF} = window.jspdf;
     const doc = new jsPDF('landscape');
-
-    // Header
-    doc.setFillColor(15, 36, 20);
-    doc.rect(0, 0, 297, 22, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('AnticiPalta — Historial de Predicciones', 14, 14);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Generado: ${new Date().toLocaleDateString('es-PE')} · Usuario: ${usuarioActual?.nombreCompleto || '—'}`, 200, 14);
-
-    // Tabla
+    doc.setFillColor(15,36,20); doc.rect(0,0,297,22,'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
+    doc.text('AnticiPalta — Historial de Predicciones',14,14);
+    doc.setFontSize(9); doc.setFont('helvetica','normal');
+    doc.text(`Generado: ${new Date().toLocaleDateString('es-PE')} · Usuario: ${usuarioActual?.nombreCompleto||'—'}`,200,14);
     const filas = predsCache.map(p => {
-      const error = (p.rendimientoEstimado && p.rendimientoReal)
-              ? Math.abs((p.rendimientoEstimado - p.rendimientoReal) / p.rendimientoReal * 100).toFixed(1) + '%'
-              : '—';
-      return [
-        `#${p.idPrediccion}`,
-        p.fechaEjecucion ? new Date(p.fechaEjecucion).toLocaleDateString('es-PE') : '—',
-        p.anio ?? '—',
-        p.mes ?? '—',
-        p.fundo?.nombreFundo ?? '—',
-        p.areaHa ?? '—',
-        p.tempC ?? '—',
-        p.rendimientoEstimado ?? '—',
-        p.rendimientoReal ?? 'Pendiente',
-        error,
-        p.rendimientoReal ? 'Completada' : 'En curso'
-      ];
+      const error = (p.rendimientoEstimado&&p.rendimientoReal) ? Math.abs((p.rendimientoEstimado-p.rendimientoReal)/p.rendimientoReal*100).toFixed(1)+'%' : '—';
+      return [`#${p.idPrediccion}`,p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—',p.anio??'—',p.mes??'—',p.fundo?.nombreFundo??'—',p.areaHa??'—',p.tempC??'—',p.rendimientoEstimado??'—',p.rendimientoReal??'Pendiente',error,p.rendimientoReal?'Completada':'En curso'];
     });
-
-    doc.autoTable({
-      startY: 28,
-      head: [['ID','Fecha','Año','Mes','Fundo','Área (ha)','Temp (°C)','Predicho (t)','Real (t)','Error %','Estado']],
-      body: filas,
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [45, 106, 53], textColor: 255, fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [232, 245, 233] },
-      didParseCell: (data) => {
-        if (data.section === 'body' && data.column.index === 10) {
-          if (data.cell.raw === 'Completada') data.cell.styles.textColor = [26, 92, 42];
-          if (data.cell.raw === 'En curso')   data.cell.styles.textColor = [125, 90, 0];
-        }
-      }
-    });
-
-    // Footer
+    doc.autoTable({startY:28,head:[['ID','Fecha','Año','Mes','Fundo','Área (ha)','Temp (°C)','Predicho (t)','Real (t)','Error %','Estado']],body:filas,styles:{fontSize:8,cellPadding:3},headStyles:{fillColor:[45,106,53],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[232,245,233]}});
     const totalPags = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPags; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(150);
-      doc.text(`AnticiPalta · JL Monteverde · Página ${i} de ${totalPags}`, 14, doc.internal.pageSize.height - 8);
-    }
-
+    for(let i=1;i<=totalPags;i++){ doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150); doc.text(`AnticiPalta · JL Monteverde · Página ${i} de ${totalPags}`,14,doc.internal.pageSize.height-8); }
     doc.save(`AnticiPalta_Historial_${new Date().toISOString().split('T')[0]}.pdf`);
   }
-  async function calcularConfianza(fundoNombre, rendimiento) {
+
+  // ── FUNDOS ──
+  async function cargarFundos() {
     try {
-      const preds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
-      const delFundo = preds
-              .filter(p => p.fundo?.nombreFundo === fundoNombre && p.rendimientoEstimado)
-              .map(p => p.rendimientoEstimado);
+      const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
+      const tb = document.getElementById('tabla-fundos');
+      document.getElementById('st-fund').textContent = fundos.length;
+      if (!fundos.length) { tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--txt2);padding:22px">Sin fundos registrados.</td></tr>'; return; }
+      tb.innerHTML=fundos.map(f=>`<tr>
+      <td>#${f.idFundo}</td><td><strong>${f.nombreFundo}</strong></td>
+      <td>${f.ubicacion??'—'}</td><td>${f.provincia?.nombreProvincia??'—'}</td><td>${f.usuario?.nombreCompleto??'—'}</td>
+      <td style="display:flex;gap:8px">
+        <button onclick="abrirEditarFundo(${f.idFundo},'${f.nombreFundo}','${f.ubicacion??''}',${f.provincia?.idProvincia})" style="padding:5px 12px;background:var(--v7);border:1px solid var(--v6);border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif">✏️ Editar</button>
+        <button onclick="abrirEliminarFundo(${f.idFundo})" style="padding:5px 12px;background:#fdecea;border:1px solid #f5c6c6;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;color:#c0392b">🗑️ Eliminar</button>
+      </td></tr>`).join('');
+    } catch(e){ console.error(e) }
+  }
 
-      if (delFundo.length < 3) return null; // no hay suficientes datos
+  async function abrirNuevoFundo() {
+    fundoEditandoId=null;
+    document.getElementById('modal-fundo-titulo').textContent='Nuevo fundo';
+    document.getElementById('nf-nombre').value=''; document.getElementById('nf-ubicacion').value='';
+    document.getElementById('nf-error').style.display='none';
+    document.getElementById('btn-guardar-fundo').textContent='Guardar fundo';
+    await cargarProvinciasModal();
+    document.getElementById('modal-fundo').style.display='flex';
+  }
 
-      const prom = delFundo.reduce((a,b)=>a+b,0) / delFundo.length;
-      const std  = Math.sqrt(delFundo.reduce((a,b)=>a+(b-prom)**2,0) / delFundo.length);
-      const min  = prom - 2*std;
-      const max  = prom + 2*std;
+  async function abrirEditarFundo(id,nombre,ubicacion,idProvincia) {
+    fundoEditandoId=id;
+    document.getElementById('modal-fundo-titulo').textContent='Editar fundo';
+    document.getElementById('nf-nombre').value=nombre; document.getElementById('nf-ubicacion').value=ubicacion||'';
+    document.getElementById('nf-error').style.display='none';
+    document.getElementById('btn-guardar-fundo').textContent='Actualizar fundo';
+    await cargarProvinciasModal();
+    document.getElementById('nf-provincia').value=idProvincia;
+    document.getElementById('modal-fundo').style.display='flex';
+  }
 
-      if (rendimiento >= min && rendimiento <= max) return { nivel:'normal',   color:'#1a5c2a', bg:'#d4edda', texto:`✅ Resultado dentro del rango histórico normal (${min.toFixed(1)}–${max.toFixed(1)} t)` };
-      if (rendimiento < min)  return { nivel:'bajo',    color:'#7d5a00', bg:'#fff3cd', texto:`⚠️ Resultado por debajo del rango histórico normal (mín. ${min.toFixed(1)} t)` };
-      return                         { nivel:'alto',    color:'#1a5c2a', bg:'#d4edda', texto:`🚀 Resultado por encima del rango histórico (máx. ${max.toFixed(1)} t)` };
-    } catch(e) { return null; }
+  async function cargarProvinciasModal() {
+    const sel=document.getElementById('nf-provincia');
+    sel.innerHTML='<option value="">Seleccionar...</option>';
+    const provs=await fetch(`${API}/api/provincias`).then(r=>r.json());
+    provs.forEach(p=>{ const o=document.createElement('option'); o.value=p.idProvincia; o.textContent=p.nombreProvincia; sel.appendChild(o); });
+  }
+
+  function cerrarModalFundo() { document.getElementById('modal-fundo').style.display='none'; }
+
+  async function guardarFundo() {
+    const nombre=document.getElementById('nf-nombre').value.trim();
+    const ubicacion=document.getElementById('nf-ubicacion').value.trim();
+    const idProv=document.getElementById('nf-provincia').value;
+    const errDiv=document.getElementById('nf-error');
+    errDiv.style.display='none';
+    if(!nombre||!idProv){ errDiv.textContent='Nombre y provincia son obligatorios.'; errDiv.style.display='block'; return; }
+    const btn=document.getElementById('btn-guardar-fundo');
+    btn.innerHTML='<span class="spin"></span>Guardando...'; btn.disabled=true;
+    try {
+      const url=fundoEditandoId?`${API}/api/fundos/${fundoEditandoId}`:`${API}/api/fundos`;
+      const method=fundoEditandoId?'PUT':'POST';
+      const res=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify({nombreFundo:nombre,ubicacion:ubicacion||null,provincia:{idProvincia:parseInt(idProv)},usuario:{idUsuario:usuarioActual.idUsuario}})});
+      if(!res.ok) throw new Error();
+      cerrarModalFundo(); cargarFundos(); cargarSelectFundos();
+    } catch(e){ errDiv.textContent='Error al guardar. Intenta nuevamente.'; errDiv.style.display='block'; }
+    finally { btn.innerHTML=fundoEditandoId?'Actualizar fundo':'Guardar fundo'; btn.disabled=false; }
+  }
+
+  function abrirEliminarFundo(id){ fundoEliminandoId=id; document.getElementById('modal-eliminar').style.display='flex'; }
+  function cerrarModalEliminar(){ document.getElementById('modal-eliminar').style.display='none'; fundoEliminandoId=null; }
+
+  async function confirmarEliminar() {
+    const btn=document.getElementById('btn-confirmar-eliminar');
+    btn.textContent='Eliminando...'; btn.disabled=true;
+    try { await fetch(`${API}/api/fundos/${fundoEliminandoId}`,{method:'DELETE'}); cerrarModalEliminar(); cargarFundos(); }
+    catch(e){ alert('Error al eliminar.'); }
+    finally { btn.textContent='Sí, eliminar'; btn.disabled=false; }
+  }
+
+  // ── PERFIL ──
+  async function cargarEstadisticasPerfil() {
+    try {
+      const preds=await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      const misPreds=preds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);
+      document.getElementById('p-total-preds').textContent=misPreds.length||'0';
+      if(misPreds.length){
+        const vals=misPreds.map(p=>p.rendimientoEstimado).filter(v=>v!=null);
+        document.getElementById('p-rend-prom').textContent=vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):'—';
+        document.getElementById('p-rend-max').textContent=vals.length?Math.max(...vals).toFixed(1):'—';
+        const ultima=misPreds.at(-1);
+        document.getElementById('p-ultima-pred').textContent=ultima?.fechaEjecucion?new Date(ultima.fechaEjecucion).toLocaleDateString('es-PE',{day:'2-digit',month:'short',year:'numeric'}):'—';
+      } else {
+        document.getElementById('p-rend-prom').textContent='—';
+        document.getElementById('p-rend-max').textContent='—';
+        document.getElementById('p-ultima-pred').textContent='Sin predicciones';
+      }
+    } catch(e){ console.error('Perfil:',e) }
+  }
+
+  // ── LOGOUT ──
+  function cerrarSesion() {
+    usuarioActual=null;
+    document.getElementById('app').classList.remove('activa');
+    document.getElementById('login').classList.add('activa');
+    document.getElementById('inp-correo').value='';
+    document.getElementById('inp-pass').value='';
+    document.getElementById('res-box').classList.remove('vis');
+  }
+
+  // ── REPORTES ──
+  async function cargarReportes() {
+    try {
+      const preds=await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      if(!preds.length) return;
+      const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+      const porMes={};
+      for(let m=1;m<=12;m++) porMes[m]=[];
+      preds.forEach(p=>{ if(p.mes&&p.rendimientoEstimado) porMes[p.mes].push(p.rendimientoEstimado); });
+      const promediosMes=Object.values(porMes).map(arr=>arr.length?(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2):0);
+      if(chartMes) chartMes.destroy();
+      chartMes=new Chart(document.getElementById('chart-mes'),{type:'line',data:{labels:meses,datasets:[{label:'Rend. promedio (t)',data:promediosMes,borderColor:'#2d6a35',backgroundColor:'rgba(74,158,86,0.1)',borderWidth:2,fill:true,tension:0.4,pointBackgroundColor:'#2d6a35'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
+
+      const porSuelo={};
+      preds.forEach(p=>{ const s=p.tipoSuelo?.descripcion||'Sin datos'; porSuelo[s]=(porSuelo[s]||0)+1; });
+      if(chartSuelo) chartSuelo.destroy();
+      chartSuelo=new Chart(document.getElementById('chart-suelo'),{type:'doughnut',data:{labels:Object.keys(porSuelo),datasets:[{data:Object.values(porSuelo),backgroundColor:['#2d6a35','#4a9e56','#c9a84c','#1e4a27','#7ec88a'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:12}}}}}});
+
+      const porAnio={};
+      preds.forEach(p=>{ if(p.anio&&p.rendimientoEstimado){ if(!porAnio[p.anio]) porAnio[p.anio]={suma:0}; porAnio[p.anio].suma+=p.rendimientoEstimado; }});
+      const anios=Object.keys(porAnio).sort();
+      if(chartAnual) chartAnual.destroy();
+      chartAnual=new Chart(document.getElementById('chart-anual'),{type:'line',data:{labels:anios,datasets:[{label:'Rend. acumulado (t)',data:anios.map(a=>porAnio[a].suma.toFixed(2)),borderColor:'#c9a84c',backgroundColor:'rgba(201,168,76,0.12)',borderWidth:2,fill:true,tension:0.3,pointBackgroundColor:'#c9a84c',pointRadius:5}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
+
+      const scatterData=preds.filter(p=>p.tempC!=null&&p.rendimientoEstimado!=null).map(p=>({x:p.tempC,y:p.rendimientoEstimado}));
+      if(chartScatter) chartScatter.destroy();
+      chartScatter=new Chart(document.getElementById('chart-scatter'),{type:'scatter',data:{datasets:[{label:'Predicciones',data:scatterData,backgroundColor:'rgba(45,106,53,0.55)',borderColor:'#2d6a35',pointRadius:5,pointHoverRadius:7}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'Temperatura (°C)',font:{size:11}}},y:{title:{display:true,text:'Rendimiento (t)',font:{size:11}},beginAtZero:false}}}});
+
+      const fundosSet=[...new Set(preds.map(p=>p.fundo?.nombreFundo||'Sin fundo'))];
+      const heatData={};
+      fundosSet.forEach(f=>{ heatData[f]={}; for(let m=1;m<=12;m++) heatData[f][m]=[]; });
+      preds.forEach(p=>{ const f=p.fundo?.nombreFundo||'Sin fundo'; if(p.mes&&p.rendimientoEstimado) heatData[f][p.mes].push(p.rendimientoEstimado); });
+      let gMin=Infinity,gMax=-Infinity;
+      fundosSet.forEach(f=>{ for(let m=1;m<=12;m++){ const arr=heatData[f][m]; if(arr.length){ const v=arr.reduce((a,b)=>a+b,0)/arr.length; if(v<gMin)gMin=v; if(v>gMax)gMax=v; }}});
+      function heatColor(val){ if(val===null)return'#f0f4f0'; const t=gMax>gMin?(val-gMin)/(gMax-gMin):0.5; return`rgb(${Math.round(232-t*(232-30))},${Math.round(245-t*(245-106))},${Math.round(233-t*(233-53))})`; }
+      let html=`<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr><th style="padding:7px 10px;text-align:left;color:var(--txt2)">Fundo</th>${meses.map(m=>`<th style="padding:7px 6px;text-align:center;color:var(--txt2)">${m}</th>`).join('')}</tr></thead><tbody>`;
+      fundosSet.forEach(f=>{ html+=`<tr><td style="padding:7px 10px;font-weight:600;white-space:nowrap;color:var(--txt)">${f}</td>`; for(let m=1;m<=12;m++){ const arr=heatData[f][m]; const val=arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null; html+=`<td style="padding:7px 6px;text-align:center;background:${heatColor(val)};border-radius:4px;font-weight:500">${val!==null?val.toFixed(1):'—'}</td>`; } html+='</tr>'; });
+      html+='</tbody></table>';
+      document.getElementById('heatmap-wrap').innerHTML=html;
+
+      const porFundo={};
+      preds.forEach(p=>{ const n=p.fundo?.nombreFundo||'Sin fundo'; if(!porFundo[n])porFundo[n]=[]; if(p.rendimientoEstimado)porFundo[n].push(p.rendimientoEstimado); });
+      const fundoNombres=Object.keys(porFundo);
+      if(chartFundo) chartFundo.destroy();
+      chartFundo=new Chart(document.getElementById('chart-fundo'),{type:'bar',data:{labels:fundoNombres,datasets:[{label:'Rend. promedio (t)',data:fundoNombres.map(f=>(porFundo[f].reduce((a,b)=>a+b,0)/porFundo[f].length).toFixed(2)),backgroundColor:['#2d6a35','#4a9e56','#c9a84c','#1e4a27','#7ec88a'],borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
+
+      document.getElementById('tabla-resumen').innerHTML=fundoNombres.map(f=>{ const vals=porFundo[f]; return`<tr><td><strong>${f}</strong></td><td>${vals.length}</td><td>${(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2)}</td><td>${Math.max(...vals).toFixed(2)}</td><td>${Math.min(...vals).toFixed(2)}</td></tr>`; }).join('');
+
+    } catch(e){ console.error('Reportes:',e) }
   }
 </script>
 <!-- MODAL INGRESAR REAL -->
