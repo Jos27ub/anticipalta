@@ -368,7 +368,7 @@
           </div>
           <div class="fc">
             <label>Mes</label>
-            <select id="pred-mes">
+            <select id="pred-mes" onchange="precargarClima()">
               <option value="">Seleccionar mes...</option>
               <option value="1">Enero</option><option value="2">Febrero</option>
               <option value="3">Marzo</option><option value="4">Abril</option>
@@ -643,18 +643,32 @@
 
   const CLIMA = {
     "Chincha": {
-      2022:{temp_c:21.5,prec_mm:8.5,rad_solar:6.2,hum_rel:74.0},
-      2023:{temp_c:22.0,prec_mm:10.2,rad_solar:6.4,hum_rel:73.5},
-      2024:{temp_c:21.8,prec_mm:9.0,rad_solar:6.3,hum_rel:74.2},
-      2025:{temp_c:22.1,prec_mm:9.5,rad_solar:6.3,hum_rel:73.8},
-      2026:{temp_c:22.0,prec_mm:9.5,rad_solar:6.3,hum_rel:74.0},
+      1:  { temp_c:23.5, prec_mm:12.0, rad_solar:6.8, hum_rel:77.0 },
+      2:  { temp_c:24.0, prec_mm:10.0, rad_solar:6.9, hum_rel:78.0 },
+      3:  { temp_c:23.5, prec_mm:6.0,  rad_solar:6.7, hum_rel:76.0 },
+      4:  { temp_c:22.0, prec_mm:2.0,  rad_solar:6.4, hum_rel:75.0 },
+      5:  { temp_c:19.5, prec_mm:0.5,  rad_solar:5.8, hum_rel:74.0 },
+      6:  { temp_c:17.5, prec_mm:0.0,  rad_solar:5.2, hum_rel:72.0 },
+      7:  { temp_c:16.5, prec_mm:0.0,  rad_solar:4.9, hum_rel:71.0 },
+      8:  { temp_c:16.5, prec_mm:0.0,  rad_solar:5.0, hum_rel:71.0 },
+      9:  { temp_c:17.5, prec_mm:0.0,  rad_solar:5.5, hum_rel:72.0 },
+      10: { temp_c:19.5, prec_mm:1.0,  rad_solar:6.2, hum_rel:73.0 },
+      11: { temp_c:21.5, prec_mm:2.0,  rad_solar:6.6, hum_rel:74.0 },
+      12: { temp_c:23.0, prec_mm:8.0,  rad_solar:6.8, hum_rel:76.0 },
     },
     "Yauyos (Catahuasi)": {
-      2022:{temp_c:14.2,prec_mm:420.0,rad_solar:5.0,hum_rel:62.0},
-      2023:{temp_c:14.8,prec_mm:390.5,rad_solar:5.2,hum_rel:61.5},
-      2024:{temp_c:14.5,prec_mm:405.0,rad_solar:5.1,hum_rel:62.5},
-      2025:{temp_c:14.6,prec_mm:400.0,rad_solar:5.1,hum_rel:62.0},
-      2026:{temp_c:14.6,prec_mm:400.0,rad_solar:5.1,hum_rel:62.0},
+      1:  { temp_c:16.5, prec_mm:95.0, rad_solar:4.2, hum_rel:68.0 },
+      2:  { temp_c:16.8, prec_mm:90.0, rad_solar:4.3, hum_rel:70.0 },
+      3:  { temp_c:16.2, prec_mm:80.0, rad_solar:4.5, hum_rel:67.0 },
+      4:  { temp_c:15.5, prec_mm:40.0, rad_solar:4.8, hum_rel:63.0 },
+      5:  { temp_c:14.5, prec_mm:12.0, rad_solar:5.1, hum_rel:60.0 },
+      6:  { temp_c:13.5, prec_mm:5.0,  rad_solar:5.4, hum_rel:57.0 },
+      7:  { temp_c:13.0, prec_mm:3.0,  rad_solar:5.6, hum_rel:55.0 },
+      8:  { temp_c:13.5, prec_mm:4.0,  rad_solar:5.5, hum_rel:56.0 },
+      9:  { temp_c:14.5, prec_mm:8.0,  rad_solar:5.2, hum_rel:59.0 },
+      10: { temp_c:15.5, prec_mm:20.0, rad_solar:4.9, hum_rel:62.0 },
+      11: { temp_c:16.0, prec_mm:35.0, rad_solar:4.6, hum_rel:65.0 },
+      12: { temp_c:16.5, prec_mm:70.0, rad_solar:4.3, hum_rel:67.0 },
     }
   };
 
@@ -810,23 +824,23 @@
 
   function precargarClima() {
     const provincia = document.getElementById('pred-provincia').value;
-    const anio      = parseInt(document.getElementById('pred-anio').value);
+    const mes       = parseInt(document.getElementById('pred-mes').value);
     const aviso     = document.getElementById('aviso-clima');
-    if (!provincia || !anio) return;
-    const datos = CLIMA[provincia]?.[anio];
+    if (!provincia || !mes) return;
+    const datos = CLIMA[provincia]?.[mes];
     if (datos) {
       document.getElementById('pred-temp').value   = datos.temp_c;
       document.getElementById('pred-precip').value = datos.prec_mm;
       document.getElementById('pred-rad').value    = datos.rad_solar;
       document.getElementById('pred-hum').value    = datos.hum_rel;
-      aviso.style.display='block';
-      aviso.innerHTML=`✅ Datos climáticos precargados para <strong>${provincia} ${anio}</strong> — puedes ajustarlos si tienes datos más precisos.`;
+      aviso.style.display = 'block';
+      const meses = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      aviso.innerHTML = `✅ Datos climáticos precargados para <strong>${provincia} — ${meses[mes]}</strong> (fuente: SENAMHI) — puedes ajustarlos si tienes datos más precisos.`;
     } else {
-      aviso.style.display='block';
-      aviso.innerHTML=`⚠️ No hay datos históricos para ${provincia} ${anio}. Ingresa los valores manualmente.`;
+      aviso.style.display = 'block';
+      aviso.innerHTML = `⚠️ Selecciona provincia y mes para precargar datos climáticos.`;
     }
   }
-
   // ── PREDICCIÓN ──
   async function generarPrediccion() {
     const provincia  = document.getElementById('pred-provincia').value;
