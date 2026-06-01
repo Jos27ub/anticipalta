@@ -798,7 +798,7 @@
 
   // ── PREDICCIÓN ──
   async function generarPrediccion() {
-    const provincia = document.getElementById('pred-provincia').value;
+    const provincia  = document.getElementById('pred-provincia').value;
     const tipo_suelo = document.getElementById('pred-suelo').value;
     const anio       = parseInt(document.getElementById('pred-anio').value);
     const mes        = parseInt(document.getElementById('pred-mes').value);
@@ -810,24 +810,12 @@
     const rad_solar  = parseFloat(document.getElementById('pred-rad').value);
     const hum_rel    = parseFloat(document.getElementById('pred-hum').value);
     const idFundo    = document.getElementById('pred-fundo').value;
-    // Indicador de confianza
-    const confianza = await calcularConfianza(fundoNombre, toneladas);
-    const confDiv = document.getElementById('res-confianza');
-    if (confianza) {
-      confDiv.style.display = 'block';
-      confDiv.style.background = confianza.bg;
-      confDiv.style.color = confianza.color;
-      confDiv.textContent = confianza.texto;
-    } else {
-      confDiv.style.display = 'none';
-    }
-
 
     if (!provincia||!tipo_suelo||!mes||[anio,area_ha,edad_anios,ph_suelo,temp_c,prec_mm,rad_solar,hum_rel].some(v=>isNaN(v))) {
       alert('Por favor completa todos los campos.'); return;
     }
 
-    // Obtener fundo seleccionado para sacar nombre
+    // Obtener nombre del fundo
     let fundoNombre = '';
     if (idFundo) {
       const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
@@ -861,38 +849,7 @@
               `Modelo: ${modelo.nombre} · R²=${modelo.r2} · MAE=${modelo.mae} t`;
       document.getElementById('res-box').classList.add('vis');
 
-      // Guardar en BD
-      if (idFundo && usuarioActual) {
-        const mods = await fetch(`${API}/api/modelos-ml`).then(r=>r.json());
-        const idModelo = mods[0]?.idModelo;
-        await fetch(`${API}/api/predicciones`, {
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({
-            anio, mes, areaHa:area_ha, edadAnios:edad_anios,
-            tempC:temp_c, precMm:prec_mm, radSolar:rad_solar,
-            phSuelo:ph_suelo, humRel:hum_rel,
-            rendimientoEstimado:toneladas,
-            modeloNombre: MODELOS[modeloSeleccionado].nombre,  // ← agrega esto
-            fechaEjecucion: new Date().toISOString(),
-            usuario:{idUsuario:usuarioActual.idUsuario},
-            fundo:{idFundo:parseInt(idFundo)},
-            modelo:{idModelo:idModelo},
-            tipoSuelo:{idTipoSuelo: await obtenerIdTipoSuelo(tipo_suelo)}
-          })
-        }).catch(()=>{});
-      }
-
-      const totalPreds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
-      document.getElementById('st-pred').textContent = totalPreds.length;
-
-    } catch(e) {
-      console.error(e);
-      alert('Error al conectar con el microservicio ML. Verifica que esté activo.');
-    } finally {
-      btn.innerHTML='🔮 Generar predicción'; btn.disabled=false;
-    }
-  }
-
+      // Indicador
   async function obtenerIdTipoSuelo(descripcion) {
     const suelos = await fetch(`${API}/api/tipos-suelo`).then(r=>r.json());
     return suelos.find(s=>s.descripcion===descripcion)?.idTipoSuelo || null;
