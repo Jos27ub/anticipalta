@@ -840,18 +840,27 @@
       document.getElementById('st-pred').textContent = preds.length;
       const tb = document.getElementById('tabla-hist');
       if (!preds.length) {
-        tb.innerHTML='<tr><td colspan="13" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones aún.</td></tr>'; return;
+        tb.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones aún.</td></tr>'; return;
       }
       tb.innerHTML=preds.reverse().map(p => {
         const predicho = p.rendimientoEstimado;
         const real     = p.rendimientoReal;
         const error    = (predicho && real) ? Math.abs((predicho - real) / real * 100).toFixed(1) : null;
-        const errorBadge = error
-                ? `<span class="badge ${parseFloat(error) <= 10 ? 'b-v' : 'b-d'}">${error}%</span>`
+
+        const botonReal = real
+                ? real
                 : `<button onclick="abrirIngresarReal(${p.idPrediccion})"
             style="padding:4px 10px;background:var(--v7);border:1px solid var(--v6);border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:var(--v3)">
             + Ingresar
           </button>`;
+
+        const errorTexto = error
+                ? `<span class="badge ${parseFloat(error) <= 10 ? 'b-v' : 'b-d'}">${error}%</span>`
+                : `<span style="color:var(--txt3);font-size:12px">—</span>`;
+
+        const estadoBadge = real
+                ? `<span class="badge b-v">Completada</span>`
+                : `<span class="badge b-d">En curso</span>`;
 
         return `<tr>
         <td>#${p.idPrediccion}</td>
@@ -862,9 +871,9 @@
         <td>${p.areaHa??'—'}</td>
         <td>${p.tempC??'—'}</td>
         <td><strong>${predicho??'—'}</strong></td>
-        <td>${real ?? '<span style="color:var(--txt3);font-size:12px">Pendiente</span>'}</td>
-        <td>${errorBadge}</td>
-        <td><span class="badge b-v">Completada</span></td>
+        <td>${botonReal}</td>
+        <td>${errorTexto}</td>
+        <td>${estadoBadge}</td>
         <td style="display:flex;gap:6px">
           <button onclick="eliminarPrediccion(${p.idPrediccion})"
             style="padding:5px 10px;background:#fdecea;border:1px solid #f5c6c6;border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:#c0392b">
@@ -1259,7 +1268,47 @@
 
     } catch(e){ console.error('Reportes:',e) }
   }
+  let prediccionRealId = null;
 
+  function abrirIngresarReal(id) {
+    prediccionRealId = id;
+    document.getElementById('inp-real').value = '';
+    document.getElementById('inp-notas').value = '';
+    document.getElementById('real-error').style.display = 'none';
+    document.getElementById('modal-real').style.display = 'flex';
+  }
+
+  function cerrarModalReal() {
+    document.getElementById('modal-real').style.display = 'none';
+    prediccionRealId = null;
+  }
+
+  async function guardarReal() {
+    const real  = parseFloat(document.getElementById('inp-real').value);
+    const notas = document.getElementById('inp-notas').value.trim();
+    const errDiv = document.getElementById('real-error');
+    errDiv.style.display = 'none';
+    if (isNaN(real) || real <= 0) {
+      errDiv.textContent = 'Ingresa un valor válido mayor a 0.';
+      errDiv.style.display = 'block'; return;
+    }
+    const btn = document.getElementById('btn-guardar-real');
+    btn.innerHTML = '<span class="spin"></span>Guardando...'; btn.disabled = true;
+    try {
+      const res = await fetch(`${API}/api/predicciones/${prediccionRealId}`, {
+        method: 'PUT', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ rendimientoReal: real, notas: notas || null })
+      });
+      if (!res.ok) throw new Error();
+      cerrarModalReal();
+      cargarHistorial();
+    } catch(e) {
+      errDiv.textContent = 'Error al guardar.';
+      errDiv.style.display = 'block';
+    } finally {
+      btn.innerHTML = 'Guardar'; btn.disabled = false;
+    }
+  }
 </script>
 <!-- MODAL INGRESAR REAL -->
 <div id="modal-real" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center">
