@@ -71,6 +71,17 @@ public class Prediccion {
 
     @Column(name = "modelo_nombre")
     private String modeloNombre;
+    @Column(name = "rendimiento_real")
+    private Double rendimientoReal;
+
+    @Column(name = "notas")
+    private String notas;
+
+    public Double getRendimientoReal() { return rendimientoReal; }
+    public void setRendimientoReal(Double rendimientoReal) { this.rendimientoReal = rendimientoReal; }
+    public String getNotas() { return notas; }
+    public void setNotas(String notas) { this.notas = notas; }
+
 
     public String getModeloNombre() { return modeloNombre; }
     public void setModeloNombre(String modeloNombre) { this.modeloNombre = modeloNombre; }

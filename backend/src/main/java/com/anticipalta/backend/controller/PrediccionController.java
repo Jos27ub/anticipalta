@@ -29,4 +29,12 @@ public class PrediccionController {
     public Map predecir(@RequestBody Map<String, Object> datos) {
         return service.predecir(datos);
     }
+    @PutMapping("/{id}")
+    public Prediccion update(@PathVariable Long id, @RequestBody Prediccion prediccion) {
+        Prediccion existing = service.findById(id);
+        if (prediccion.getRendimientoReal() != null) existing.setRendimientoReal(prediccion.getRendimientoReal());
+        if (prediccion.getNotas() != null) existing.setNotas(prediccion.getNotas());
+        return service.save(existing);
+    }
+
 }
