@@ -7,5 +7,6 @@ import java.util.List;
 
 @Repository
 public interface FundoRepository extends JpaRepository<Fundo, Long> {
-    List<Fundo> findByUsuario_IdUsuario(Long idUsuario);
+    @Query("SELECT f FROM Fundo f JOIN FETCH f.provincia JOIN FETCH f.usuario")
+        List<Fundo> findAllWithRelations();
 }
