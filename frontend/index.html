@@ -401,8 +401,8 @@
           <table>
             <thead>
             <tr>
-              <th>ID</th><th>Fecha</th><th>Año</th><th>Área (ha)</th>
-              <th>Temp (°C)</th><th>Resultado (t)</th><th>Estado</th><th>Acciones</th>
+              <th>ID</th><th>Fecha</th><th>Año</th><th>Mes</th><th>Área (ha)</th>
+              <th>Temp (°C)</th><th>Resultado (t)</th><th>Modelo</th><th>Estado</th><th>Acciones</th>
             </tr>
             </thead>
             <tbody id="tabla-hist"><tr><td colspan="8" style="text-align:center;color:var(--txt2);padding:22px">Cargando historial...</td></tr></tbody>
@@ -600,6 +600,7 @@
     const hum_rel    = parseFloat(document.getElementById('pred-hum').value);
     const idFundo    = document.getElementById('pred-fundo').value;
 
+
     if (!provincia||!tipo_suelo||!mes||[anio,area_ha,edad_anios,ph_suelo,temp_c,prec_mm,rad_solar,hum_rel].some(v=>isNaN(v))) {
       alert('Por favor completa todos los campos.'); return;
     }
@@ -649,6 +650,7 @@
             tempC:temp_c, precMm:prec_mm, radSolar:rad_solar,
             phSuelo:ph_suelo, humRel:hum_rel,
             rendimientoEstimado:toneladas,
+            modeloNombre: MODELOS[modeloSeleccionado].nombre,  // ← agrega esto
             fechaEjecucion: new Date().toISOString(),
             usuario:{idUsuario:usuarioActual.idUsuario},
             fundo:{idFundo:parseInt(idFundo)},
@@ -684,21 +686,23 @@
         tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones aún.</td></tr>'; return;
       }
       tb.innerHTML=preds.reverse().map(p=>`
-      <tr>
-        <td>#${p.idPrediccion}</td>
-        <td>${p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—'}</td>
-        <td>${p.anio??'—'}</td>
-        <td>${p.areaHa??'—'}</td>
-        <td>${p.tempC??'—'}</td>
-        <td><strong>${p.rendimientoEstimado??'—'}</strong></td>
-        <td><span class="badge b-v">Completada</span></td>
-        <td>
-          <button onclick="eliminarPrediccion(${p.idPrediccion})"
-            style="padding:5px 12px;background:#fdecea;border:1px solid #f5c6c6;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;color:#c0392b">
-            🗑️ Eliminar
-          </button>
-        </td>
-      </tr>`).join('');
+  <tr>
+    <td>#${p.idPrediccion}</td>
+    <td>${p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—'}</td>
+    <td>${p.anio??'—'}</td>
+    <td>${p.mes??'—'}</td>
+    <td>${p.areaHa??'—'}</td>
+    <td>${p.tempC??'—'}</td>
+    <td><strong>${p.rendimientoEstimado??'—'}</strong></td>
+    <td><span class="badge b-d">${p.modeloNombre??'—'}</span></td>
+    <td><span class="badge b-v">Completada</span></td>
+    <td>
+      <button onclick="eliminarPrediccion(${p.idPrediccion})"
+        style="padding:5px 12px;background:#fdecea;border:1px solid #f5c6c6;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;color:#c0392b">
+        🗑️ Eliminar
+      </button>
+    </td>
+  </tr>`).join('');
     } catch(e){ console.error(e) }
   }
 
