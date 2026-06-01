@@ -414,6 +414,7 @@
           <div><span class="res-v" id="res-v">—</span><span class="res-u">toneladas</span></div>
           <div class="res-d" id="res-d"></div>
           <div class="res-modelo" id="res-modelo"></div>
+          <div id="res-confianza" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:12px;font-weight:500"></div>
         </div>
       </div>
     </div>
@@ -809,6 +810,17 @@
     const rad_solar  = parseFloat(document.getElementById('pred-rad').value);
     const hum_rel    = parseFloat(document.getElementById('pred-hum').value);
     const idFundo    = document.getElementById('pred-fundo').value;
+    // Indicador de confianza
+    const confianza = await calcularConfianza(fundoNombre, toneladas);
+    const confDiv = document.getElementById('res-confianza');
+    if (confianza) {
+      confDiv.style.display = 'block';
+      confDiv.style.background = confianza.bg;
+      confDiv.style.color = confianza.color;
+      confDiv.textContent = confianza.texto;
+    } else {
+      confDiv.style.display = 'none';
+    }
 
 
     if (!provincia||!tipo_suelo||!mes||[anio,area_ha,edad_anios,ph_suelo,temp_c,prec_mm,rad_solar,hum_rel].some(v=>isNaN(v))) {
@@ -1514,6 +1526,25 @@
     }
 
     doc.save(`AnticiPalta_Historial_${new Date().toISOString().split('T')[0]}.pdf`);
+  }
+  async function calcularConfianza(fundoNombre, rendimiento) {
+    try {
+      const preds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      const delFundo = preds
+              .filter(p => p.fundo?.nombreFundo === fundoNombre && p.rendimientoEstimado)
+              .map(p => p.rendimientoEstimado);
+
+      if (delFundo.length < 3) return null; // no hay suficientes datos
+
+      const prom = delFundo.reduce((a,b)=>a+b,0) / delFundo.length;
+      const std  = Math.sqrt(delFundo.reduce((a,b)=>a+(b-prom)**2,0) / delFundo.length);
+      const min  = prom - 2*std;
+      const max  = prom + 2*std;
+
+      if (rendimiento >= min && rendimiento <= max) return { nivel:'normal',   color:'#1a5c2a', bg:'#d4edda', texto:`✅ Resultado dentro del rango histórico normal (${min.toFixed(1)}–${max.toFixed(1)} t)` };
+      if (rendimiento < min)  return { nivel:'bajo',    color:'#7d5a00', bg:'#fff3cd', texto:`⚠️ Resultado por debajo del rango histórico normal (mín. ${min.toFixed(1)} t)` };
+      return                         { nivel:'alto',    color:'#1a5c2a', bg:'#d4edda', texto:`🚀 Resultado por encima del rango histórico (máx. ${max.toFixed(1)} t)` };
+    } catch(e) { return null; }
   }
 </script>
 <!-- MODAL INGRESAR REAL -->
