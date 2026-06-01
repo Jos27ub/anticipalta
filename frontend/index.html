@@ -285,7 +285,7 @@
         <div class="cstat"><div class="cstat-ico">🔮</div><div class="cstat-l">Predicciones</div><div class="cstat-n" id="st-pred">—</div><div class="cstat-s">Total registradas</div></div>
         <div class="cstat"><div class="cstat-ico">🌱</div><div class="cstat-l">Fundos</div><div class="cstat-n" id="st-fund">—</div><div class="cstat-s">Registrados</div></div>
         <div class="cstat"><div class="cstat-ico">📍</div><div class="cstat-l">Provincias</div><div class="cstat-n" id="st-prov">—</div><div class="cstat-s">Disponibles</div></div>
-        <div class="cstat"><div class="cstat-ico">🤖</div><div class="cstat-l">Modelos ML</div><div class="cstat-n" id="st-mod">—</div><div class="cstat-s">Disponibles</div></div>
+        <div class="cstat"><div class="cstat-ico">⚖️</div><div class="cstat-l">Rend. promedio</div><div class="cstat-n" id="st-rend">—</div><div class="cstat-s">Toneladas est.</div></div>
       </div>
       <div class="cards-2">
         <div class="card">
@@ -394,16 +394,40 @@
 
     <!-- REPORTES -->
     <div id="pag-reportes" class="pagina">
+      <!-- Fila 1: línea por mes + donut suelo -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
         <div class="card">
-          <div class="card-t">📈 Rendimiento por mes</div>
+          <div class="card-t">📈 Rendimiento promedio por mes</div>
           <canvas id="chart-mes" height="200"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-t">🥧 Distribución por tipo de suelo</div>
+          <canvas id="chart-suelo" height="200"></canvas>
+        </div>
+      </div>
+      <!-- Fila 2: evolución anual + dispersión temp -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+        <div class="card">
+          <div class="card-t">📅 Evolución anual de rendimiento</div>
+          <canvas id="chart-anual" height="200"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-t">🌡️ Dispersión rendimiento vs temperatura</div>
+          <canvas id="chart-scatter" height="200"></canvas>
+        </div>
+      </div>
+      <!-- Fila 3: heatmap + tabla resumen -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+        <div class="card">
+          <div class="card-t">🗓️ Heatmap rendimiento mes × fundo</div>
+          <div id="heatmap-wrap" style="overflow-x:auto"></div>
         </div>
         <div class="card">
           <div class="card-t">🌱 Rendimiento por fundo</div>
           <canvas id="chart-fundo" height="200"></canvas>
         </div>
       </div>
+      <!-- Tabla resumen -->
       <div class="card">
         <div class="card-t">📋 Resumen por fundo</div>
         <div class="tabla-w">
@@ -414,7 +438,6 @@
         </div>
       </div>
     </div>
-
     <!-- FUNDOS -->
     <div id="pag-fundos" class="pagina">
       <div class="card">
@@ -555,12 +578,12 @@
         fetch(`${API}/api/predicciones`).then(r=>r.json()),
         fetch(`${API}/api/fundos`).then(r=>r.json()),
         fetch(`${API}/api/provincias`).then(r=>r.json()),
-        fetch(`${API}/api/modelos-ml`).then(r=>r.json()),
       ]);
       document.getElementById('st-pred').textContent = preds.length;
       document.getElementById('st-fund').textContent = fundos.length;
       document.getElementById('st-prov').textContent = provs.length;
-      document.getElementById('st-mod').textContent  = mods.length;
+      const rendProm = preds.length ? (preds.reduce((a,b) => a + (b.rendimientoEstimado||0), 0) / preds.length).toFixed(1) : '—';
+      document.getElementById('st-rend').textContent = rendProm;
       const lista = document.getElementById('lista-preds');
       if (!preds.length) {
         lista.innerHTML='<div style="color:var(--txt2);font-size:13px;text-align:center;padding:22px 0">Sin predicciones aún.<br/><small>Usa "Nueva predicción" para empezar.</small></div>';
@@ -892,82 +915,173 @@
     }
   }
 
-  let chartMes = null;
-  let chartFundo = null;
+
+  let chartMes = null, chartFundo = null, chartSuelo = null, chartAnual = null, chartScatter = null;
 
   async function cargarReportes() {
     try {
-      const preds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      const preds = await fetch(`${API}/api/predicciones`).then(r => r.json());
       if (!preds.length) return;
 
-      // Datos por mes
+      const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+      // ── 1. Rendimiento promedio por mes ──
       const porMes = {};
       for (let m = 1; m <= 12; m++) porMes[m] = [];
-      preds.forEach(p => {
-        if (p.mes && p.rendimientoEstimado) porMes[p.mes].push(p.rendimientoEstimado);
-      });
-      const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      preds.forEach(p => { if (p.mes && p.rendimientoEstimado) porMes[p.mes].push(p.rendimientoEstimado); });
       const promediosMes = Object.values(porMes).map(arr => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2) : 0);
-
-      // Datos por fundo
-      const porFundo = {};
-      preds.forEach(p => {
-        const nombre = p.fundo?.nombreFundo || 'Sin fundo';
-        if (!porFundo[nombre]) porFundo[nombre] = [];
-        if (p.rendimientoEstimado) porFundo[nombre].push(p.rendimientoEstimado);
-      });
-      const fundoNombres = Object.keys(porFundo);
-      const promediosFundo = fundoNombres.map(f => (porFundo[f].reduce((a,b)=>a+b,0)/porFundo[f].length).toFixed(2));
-
-      // Gráfico por mes
       if (chartMes) chartMes.destroy();
       chartMes = new Chart(document.getElementById('chart-mes'), {
         type: 'line',
         data: {
           labels: meses,
-          datasets: [{
-            label: 'Rendimiento promedio (t)',
-            data: promediosMes,
-            borderColor: '#2d6a35',
-            backgroundColor: 'rgba(74,158,86,0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: '#2d6a35'
-          }]
+          datasets: [{ label: 'Rend. promedio (t)', data: promediosMes,
+            borderColor:'#2d6a35', backgroundColor:'rgba(74,158,86,0.1)',
+            borderWidth:2, fill:true, tension:0.4, pointBackgroundColor:'#2d6a35' }]
         },
         options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:false } } }
       });
 
-      // Gráfico por fundo
+      // ── 2. Donut tipo de suelo ──
+      const porSuelo = {};
+      preds.forEach(p => {
+        const s = p.tipoSuelo?.descripcion || p.tipoSuelo || 'Sin datos';
+        porSuelo[s] = (porSuelo[s] || 0) + 1;
+      });
+      if (chartSuelo) chartSuelo.destroy();
+      chartSuelo = new Chart(document.getElementById('chart-suelo'), {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(porSuelo),
+          datasets: [{ data: Object.values(porSuelo),
+            backgroundColor: ['#2d6a35','#4a9e56','#c9a84c','#1e4a27','#7ec88a'],
+            borderWidth: 2, borderColor: '#fff' }]
+        },
+        options: { responsive:true, plugins:{ legend:{ position:'bottom', labels:{ font:{ size:12 } } } } }
+      });
+
+      // ── 3. Evolución anual acumulada ──
+      const porAnio = {};
+      preds.forEach(p => {
+        if (p.anio && p.rendimientoEstimado) {
+          if (!porAnio[p.anio]) porAnio[p.anio] = { suma:0, count:0 };
+          porAnio[p.anio].suma  += p.rendimientoEstimado;
+          porAnio[p.anio].count += 1;
+        }
+      });
+      const anios = Object.keys(porAnio).sort();
+      const rendAnual = anios.map(a => porAnio[a].suma.toFixed(2));
+      if (chartAnual) chartAnual.destroy();
+      chartAnual = new Chart(document.getElementById('chart-anual'), {
+        type: 'line',
+        data: {
+          labels: anios,
+          datasets: [{ label: 'Rend. acumulado (t)', data: rendAnual,
+            borderColor:'#c9a84c', backgroundColor:'rgba(201,168,76,0.12)',
+            borderWidth:2, fill:true, tension:0.3, pointBackgroundColor:'#c9a84c',
+            pointRadius:5 }]
+        },
+        options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:false } } }
+      });
+
+      // ── 4. Dispersión rendimiento vs temperatura ──
+      const scatterData = preds
+              .filter(p => p.tempC != null && p.rendimientoEstimado != null)
+              .map(p => ({ x: p.tempC, y: p.rendimientoEstimado }));
+      if (chartScatter) chartScatter.destroy();
+      chartScatter = new Chart(document.getElementById('chart-scatter'), {
+        type: 'scatter',
+        data: {
+          datasets: [{ label: 'Predicciones', data: scatterData,
+            backgroundColor:'rgba(45,106,53,0.55)', borderColor:'#2d6a35',
+            pointRadius:5, pointHoverRadius:7 }]
+        },
+        options: {
+          responsive:true,
+          plugins:{ legend:{ display:false } },
+          scales: {
+            x:{ title:{ display:true, text:'Temperatura (°C)', font:{ size:11 } } },
+            y:{ title:{ display:true, text:'Rendimiento (t)',  font:{ size:11 } }, beginAtZero:false }
+          }
+        }
+      });
+
+      // ── 5. Heatmap mes × fundo ──
+      const fundosSet  = [...new Set(preds.map(p => p.fundo?.nombreFundo || 'Sin fundo'))];
+      const heatData   = {};
+      fundosSet.forEach(f => { heatData[f] = {}; for(let m=1;m<=12;m++) heatData[f][m] = []; });
+      preds.forEach(p => {
+        const f = p.fundo?.nombreFundo || 'Sin fundo';
+        if (p.mes && p.rendimientoEstimado) heatData[f][p.mes].push(p.rendimientoEstimado);
+      });
+
+      // Calcular min/max global para escala de color
+      let gMin = Infinity, gMax = -Infinity;
+      fundosSet.forEach(f => {
+        for(let m=1;m<=12;m++) {
+          const arr = heatData[f][m];
+          if (arr.length) { const v = arr.reduce((a,b)=>a+b,0)/arr.length; if(v<gMin)gMin=v; if(v>gMax)gMax=v; }
+        }
+      });
+
+      function heatColor(val) {
+        if (val === null) return '#f0f4f0';
+        const t = gMax > gMin ? (val - gMin) / (gMax - gMin) : 0.5;
+        const r = Math.round(232 - t * (232 - 30));
+        const g = Math.round(245 - t * (245 - 106));
+        const b = Math.round(233 - t * (233 - 53));
+        return `rgb(${r},${g},${b})`;
+      }
+
+      let html = `<table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead><tr><th style="padding:7px 10px;text-align:left;color:var(--txt2)">Fundo</th>
+      ${meses.map(m=>`<th style="padding:7px 6px;text-align:center;color:var(--txt2)">${m}</th>`).join('')}
+      </tr></thead><tbody>`;
+      fundosSet.forEach(f => {
+        html += `<tr><td style="padding:7px 10px;font-weight:600;white-space:nowrap;color:var(--txt)">${f}</td>`;
+        for(let m=1;m<=12;m++) {
+          const arr = heatData[f][m];
+          const val = arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
+          const bg  = heatColor(val);
+          const txt = val !== null ? val.toFixed(1) : '—';
+          html += `<td style="padding:7px 6px;text-align:center;background:${bg};border-radius:4px;font-weight:500">${txt}</td>`;
+        }
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      document.getElementById('heatmap-wrap').innerHTML = html;
+
+      // ── 6. Barras por fundo ──
+      const porFundo = {};
+      preds.forEach(p => {
+        const n = p.fundo?.nombreFundo || 'Sin fundo';
+        if (!porFundo[n]) porFundo[n] = [];
+        if (p.rendimientoEstimado) porFundo[n].push(p.rendimientoEstimado);
+      });
+      const fundoNombres   = Object.keys(porFundo);
+      const promediosFundo = fundoNombres.map(f => (porFundo[f].reduce((a,b)=>a+b,0)/porFundo[f].length).toFixed(2));
       if (chartFundo) chartFundo.destroy();
       chartFundo = new Chart(document.getElementById('chart-fundo'), {
         type: 'bar',
         data: {
           labels: fundoNombres,
-          datasets: [{
-            label: 'Rendimiento promedio (t)',
-            data: promediosFundo,
-            backgroundColor: ['#2d6a35','#4a9e56','#c9a84c','#1e4a27'],
-            borderRadius: 6
-          }]
+          datasets: [{ label: 'Rend. promedio (t)', data: promediosFundo,
+            backgroundColor:['#2d6a35','#4a9e56','#c9a84c','#1e4a27','#7ec88a'],
+            borderRadius:6 }]
         },
         options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:false } } }
       });
 
-      // Tabla resumen
-      const tb = document.getElementById('tabla-resumen');
-      tb.innerHTML = fundoNombres.map(f => {
+      // ── 7. Tabla resumen ──
+      document.getElementById('tabla-resumen').innerHTML = fundoNombres.map(f => {
         const vals = porFundo[f];
         const prom = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);
-        const max  = Math.max(...vals).toFixed(2);
-        const min  = Math.min(...vals).toFixed(2);
         return `<tr>
         <td><strong>${f}</strong></td>
         <td>${vals.length}</td>
         <td>${prom}</td>
-        <td>${max}</td>
-        <td>${min}</td>
+        <td>${Math.max(...vals).toFixed(2)}</td>
+        <td>${Math.min(...vals).toFixed(2)}</td>
       </tr>`;
       }).join('');
 
