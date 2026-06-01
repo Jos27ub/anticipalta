@@ -427,10 +427,10 @@
             <thead>
             <tr>
               <th>ID</th><th>Fecha</th><th>Año</th><th>Mes</th><th>Fundo</th><th>Área (ha)</th>
-              <th>Temp (°C)</th><th>Resultado (t)</th><th>Modelo</th><th>Estado</th><th>Acciones</th>
+              <th>Temp (°C)</th><th>Resultado (t)</th><th>Acciones</th>
             </tr>
             </thead>
-            <tbody id="tabla-hist"><tr><td colspan="8" style="text-align:center;color:var(--txt2);padding:22px">Cargando historial...</td></tr></tbody>
+            <tbody id="tabla-hist"><tr><td colspan="9" style="text-align:center;color:var(--txt2);padding:22px">Cargando historial...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -827,7 +827,6 @@
     <td>${p.areaHa??'—'}</td>
     <td>${p.tempC??'—'}</td>
     <td><strong>${p.rendimientoEstimado??'—'}</strong></td>
-    <td><span class="badge b-d">${p.modeloNombre??'—'}</span></td>
     <td><span class="badge b-v">Completada</span></td>
     <td>
       <button onclick="eliminarPrediccion(${p.idPrediccion})"
