@@ -228,18 +228,62 @@
     </div>
   </div>
   <div class="login-r">
-    <h2 class="form-h">Bienvenido</h2>
-    <p class="form-sub">Ingresa tus credenciales para continuar</p>
-    <div class="campo">
-      <label>Correo electrónico</label>
-      <input type="email" id="inp-correo" placeholder="correo@ejemplo.com"/>
+    <!-- TABS -->
+    <div style="display:flex;gap:0;margin-bottom:28px;border-bottom:2px solid var(--v6)">
+      <button id="tab-login" onclick="cambiarTab('login')"
+              style="flex:1;padding:11px;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--v3);border-bottom:2px solid var(--v3);margin-bottom:-2px;cursor:pointer">
+        Iniciar sesión
+      </button>
+      <button id="tab-registro" onclick="cambiarTab('registro')"
+              style="flex:1;padding:11px;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--txt3);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer">
+        Registrarse
+      </button>
     </div>
-    <div class="campo">
-      <label>Contraseña</label>
-      <input type="password" id="inp-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')iniciarSesion()"/>
+
+    <!-- FORM LOGIN -->
+    <div id="form-login">
+      <h2 class="form-h">Bienvenido</h2>
+      <p class="form-sub">Ingresa tus credenciales para continuar</p>
+      <div class="campo">
+        <label>Correo electrónico</label>
+        <input type="email" id="inp-correo" placeholder="correo@ejemplo.com"/>
+      </div>
+      <div class="campo">
+        <label>Contraseña</label>
+        <input type="password" id="inp-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')iniciarSesion()"/>
+      </div>
+      <button class="btn-p" onclick="iniciarSesion()" id="btn-login">Ingresar al sistema</button>
+      <div class="login-err" id="login-err">Correo o contraseña incorrectos.</div>
     </div>
-    <button class="btn-p" onclick="iniciarSesion()" id="btn-login">Ingresar al sistema</button>
-    <div class="login-err" id="login-err">Correo o contraseña incorrectos.</div>
+
+    <!-- FORM REGISTRO -->
+    <div id="form-registro" style="display:none">
+      <h2 class="form-h">Crear cuenta</h2>
+      <p class="form-sub">Completa los datos para registrarte</p>
+      <div class="campo">
+        <label>Nombre completo</label>
+        <input type="text" id="reg-nombre" placeholder="Ej: Juan Pérez"/>
+      </div>
+      <div class="campo">
+        <label>Fecha de nacimiento</label>
+        <input type="date" id="reg-fecha-nac"/>
+      </div>
+      <div class="campo">
+        <label>Correo electrónico</label>
+        <input type="email" id="reg-correo" placeholder="correo@ejemplo.com"/>
+      </div>
+      <div class="campo">
+        <label>Contraseña</label>
+        <input type="password" id="reg-pass" placeholder="••••••••"/>
+      </div>
+      <div class="campo">
+        <label>Confirmar contraseña</label>
+        <input type="password" id="reg-pass2" placeholder="••••••••" onkeydown="if(event.key==='Enter')registrarUsuario()"/>
+      </div>
+      <button class="btn-p" onclick="registrarUsuario()" id="btn-registro">Crear cuenta</button>
+      <div class="login-err" id="registro-err"></div>
+      <div id="registro-ok" style="background:#d4edda;border:1px solid #b8dbb8;color:#1a5c2a;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;display:none"></div>
+    </div>
   </div>
 </div>
 
@@ -556,6 +600,72 @@
     document.getElementById('p-correo').textContent   = usuarioActual.correo;
     document.getElementById('p-fecha').textContent    = usuarioActual.fechaRegistro || '—';
     cargarDashboard(); cargarSelectFundos();
+  }
+
+  //FUNCION DE REGISTRO DE USUARIO
+  function cambiarTab(tab) {
+    const esLogin = tab === 'login';
+    document.getElementById('form-login').style.display    = esLogin ? 'block' : 'none';
+    document.getElementById('form-registro').style.display = esLogin ? 'none'  : 'block';
+    document.getElementById('tab-login').style.color         = esLogin ? 'var(--v3)'   : 'var(--txt3)';
+    document.getElementById('tab-registro').style.color      = esLogin ? 'var(--txt3)' : 'var(--v3)';
+    document.getElementById('tab-login').style.borderBottomColor    = esLogin ? 'var(--v3)' : 'transparent';
+    document.getElementById('tab-registro').style.borderBottomColor = esLogin ? 'transparent' : 'var(--v3)';
+  }
+
+  async function registrarUsuario() {
+    const nombre   = document.getElementById('reg-nombre').value.trim();
+    const fechaNac = document.getElementById('reg-fecha-nac').value;
+    const correo   = document.getElementById('reg-correo').value.trim();
+    const pass     = document.getElementById('reg-pass').value;
+    const pass2    = document.getElementById('reg-pass2').value;
+    const errDiv   = document.getElementById('registro-err');
+    const okDiv    = document.getElementById('registro-ok');
+    errDiv.style.display = 'none';
+    okDiv.style.display  = 'none';
+
+    if (!nombre || !fechaNac || !correo || !pass || !pass2) {
+      errDiv.textContent = 'Por favor completa todos los campos.'; errDiv.style.display = 'block'; return;
+    }
+    if (pass !== pass2) {
+      errDiv.textContent = 'Las contraseñas no coinciden.'; errDiv.style.display = 'block'; return;
+    }
+    if (pass.length < 6) {
+      errDiv.textContent = 'La contraseña debe tener al menos 6 caracteres.'; errDiv.style.display = 'block'; return;
+    }
+
+    const btn = document.getElementById('btn-registro');
+    btn.innerHTML = '<span class="spin"></span>Registrando...'; btn.disabled = true;
+
+    try {
+      const res = await fetch(`${API}/api/usuarios`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombreCompleto: nombre,
+          fechaNac:       fechaNac,
+          correo:         correo,
+          contrasena:     pass,
+          estado:         true,
+          fechaRegistro:  new Date().toISOString().split('T')[0],
+          rol:            { idRol: 2 }   // rol por defecto: usuario normal
+        })
+      });
+      if (!res.ok) throw new Error();
+      okDiv.textContent = '✅ Cuenta creada exitosamente. Ya puedes iniciar sesión.';
+      okDiv.style.display = 'block';
+      document.getElementById('reg-nombre').value    = '';
+      document.getElementById('reg-fecha-nac').value = '';
+      document.getElementById('reg-correo').value    = '';
+      document.getElementById('reg-pass').value      = '';
+      document.getElementById('reg-pass2').value     = '';
+      setTimeout(() => cambiarTab('login'), 2000);
+    } catch(e) {
+      errDiv.textContent = 'Error al registrar. Verifica que el correo no esté en uso.';
+      errDiv.style.display = 'block';
+    } finally {
+      btn.innerHTML = 'Crear cuenta'; btn.disabled = false;
+    }
   }
 
   // ── NAVEGACIÓN ──
