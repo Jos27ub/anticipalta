@@ -249,7 +249,7 @@
   <nav class="sidebar">
     <div class="sb-logo">
       <div class="sb-logo-ico">🥑</div>
-      <div class="sb-logo-txt">Anticip<span>Alta</span></div>
+      <div class="sb-logo-txt">Antici<span>Palta</span></div>
     </div>
     <div class="sb-user">
       <div class="sb-user-n" id="sb-nombre">Cargando...</div>
@@ -306,26 +306,6 @@
     <!-- PREDICCIÓN -->
     <div id="pag-prediccion" class="pagina">
       <div class="card" style="max-width:860px">
-
-        <p class="sec-t">Selecciona el modelo de predicción</p>
-        <div class="modelo-selector">
-          <div class="modelo-card selected" onclick="seleccionarModelo(this,'xgboost')" id="mc-xgboost">
-            <div class="modelo-card-nombre">🏆 XGBoost <span class="modelo-card-r2">R²=0.8376</span></div>
-            <div class="modelo-card-stats">MAE=20.89 t · RMSE=29.79 · CV=0.8550±0.015</div>
-          </div>
-          <div class="modelo-card" onclick="seleccionarModelo(this,'gradient_boosting')" id="mc-gradient_boosting">
-            <div class="modelo-card-nombre">🔥 Gradient Boosting <span class="modelo-card-r2">R²=0.8312</span></div>
-            <div class="modelo-card-stats">MAE=21.14 t · RMSE=30.38 · CV=0.8527±0.021</div>
-          </div>
-          <div class="modelo-card" onclick="seleccionarModelo(this,'random_forest')" id="mc-random_forest">
-            <div class="modelo-card-nombre">🌲 Random Forest <span class="modelo-card-r2">R²=0.7975</span></div>
-            <div class="modelo-card-stats">MAE=22.88 t · RMSE=33.27 · CV=0.8315±0.020</div>
-          </div>
-          <div class="modelo-card" onclick="seleccionarModelo(this,'ridge_regression')" id="mc-ridge_regression">
-            <div class="modelo-card-nombre">📐 Ridge Regression <span class="modelo-card-r2">R²=0.7360</span></div>
-            <div class="modelo-card-stats">MAE=27.75 t · RMSE=37.99 · CV=0.7626±0.019</div>
-          </div>
-        </div>
 
         <p class="sec-t">Datos del fundo</p>
         <div class="pred-grid">
@@ -404,7 +384,7 @@
             <thead>
             <tr>
               <th>ID</th><th>Fecha</th><th>Año</th><th>Mes</th><th>Fundo</th><th>Área (ha)</th>
-              <th>Temp (°C)</th><th>Resultado (t)</th><th>Modelo</th><th>Estado</th><th>Acciones</th>
+              <th>Temp (°C)</th><th>Resultado (t)</th><th>Estado</th><th>Acciones</th>
             </tr>
             </thead>
             <tbody id="tabla-hist"><tr><td colspan="8" style="text-align:center;color:var(--txt2);padding:22px">Cargando historial...</td></tr></tbody>
@@ -518,13 +498,7 @@
   document.getElementById('topbar-fecha').textContent =
           new Date().toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
-  // ── SELECTOR DE MODELO ──
-  function seleccionarModelo(el, key) {
-    document.querySelectorAll('.modelo-card').forEach(c => c.classList.remove('selected'));
-    el.classList.add('selected');
-    modeloSeleccionado = key;
-    document.getElementById('res-box').classList.remove('vis');
-  }
+
 
   // ── LOGIN ──
   async function iniciarSesion() {
