@@ -327,14 +327,16 @@
 
         <p class="sec-t">Datos del fundo</p>
         <div class="pred-grid">
-          <div class="fc"><label>Fundo</label><select id="pred-fundo"><option value="">Seleccionar fundo...</option></select></div>
           <div class="fc">
-            <label>Provincia</label>
-            <select id="pred-provincia" onchange="precargarClima()">
-              <option value="">Seleccionar provincia...</option>
-              <option value="Chincha">Chincha</option>
-              <option value="Yauyos (Catahuasi)">Yauyos (Catahuasi)</option>
+            <label>Fundo</label>
+            <select id="pred-fundo" onchange="onFundoChange()">
+              <option value="">Seleccionar fundo...</option>
             </select>
+          </div><div class="fc">
+            <label>Provincia</label>
+            <input type="text" id="pred-provincia" readonly
+                   style="background:#f0f4f0;color:var(--txt2);cursor:not-allowed"
+                   placeholder="Se carga al seleccionar fundo"/>
           </div>
           <div class="fc">
             <label>Año de campaña</label>
@@ -585,7 +587,7 @@
 
   // ── PREDICCIÓN ──
   async function generarPrediccion() {
-    const provincia  = document.getElementById('pred-provincia').value;
+    const provincia = document.getElementById('pred-provincia').value;
     const tipo_suelo = document.getElementById('pred-suelo').value;
     const anio       = parseInt(document.getElementById('pred-anio').value);
     const mes        = parseInt(document.getElementById('pred-mes').value);
@@ -827,8 +829,9 @@
   };
 
   function precargarClima() {
-    const provincia = document.getElementById('pred-provincia').value;
+    const provincia = document.getElementById('pred-provincia').value; // igual, no cambia
     const anio      = parseInt(document.getElementById('pred-anio').value);
+    const mes       = parseInt(document.getElementById('pred-mes').value);
     const aviso     = document.getElementById('aviso-clima');
     if (!provincia || !anio) return;
     const datos = CLIMA[provincia]?.[anio];
@@ -854,6 +857,37 @@
     document.getElementById('inp-pass').value='';
     document.getElementById('res-box').classList.remove('vis');
   }
+
+  let fundosCache = [];
+
+  async function cargarSelectFundos() {
+    try {
+      const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
+      fundosCache = fundos;
+      const sf = document.getElementById('pred-fundo');
+      sf.innerHTML = '<option value="">Seleccionar fundo...</option>';
+      fundos.forEach(f=>{
+        const o = document.createElement('option');
+        o.value = f.idFundo;
+        o.textContent = f.nombreFundo;
+        sf.appendChild(o);
+      });
+    } catch(e){ console.error('Selects:',e) }
+  }
+
+  function onFundoChange() {
+    const idFundo = document.getElementById('pred-fundo').value;
+    const fundo = fundosCache.find(f => f.idFundo == idFundo);
+
+    if (fundo?.provincia?.nombreProvincia) {
+      document.getElementById('pred-provincia').value = fundo.provincia.nombreProvincia;
+      precargarClima();
+    } else {
+      document.getElementById('pred-provincia').value = '';
+      document.getElementById('aviso-clima').style.display = 'none';
+    }
+  }
+
 </script>
 </body>
 </html>
