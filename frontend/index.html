@@ -422,6 +422,54 @@
     <div id="pag-historial" class="pagina">
       <div class="card">
         <div class="card-t">📋 Historial de predicciones</div>
+        <!-- FILTROS -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:10px;margin-bottom:16px;align-items:end">
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:5px">AÑO</label>
+            <select id="fil-anio" onchange="filtrarHistorial()" style="width:100%;padding:8px 10px;border:1.5px solid var(--v6);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--crema);outline:none">
+              <option value="">Todos</option>
+              <option value="2022">2022</option>
+              <option value="2023">2023</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:5px">MES</label>
+            <select id="fil-mes" onchange="filtrarHistorial()" style="width:100%;padding:8px 10px;border:1.5px solid var(--v6);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--crema);outline:none">
+              <option value="">Todos</option>
+              <option value="1">Enero</option><option value="2">Febrero</option>
+              <option value="3">Marzo</option><option value="4">Abril</option>
+              <option value="5">Mayo</option><option value="6">Junio</option>
+              <option value="7">Julio</option><option value="8">Agosto</option>
+              <option value="9">Septiembre</option><option value="10">Octubre</option>
+              <option value="11">Noviembre</option><option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:5px">FUNDO</label>
+            <select id="fil-fundo" onchange="filtrarHistorial()" style="width:100%;padding:8px 10px;border:1.5px solid var(--v6);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--crema);outline:none">
+              <option value="">Todos</option>
+              <option value="Fundo San Fernando">Fundo San Fernando</option>
+              <option value="Fundo La Palmera">Fundo La Palmera</option>
+              <option value="Fundo La Quebrada">Fundo La Quebrada</option>
+              <option value="Fundo El Mirador">Fundo El Mirador</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:5px">ESTADO</label>
+            <select id="fil-estado" onchange="filtrarHistorial()" style="width:100%;padding:8px 10px;border:1.5px solid var(--v6);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--crema);outline:none">
+              <option value="">Todos</option>
+              <option value="en_curso">En curso</option>
+              <option value="completada">Completada</option>
+            </select>
+          </div>
+          <button onclick="limpiarFiltros()" style="padding:8px 14px;background:none;border:1.5px solid var(--v6);border-radius:8px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--txt2);white-space:nowrap">
+            ✕ Limpiar
+          </button>
+        </div>
+        <div id="fil-resultado" style="font-size:12px;color:var(--txt2);margin-bottom:10px;display:none"></div>
         <div class="tabla-w">
           <table>
             <thead>
@@ -1308,6 +1356,98 @@
     } finally {
       btn.innerHTML = 'Guardar'; btn.disabled = false;
     }
+  }
+  let predsCache = [];
+
+  async function cargarHistorial() {
+    try {
+      const preds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      document.getElementById('st-pred').textContent = preds.length;
+      predsCache = preds.reverse();
+      filtrarHistorial();
+    } catch(e){ console.error(e) }
+  }
+
+  function filtrarHistorial() {
+    const anio   = document.getElementById('fil-anio').value;
+    const mes    = document.getElementById('fil-mes').value;
+    const fundo  = document.getElementById('fil-fundo').value;
+    const estado = document.getElementById('fil-estado').value;
+
+    let filtrados = predsCache.filter(p => {
+      if (anio   && String(p.anio) !== anio) return false;
+      if (mes    && String(p.mes)  !== mes)  return false;
+      if (fundo  && p.fundo?.nombreFundo !== fundo) return false;
+      if (estado === 'completada' && !p.rendimientoReal) return false;
+      if (estado === 'en_curso'   &&  p.rendimientoReal) return false;
+      return true;
+    });
+
+    const resDiv = document.getElementById('fil-resultado');
+    if (anio || mes || fundo || estado) {
+      resDiv.style.display = 'block';
+      resDiv.textContent = `Mostrando ${filtrados.length} de ${predsCache.length} predicciones`;
+    } else {
+      resDiv.style.display = 'none';
+    }
+
+    renderTablaHistorial(filtrados);
+  }
+
+  function limpiarFiltros() {
+    document.getElementById('fil-anio').value   = '';
+    document.getElementById('fil-mes').value    = '';
+    document.getElementById('fil-fundo').value  = '';
+    document.getElementById('fil-estado').value = '';
+    document.getElementById('fil-resultado').style.display = 'none';
+    renderTablaHistorial(predsCache);
+  }
+
+  function renderTablaHistorial(preds) {
+    const tb = document.getElementById('tabla-hist');
+    if (!preds.length) {
+      tb.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones para los filtros seleccionados.</td></tr>'; return;
+    }
+    tb.innerHTML = preds.map(p => {
+      const predicho = p.rendimientoEstimado;
+      const real     = p.rendimientoReal;
+      const error    = (predicho && real) ? Math.abs((predicho - real) / real * 100).toFixed(1) : null;
+
+      const botonReal = real
+              ? real
+              : `<button onclick="abrirIngresarReal(${p.idPrediccion})"
+          style="padding:4px 10px;background:var(--v7);border:1px solid var(--v6);border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:var(--v3)">
+          + Ingresar
+        </button>`;
+
+      const errorTexto = error
+              ? `<span class="badge ${parseFloat(error) <= 10 ? 'b-v' : 'b-d'}">${error}%</span>`
+              : `<span style="color:var(--txt3);font-size:12px">—</span>`;
+
+      const estadoBadge = real
+              ? `<span class="badge b-v">Completada</span>`
+              : `<span class="badge b-d">En curso</span>`;
+
+      return `<tr>
+      <td>#${p.idPrediccion}</td>
+      <td>${p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—'}</td>
+      <td>${p.anio??'—'}</td>
+      <td>${p.mes??'—'}</td>
+      <td>${p.fundo?.nombreFundo??'—'}</td>
+      <td>${p.areaHa??'—'}</td>
+      <td>${p.tempC??'—'}</td>
+      <td><strong>${predicho??'—'}</strong></td>
+      <td>${botonReal}</td>
+      <td>${errorTexto}</td>
+      <td>${estadoBadge}</td>
+      <td style="display:flex;gap:6px">
+        <button onclick="eliminarPrediccion(${p.idPrediccion})"
+          style="padding:5px 10px;background:#fdecea;border:1px solid #f5c6c6;border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:#c0392b">
+          🗑️
+        </button>
+      </td>
+    </tr>`;
+    }).join('');
   }
 </script>
 <!-- MODAL INGRESAR REAL -->
