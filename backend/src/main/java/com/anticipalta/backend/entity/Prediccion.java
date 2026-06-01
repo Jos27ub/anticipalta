@@ -71,6 +71,9 @@ public class Prediccion {
 
     @Column(name = "modelo_nombre")
     private String modeloNombre;
+
+    public String getModeloNombre() { return modeloNombre; }
+    public void setModeloNombre(String modeloNombre) { this.modeloNombre = modeloNombre; }
     public Prediccion() {}
 
     public Long getIdPrediccion() { return idPrediccion; }
