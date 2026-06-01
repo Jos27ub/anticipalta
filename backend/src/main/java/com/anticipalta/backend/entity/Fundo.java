@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "fundo")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Fundo {
 
     @Id
@@ -21,12 +22,12 @@ public class Fundo {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_provincia", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private Provincia provincia;
+        private Provincia provincia;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private Usuario usuario;
+        private Usuario usuario;
 
     public Fundo() {}
 

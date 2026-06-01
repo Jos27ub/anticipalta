@@ -1,10 +1,11 @@
 package com.anticipalta.backend.entity;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "prediccion")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Prediccion {
 
     @Id
@@ -25,16 +26,24 @@ public class Prediccion {
     private String lote;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario usuario;
+        @JoinColumn(name = "id_usuario", nullable = false)
+        @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "predicciones"})
+        private Usuario usuario;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_fundo", nullable = false)
-    private Fundo fundo;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "id_fundo", nullable = false)
+        @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "predicciones"})
+        private Fundo fundo;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_modelo", nullable = false)
-    private ModeloML modelo;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "id_modelo", nullable = false)
+        @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+        private ModeloML modelo;
+
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "id_tipo_suelo", nullable = false)
+        @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+        private TipoSuelo tipoSuelo;
 
     @Column(name = "area_ha")
     private Double areaHa;
@@ -53,10 +62,6 @@ public class Prediccion {
 
     @Column(name = "hum_rel")
     private Double humRel;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_tipo_suelo", nullable = false)
-    private TipoSuelo tipoSuelo;
 
     @Column(name = "ph_suelo")
     private Double phSuelo;
