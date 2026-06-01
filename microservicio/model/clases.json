@@ -1,1 +1,42 @@
-{"provincias": ["Chincha", "Yauyos (Catahuasi)"], "tipos_suelo": ["Arcilloso", "Arenoso", "Franco", "Franco-Arenoso"], "features": ["Anio", "Provincia", "Area_Ha", "Edad_Anios", "Prec_mm", "Rad_Solar", "Tipo_Suelo", "pH_Suelo", "Temp_C", "Hum_Rel"], "mejores_modelos": ["XGBoost", "Random Forest", "Gradient Boosting", "Ridge Regression"]}
+{
+    "provincias": [
+        "Chincha",
+        "Yauyos (Catahuasi)"
+    ],
+    "tipos_suelo": [
+        "Arcilloso",
+        "Arenoso",
+        "Franco",
+        "Franco-Arenoso"
+    ],
+    "fundos": [
+        "Fundo El Mirador",
+        "Fundo La Palmera",
+        "Fundo La Quebrada",
+        "Fundo San Fernando"
+    ],
+    "features": [
+        "Anio",
+        "Mes",
+        "Provincia",
+        "Fundo",
+        "Area_Ha",
+        "Edad_Anios",
+        "Prec_mm",
+        "Rad_Solar",
+        "Tipo_Suelo",
+        "pH_Suelo",
+        "Temp_C",
+        "Hum_Rel"
+    ],
+    "mejores_modelos": [
+        "XGBoost",
+        "Random Forest",
+        "Gradient Boosting",
+        "Ridge Regression"
+    ],
+    "mejor_modelo": "XGBoost",
+    "r2": 0.8376,
+    "mae": 20.89,
+    "rmse": 29.79
+}
