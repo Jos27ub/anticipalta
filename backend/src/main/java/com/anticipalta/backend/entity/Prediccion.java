@@ -69,6 +69,8 @@ public class Prediccion {
     @Column(name = "rendimiento_estimado")
     private Double rendimientoEstimado;
 
+    @Column(name = "modelo_nombre")
+    private String modeloNombre;
     public Prediccion() {}
 
     public Long getIdPrediccion() { return idPrediccion; }
