@@ -259,6 +259,7 @@
       <div class="nav-i activo" onclick="irA('dashboard',this)"><span class="nav-ico">📊</span> Dashboard</div>
       <div class="nav-i" onclick="irA('prediccion',this)"><span class="nav-ico">🔮</span> Nueva predicción</div>
       <div class="nav-i" onclick="irA('historial',this)"><span class="nav-ico">📋</span> Historial</div>
+      <div class="nav-i" onclick="irA('reportes',this)"><span class="nav-ico">📈</span> Reportes</div>
       <div class="nav-sec">Datos</div>
       <div class="nav-i" onclick="irA('fundos',this)"><span class="nav-ico">🌱</span> Mis fundos</div>
       <div class="nav-i" onclick="irA('perfil',this)"><span class="nav-ico">👤</span> Mi perfil</div>
@@ -411,6 +412,29 @@
       </div>
     </div>
 
+    <!-- REPORTES -->
+    <div id="pag-reportes" class="pagina">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+        <div class="card">
+          <div class="card-t">📈 Rendimiento por mes</div>
+          <canvas id="chart-mes" height="200"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-t">🌱 Rendimiento por fundo</div>
+          <canvas id="chart-fundo" height="200"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-t">📋 Resumen por fundo</div>
+        <div class="tabla-w">
+          <table>
+            <thead><tr><th>Fundo</th><th>Predicciones</th><th>Promedio (t)</th><th>Máximo (t)</th><th>Mínimo (t)</th></tr></thead>
+            <tbody id="tabla-resumen"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- FUNDOS -->
     <div id="pag-fundos" class="pagina">
       <div class="card">
@@ -538,7 +562,7 @@
   }
 
   // ── NAVEGACIÓN ──
-  const titulos = {dashboard:'Dashboard',prediccion:'Nueva predicción',historial:'Historial',fundos:'Mis fundos',perfil:'Mi perfil'};
+  const titulos = {dashboard:'Dashboard', prediccion:'Nueva predicción', historial:'Historial', reportes:'Reportes', fundos:'Mis fundos', perfil:'Mi perfil'};
   function irA(p,el) {
     document.querySelectorAll('.pagina').forEach(x=>x.classList.remove('activa'));
     document.querySelectorAll('.nav-i').forEach(x=>x.classList.remove('activo'));
@@ -547,6 +571,7 @@
     document.getElementById('topbar-t').textContent = titulos[p]||p;
     if(p==='historial') cargarHistorial();
     if(p==='fundos')    cargarFundos();
+    if(p==='reportes') cargarReportes();
   }
 
   // ── DASHBOARD ──
@@ -893,6 +918,89 @@
     }
   }
 
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js">
+  let chartMes = null;
+  let chartFundo = null;
+
+  async function cargarReportes() {
+    try {
+      const preds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      if (!preds.length) return;
+
+      // Datos por mes
+      const porMes = {};
+      for (let m = 1; m <= 12; m++) porMes[m] = [];
+      preds.forEach(p => {
+        if (p.mes && p.rendimientoEstimado) porMes[p.mes].push(p.rendimientoEstimado);
+      });
+      const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      const promediosMes = Object.values(porMes).map(arr => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2) : 0);
+
+      // Datos por fundo
+      const porFundo = {};
+      preds.forEach(p => {
+        const nombre = p.fundo?.nombreFundo || 'Sin fundo';
+        if (!porFundo[nombre]) porFundo[nombre] = [];
+        if (p.rendimientoEstimado) porFundo[nombre].push(p.rendimientoEstimado);
+      });
+      const fundoNombres = Object.keys(porFundo);
+      const promediosFundo = fundoNombres.map(f => (porFundo[f].reduce((a,b)=>a+b,0)/porFundo[f].length).toFixed(2));
+
+      // Gráfico por mes
+      if (chartMes) chartMes.destroy();
+      chartMes = new Chart(document.getElementById('chart-mes'), {
+        type: 'line',
+        data: {
+          labels: meses,
+          datasets: [{
+            label: 'Rendimiento promedio (t)',
+            data: promediosMes,
+            borderColor: '#2d6a35',
+            backgroundColor: 'rgba(74,158,86,0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#2d6a35'
+          }]
+        },
+        options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:false } } }
+      });
+
+      // Gráfico por fundo
+      if (chartFundo) chartFundo.destroy();
+      chartFundo = new Chart(document.getElementById('chart-fundo'), {
+        type: 'bar',
+        data: {
+          labels: fundoNombres,
+          datasets: [{
+            label: 'Rendimiento promedio (t)',
+            data: promediosFundo,
+            backgroundColor: ['#2d6a35','#4a9e56','#c9a84c','#1e4a27'],
+            borderRadius: 6
+          }]
+        },
+        options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:false } } }
+      });
+
+      // Tabla resumen
+      const tb = document.getElementById('tabla-resumen');
+      tb.innerHTML = fundoNombres.map(f => {
+        const vals = porFundo[f];
+        const prom = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);
+        const max  = Math.max(...vals).toFixed(2);
+        const min  = Math.min(...vals).toFixed(2);
+        return `<tr>
+        <td><strong>${f}</strong></td>
+        <td>${vals.length}</td>
+        <td>${prom}</td>
+        <td>${max}</td>
+        <td>${min}</td>
+      </tr>`;
+      }).join('');
+
+    } catch(e){ console.error('Reportes:',e) }
+  }
 </script>
 </body>
 </html>
