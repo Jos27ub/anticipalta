@@ -428,7 +428,7 @@
             <tr>
               <th>ID</th><th>Fecha</th><th>Año</th><th>Mes</th><th>Fundo</th>
               <th>Área (ha)</th><th>Temp (°C)</th><th>Predicho (t)</th>
-              <th>Real (t)</th><th>Error %</th><th>Modelo</th><th>Estado</th><th>Acciones</th>
+              <th>Real (t)</th><th>Error %</th><th>Estado</th><th>Acciones</th>
             </tr>
             </thead>
             <tbody id="tabla-hist"><tr><td colspan="10" style="text-align:center;color:var(--txt2);padding:22px">Cargando historial...</td></tr></tbody>
@@ -864,7 +864,6 @@
         <td><strong>${predicho??'—'}</strong></td>
         <td>${real ?? '<span style="color:var(--txt3);font-size:12px">Pendiente</span>'}</td>
         <td>${errorBadge}</td>
-        <td><span class="badge b-d">${p.modeloNombre??'—'}</span></td>
         <td><span class="badge b-v">Completada</span></td>
         <td style="display:flex;gap:6px">
           <button onclick="eliminarPrediccion(${p.idPrediccion})"
