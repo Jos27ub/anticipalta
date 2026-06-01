@@ -427,10 +427,10 @@
             <thead>
             <tr>
               <th>ID</th><th>Fecha</th><th>Año</th><th>Mes</th><th>Fundo</th><th>Área (ha)</th>
-              <th>Temp (°C)</th><th>Resultado (t)</th><th>Acciones</th>
+              <th>Temp (°C)</th><th>Resultado (t)</th><th>Estado</th><th>Acciones</th>
             </tr>
             </thead>
-            <tbody id="tabla-hist"><tr><td colspan="9" style="text-align:center;color:var(--txt2);padding:22px">Cargando historial...</td></tr></tbody>
+            <tbody id="tabla-hist"><tr><td colspan="10" style="text-align:center;color:var(--txt2);padding:22px">Cargando historial...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -509,6 +509,29 @@
         <div class="p-fila"><span class="p-l">Fecha registro</span><span class="p-v" id="p-fecha">—</span></div>
         <div class="p-fila"><span class="p-l">Mejor modelo</span><span class="p-v">XGBoost · R²=0.8376 ★</span></div>
         <div class="p-fila"><span class="p-l">Dataset</span><span class="p-v">1,572 registros · 2022–2025</span></div>
+        <div style="margin-top:24px;border-top:1px solid #f0f4f0;padding-top:20px">
+          <div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.9px;margin-bottom:14px">Mi actividad</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="background:var(--v7);border-radius:10px;padding:14px 16px">
+              <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">Total predicciones</div>
+              <div style="font-family:'DM Serif Display',serif;font-size:26px;color:var(--v3)" id="p-total-preds">—</div>
+            </div>
+            <div style="background:var(--v7);border-radius:10px;padding:14px 16px">
+              <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">Rend. promedio</div>
+              <div style="font-family:'DM Serif Display',serif;font-size:26px;color:var(--v3)" id="p-rend-prom">—</div>
+              <div style="font-size:10px;color:var(--txt3)">toneladas</div>
+            </div>
+            <div style="background:var(--v7);border-radius:10px;padding:14px 16px">
+              <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">Mejor rendimiento</div>
+              <div style="font-family:'DM Serif Display',serif;font-size:26px;color:var(--v3)" id="p-rend-max">—</div>
+              <div style="font-size:10px;color:var(--txt3)">toneladas</div>
+            </div>
+            <div style="background:var(--v7);border-radius:10px;padding:14px 16px">
+              <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">Última predicción</div>
+              <div style="font-family:'DM Serif Display',serif;font-size:16px;color:var(--v3);margin-top:4px" id="p-ultima-pred">—</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -679,6 +702,7 @@
     if(p==='historial') cargarHistorial();
     if(p==='fundos')    cargarFundos();
     if(p==='reportes') cargarReportes();
+    if (p === 'perfil') cargarEstadisticasPerfil();
   }
 
   // ── DASHBOARD ──
@@ -931,6 +955,32 @@
     } finally {
       btn.innerHTML = fundoEditandoId ? 'Actualizar fundo' : 'Guardar fundo'; btn.disabled = false;
     }
+  }
+
+  async function cargarEstadisticasPerfil() {
+    try {
+      const preds = await fetch(`${API}/api/predicciones`).then(r => r.json());
+      const misPreds = preds.filter(p => p.usuario?.idUsuario === usuarioActual.idUsuario);
+
+      document.getElementById('p-total-preds').textContent = misPreds.length || '0';
+
+      if (misPreds.length) {
+        const vals = misPreds.map(p => p.rendimientoEstimado).filter(v => v != null);
+        const prom = vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1) : '—';
+        const max  = vals.length ? Math.max(...vals).toFixed(1) : '—';
+        const ultima = misPreds.at(-1);
+        const fechaUltima = ultima?.fechaEjecucion
+                ? new Date(ultima.fechaEjecucion).toLocaleDateString('es-PE', { day:'2-digit', month:'short', year:'numeric' })
+                : '—';
+        document.getElementById('p-rend-prom').textContent  = prom;
+        document.getElementById('p-rend-max').textContent   = max;
+        document.getElementById('p-ultima-pred').textContent = fechaUltima;
+      } else {
+        document.getElementById('p-rend-prom').textContent  = '—';
+        document.getElementById('p-rend-max').textContent   = '—';
+        document.getElementById('p-ultima-pred').textContent = 'Sin predicciones';
+      }
+    } catch(e) { console.error('Perfil stats:', e); }
   }
 
   function abrirEliminarFundo(id) { fundoEliminandoId=id; document.getElementById('modal-eliminar').style.display='flex'; }
