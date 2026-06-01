@@ -9,4 +9,6 @@ import java.util.List;
 public interface PrediccionRepository extends JpaRepository<Prediccion, Long> {
     List<Prediccion> findByUsuario_IdUsuario(Long idUsuario);
     List<Prediccion> findByFundo_IdFundo(Long idFundo);
+        @Query("SELECT p FROM Prediccion p LEFT JOIN FETCH p.fundo LEFT JOIN FETCH p.usuario LEFT JOIN FETCH p.modelo LEFT JOIN FETCH p.tipoSuelo")
+        List<Prediccion> findAllWithRelations();
 }

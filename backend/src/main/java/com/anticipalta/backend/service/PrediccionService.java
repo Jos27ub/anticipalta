@@ -19,7 +19,7 @@ public class PrediccionService {
         this.restTemplate = restTemplate;
     }
 
-    public List<Prediccion> findAll() { return repo.findAll(); }
+public List<Prediccion> findAll() { return repo.findAllWithRelations(); }
     public Prediccion findById(Long id) { return repo.findById(id).orElseThrow(); }
     public Prediccion save(Prediccion p) { return repo.save(p); }
     public void delete(Long id) { repo.deleteById(id); }
