@@ -25,9 +25,11 @@ public class PrediccionService {
     public void delete(Long id) { repo.deleteById(id); }
 
     public Map predecir(Map<String, Object> datos) {
-        // Construir payload con los campos exactos que espera el modelo XGBoost
         Map<String, Object> payload = new HashMap<>();
         payload.put("Anio",       datos.get("Anio"));
+        payload.put("Mes",        datos.get("Mes"));
+        payload.put("Fundo",      datos.get("Fundo"));
+        payload.put("Lote",       datos.get("Lote"));
         payload.put("Provincia",  datos.get("Provincia"));
         payload.put("Area_Ha",    datos.get("Area_Ha"));
         payload.put("Edad_Anios", datos.get("Edad_Anios"));
