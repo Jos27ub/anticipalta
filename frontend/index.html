@@ -401,7 +401,7 @@
           <table>
             <thead>
             <tr>
-              <th>ID</th><th>Fecha</th><th>Año</th><th>Mes</th><th>Área (ha)</th>
+              <th>ID</th><th>Fecha</th><th>Año</th><th>Mes</th><th>Fundo</th><th>Área (ha)</th>
               <th>Temp (°C)</th><th>Resultado (t)</th><th>Modelo</th><th>Estado</th><th>Acciones</th>
             </tr>
             </thead>
@@ -691,6 +691,7 @@
     <td>${p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—'}</td>
     <td>${p.anio??'—'}</td>
     <td>${p.mes??'—'}</td>
+    <td>${p.fundo?.nombreFundo??'—'}</td>
     <td>${p.areaHa??'—'}</td>
     <td>${p.tempC??'—'}</td>
     <td><strong>${p.rendimientoEstimado??'—'}</strong></td>
