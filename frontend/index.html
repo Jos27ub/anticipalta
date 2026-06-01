@@ -421,7 +421,12 @@
     <!-- HISTORIAL -->
     <div id="pag-historial" class="pagina">
       <div class="card">
-        <div class="card-t">📋 Historial de predicciones</div>
+        <div class="card-t" style="justify-content:space-between">
+          <span>📋 Historial de predicciones</span>
+          <button onclick="exportarPDF()" class="btn-v" style="padding:7px 14px;font-size:12px">
+            📄 Exportar PDF
+          </button>
+        </div>
         <!-- FILTROS -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:10px;margin-bottom:16px;align-items:end">
           <div>
@@ -1449,6 +1454,67 @@
     </tr>`;
     }).join('');
   }
+  function exportarPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape');
+
+    // Header
+    doc.setFillColor(15, 36, 20);
+    doc.rect(0, 0, 297, 22, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('AnticiPalta — Historial de Predicciones', 14, 14);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generado: ${new Date().toLocaleDateString('es-PE')} · Usuario: ${usuarioActual?.nombreCompleto || '—'}`, 200, 14);
+
+    // Tabla
+    const filas = predsCache.map(p => {
+      const error = (p.rendimientoEstimado && p.rendimientoReal)
+              ? Math.abs((p.rendimientoEstimado - p.rendimientoReal) / p.rendimientoReal * 100).toFixed(1) + '%'
+              : '—';
+      return [
+        `#${p.idPrediccion}`,
+        p.fechaEjecucion ? new Date(p.fechaEjecucion).toLocaleDateString('es-PE') : '—',
+        p.anio ?? '—',
+        p.mes ?? '—',
+        p.fundo?.nombreFundo ?? '—',
+        p.areaHa ?? '—',
+        p.tempC ?? '—',
+        p.rendimientoEstimado ?? '—',
+        p.rendimientoReal ?? 'Pendiente',
+        error,
+        p.rendimientoReal ? 'Completada' : 'En curso'
+      ];
+    });
+
+    doc.autoTable({
+      startY: 28,
+      head: [['ID','Fecha','Año','Mes','Fundo','Área (ha)','Temp (°C)','Predicho (t)','Real (t)','Error %','Estado']],
+      body: filas,
+      styles: { fontSize: 8, cellPadding: 3 },
+      headStyles: { fillColor: [45, 106, 53], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [232, 245, 233] },
+      didParseCell: (data) => {
+        if (data.section === 'body' && data.column.index === 10) {
+          if (data.cell.raw === 'Completada') data.cell.styles.textColor = [26, 92, 42];
+          if (data.cell.raw === 'En curso')   data.cell.styles.textColor = [125, 90, 0];
+        }
+      }
+    });
+
+    // Footer
+    const totalPags = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPags; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`AnticiPalta · JL Monteverde · Página ${i} de ${totalPags}`, 14, doc.internal.pageSize.height - 8);
+    }
+
+    doc.save(`AnticiPalta_Historial_${new Date().toISOString().split('T')[0]}.pdf`);
+  }
 </script>
 <!-- MODAL INGRESAR REAL -->
 <div id="modal-real" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center">
@@ -1473,5 +1539,7 @@
     </div>
   </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 </body>
 </html>
