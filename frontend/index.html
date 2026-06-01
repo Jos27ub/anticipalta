@@ -159,6 +159,23 @@
     .res-v{font-family:'DM Serif Display',serif;font-size:50px;color:var(--d2)}
     .res-u{font-size:17px;color:rgba(255,255,255,.65);margin-left:6px}
     .res-d{margin-top:14px;font-size:12px;color:rgba(255,255,255,.55);line-height:1.75}
+    .res-modelo{margin-top:10px;font-size:11px;color:rgba(255,255,255,.4);font-style:italic}
+
+    /* SELECTOR DE MODELO con badges */
+    .modelo-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+    .modelo-card{
+      border:2px solid var(--v6);border-radius:10px;padding:12px 14px;cursor:pointer;
+      transition:all .2s;background:var(--crema);
+    }
+    .modelo-card:hover{border-color:var(--v4);background:var(--v7)}
+    .modelo-card.selected{border-color:var(--v3);background:var(--v7);box-shadow:0 0 0 3px rgba(74,158,86,.12)}
+    .modelo-card-nombre{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:4px}
+    .modelo-card-stats{font-size:11px;color:var(--txt2)}
+    .modelo-card-r2{
+      display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;
+      background:var(--v3);color:var(--blanco);margin-left:6px;
+    }
+    .modelo-card.selected .modelo-card-r2{background:var(--v1)}
 
     /* TABLA */
     .tabla-w{overflow-x:auto}
@@ -186,11 +203,10 @@
     @keyframes giro{to{transform:rotate(360deg)}}
     @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-    /* RESPONSIVE */
     @media(max-width:900px){
       .login-l{display:none}.login-r{width:100%}
       .cards-4{grid-template-columns:1fr 1fr}.cards-2{grid-template-columns:1fr}
-      .pred-grid{grid-template-columns:1fr}
+      .pred-grid{grid-template-columns:1fr}.modelo-selector{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -206,9 +222,9 @@
     <h1 class="login-h">Predice tu<br/><em>cosecha</em><br/>con precisión</h1>
     <p class="login-desc">Sistema inteligente de predicción de producción de palta basado en machine learning y datos agroclimáticos reales.</p>
     <div class="stats">
-      <div><div class="stat-n">83%</div><div class="stat-l">Precisión R²</div></div>
+      <div><div class="stat-n">83.76%</div><div class="stat-l">Precisión R² XGBoost</div></div>
       <div><div class="stat-n">1,572</div><div class="stat-l">Registros reales</div></div>
-      <div><div class="stat-n">2</div><div class="stat-l">Regiones</div></div>
+      <div><div class="stat-n">4</div><div class="stat-l">Modelos ML</div></div>
     </div>
   </div>
   <div class="login-r">
@@ -279,7 +295,7 @@
           <div class="card-t">⚡ Estado del sistema</div>
           <div class="act-i"><div class="act-dot"></div><div><div class="act-txt">Sistema activo</div><div class="act-t">Hace un momento</div></div></div>
           <div class="act-i"><div class="act-dot" style="background:var(--d1)"></div><div><div class="act-txt">Supabase conectado</div><div class="act-t">PostgreSQL OK</div></div></div>
-          <div class="act-i"><div class="act-dot" style="background:#4a90d9"></div><div><div class="act-txt">Modelo XGBoost v2</div><div class="act-t">R² = 0.9533</div></div></div>
+          <div class="act-i"><div class="act-dot" style="background:#4a90d9"></div><div><div class="act-txt">XGBoost · R²=0.8376 ★</div><div class="act-t">Mejor modelo</div></div></div>
           <div class="act-i"><div class="act-dot" style="background:#9b59b6"></div><div><div class="act-txt">Microservicio ML</div><div class="act-t">anticipalta.onrender.com</div></div></div>
         </div>
       </div>
@@ -287,11 +303,31 @@
 
     <!-- PREDICCIÓN -->
     <div id="pag-prediccion" class="pagina">
-      <div class="card" style="max-width:820px">
+      <div class="card" style="max-width:860px">
+
+        <p class="sec-t">Selecciona el modelo de predicción</p>
+        <div class="modelo-selector">
+          <div class="modelo-card selected" onclick="seleccionarModelo(this,'xgboost')" id="mc-xgboost">
+            <div class="modelo-card-nombre">🏆 XGBoost <span class="modelo-card-r2">R²=0.8376</span></div>
+            <div class="modelo-card-stats">MAE=20.89 t · RMSE=29.79 · CV=0.8550±0.015</div>
+          </div>
+          <div class="modelo-card" onclick="seleccionarModelo(this,'gradient_boosting')" id="mc-gradient_boosting">
+            <div class="modelo-card-nombre">🔥 Gradient Boosting <span class="modelo-card-r2">R²=0.8312</span></div>
+            <div class="modelo-card-stats">MAE=21.14 t · RMSE=30.38 · CV=0.8527±0.021</div>
+          </div>
+          <div class="modelo-card" onclick="seleccionarModelo(this,'random_forest')" id="mc-random_forest">
+            <div class="modelo-card-nombre">🌲 Random Forest <span class="modelo-card-r2">R²=0.7975</span></div>
+            <div class="modelo-card-stats">MAE=22.88 t · RMSE=33.27 · CV=0.8315±0.020</div>
+          </div>
+          <div class="modelo-card" onclick="seleccionarModelo(this,'ridge_regression')" id="mc-ridge_regression">
+            <div class="modelo-card-nombre">📐 Ridge Regression <span class="modelo-card-r2">R²=0.7360</span></div>
+            <div class="modelo-card-stats">MAE=27.75 t · RMSE=37.99 · CV=0.7626±0.019</div>
+          </div>
+        </div>
+
         <p class="sec-t">Datos del fundo</p>
         <div class="pred-grid">
           <div class="fc"><label>Fundo</label><select id="pred-fundo"><option value="">Seleccionar fundo...</option></select></div>
-          <div class="fc"><label>Modelo ML</label><select id="pred-modelo"><option value="">Seleccionar modelo...</option></select></div>
           <div class="fc">
             <label>Provincia</label>
             <select id="pred-provincia" onchange="precargarClima()">
@@ -304,47 +340,53 @@
             <label>Año de campaña</label>
             <input type="number" id="pred-anio" value="2026" min="2022" max="2035" step="1" onchange="precargarClima()"/>
           </div>
+          <div class="fc">
+            <label>Mes</label>
+            <select id="pred-mes">
+              <option value="">Seleccionar mes...</option>
+              <option value="1">Enero</option><option value="2">Febrero</option>
+              <option value="3">Marzo</option><option value="4">Abril</option>
+              <option value="5">Mayo</option><option value="6">Junio</option>
+              <option value="7">Julio</option><option value="8">Agosto</option>
+              <option value="9">Septiembre</option><option value="10">Octubre</option>
+              <option value="11">Noviembre</option><option value="12">Diciembre</option>
+            </select>
+          </div>
         </div>
 
         <p class="sec-t">Parámetros del cultivo</p>
         <div class="pred-grid">
           <div class="fc"><label>Área (ha)</label><input type="number" id="pred-area" placeholder="Ej: 10.5" step="0.1" min="1" max="100"/></div>
           <div class="fc"><label>Edad del cultivo (años)</label><input type="number" id="pred-edad" placeholder="Ej: 8" min="1" max="30"/></div>
-          <div class="fc"><label>Tipo de suelo</label><select id="pred-suelo"><option value="">Seleccionar tipo...</option></select></div>
+          <div class="fc"><label>Tipo de suelo</label>
+            <select id="pred-suelo">
+              <option value="">Seleccionar tipo...</option>
+              <option value="Arenoso">Arenoso</option>
+              <option value="Arcilloso">Arcilloso</option>
+              <option value="Franco-Arenoso">Franco-Arenoso</option>
+              <option value="Franco">Franco</option>
+            </select>
+          </div>
           <div class="fc"><label>pH del suelo</label><input type="number" id="pred-ph" placeholder="Ej: 7.0" step="0.1" min="3" max="10"/></div>
         </div>
 
         <p class="sec-t">Datos climáticos</p>
-
-        <!-- Aviso de precarga -->
         <div id="aviso-clima" style="display:none;background:var(--v7);border:1px solid var(--v6);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--txt2);margin-bottom:16px"></div>
-        <div style="font-size:10px;color:var(--txt3);margin-top:4px">
-          Fuente: SENAMHI · Weather Atlas · DePeru.com — Promedios históricos anuales
+        <div style="font-size:10px;color:var(--txt3);margin-bottom:12px">Fuente: SENAMHI · Weather Atlas · DePeru.com — Promedios históricos anuales</div>
+        <div class="pred-grid">
+          <div class="fc"><label>Temperatura promedio (°C)</label><input type="number" id="pred-temp" placeholder="Precarga al seleccionar provincia" step="0.1"/></div>
+          <div class="fc"><label>Precipitación anual (mm)</label><input type="number" id="pred-precip" placeholder="Precarga al seleccionar provincia" step="0.1"/></div>
+          <div class="fc"><label>Radiación solar (MJ/m²/día)</label><input type="number" id="pred-rad" placeholder="Precarga al seleccionar provincia" step="0.1"/></div>
+          <div class="fc"><label>Humedad relativa (%)</label><input type="number" id="pred-hum" placeholder="Precarga al seleccionar provincia" step="0.1" min="0" max="100"/></div>
         </div>
 
-        <div class="pred-grid">
-          <div class="fc">
-            <label>Temperatura promedio (°C)</label>
-            <input type="number" id="pred-temp" placeholder="Precarga automática al seleccionar provincia" step="0.1"/>
-          </div>
-          <div class="fc">
-            <label>Precipitación anual (mm)</label>
-            <input type="number" id="pred-precip" placeholder="Precarga automática al seleccionar provincia" step="0.1"/>
-          </div>
-          <div class="fc">
-            <label>Radiación solar (MJ/m²/día)</label>
-            <input type="number" id="pred-rad" placeholder="Precarga automática al seleccionar provincia" step="0.1"/>
-          </div>
-          <div class="fc">
-            <label>Humedad relativa (%)</label>
-            <input type="number" id="pred-hum" placeholder="Precarga automática al seleccionar provincia" step="0.1" min="0" max="100"/>
-          </div>
-        </div>
         <button class="btn-v" onclick="generarPrediccion()" id="btn-pred">🔮 Generar predicción</button>
+
         <div class="res-box" id="res-box">
           <div class="res-l">RENDIMIENTO ESTIMADO</div>
           <div><span class="res-v" id="res-v">—</span><span class="res-u">toneladas</span></div>
           <div class="res-d" id="res-d"></div>
+          <div class="res-modelo" id="res-modelo"></div>
         </div>
       </div>
     </div>
@@ -361,14 +403,13 @@
               <th>Temp (°C)</th><th>Resultado (t)</th><th>Estado</th><th>Acciones</th>
             </tr>
             </thead>
-            <tbody id="tabla-hist"><tr><td colspan="7" style="text-align:center;color:var(--txt2);padding:22px">Cargando historial...</td></tr></tbody>
+            <tbody id="tabla-hist"><tr><td colspan="8" style="text-align:center;color:var(--txt2);padding:22px">Cargando historial...</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
     <!-- FUNDOS -->
-
     <div id="pag-fundos" class="pagina">
       <div class="card">
         <div class="card-t" style="justify-content:space-between">
@@ -384,7 +425,6 @@
       </div>
     </div>
 
-
     <!-- PERFIL -->
     <div id="pag-perfil" class="pagina">
       <div class="perfil-card">
@@ -394,19 +434,70 @@
         <div class="p-fila"><span class="p-l">Correo</span><span class="p-v" id="p-correo">—</span></div>
         <div class="p-fila"><span class="p-l">Estado</span><span class="p-v"><span class="badge b-v">Activo</span></span></div>
         <div class="p-fila"><span class="p-l">Fecha registro</span><span class="p-v" id="p-fecha">—</span></div>
-        <div class="p-fila"><span class="p-l">Modelo activo</span><span class="p-v">XGBoost v2 · R²=0.9533</span></div>
+        <div class="p-fila"><span class="p-l">Mejor modelo</span><span class="p-v">XGBoost · R²=0.8376 ★</span></div>
+        <div class="p-fila"><span class="p-l">Dataset</span><span class="p-v">1,572 registros · 2022–2025</span></div>
       </div>
     </div>
 
   </div>
 </div>
 
+<!-- MODAL FUNDO -->
+<div id="modal-fundo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center">
+  <div style="background:var(--blanco);border-radius:16px;padding:32px;width:480px;max-width:95vw;box-shadow:var(--sombra2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+      <h3 id="modal-fundo-titulo" style="font-family:'DM Serif Display',serif;font-size:20px">Nuevo fundo</h3>
+      <button onclick="cerrarModalFundo()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--txt2)">✕</button>
+    </div>
+    <div class="fc"><label>Nombre del fundo</label><input type="text" id="nf-nombre" placeholder="Ej: Fundo San José"/></div>
+    <div class="fc"><label>Ubicación</label><input type="text" id="nf-ubicacion" placeholder="Ej: Valle de Chincha"/></div>
+    <div class="fc"><label>Provincia</label><select id="nf-provincia"><option value="">Seleccionar...</option></select></div>
+    <div id="nf-error" style="color:#c0392b;font-size:13px;margin-bottom:12px;display:none"></div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px">
+      <button onclick="cerrarModalFundo()" style="padding:10px 20px;background:none;border:1.5px solid var(--v6);border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px">Cancelar</button>
+      <button onclick="guardarFundo()" id="btn-guardar-fundo" class="btn-v" style="padding:10px 22px">Guardar fundo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINAR -->
+<div id="modal-eliminar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center">
+  <div style="background:var(--blanco);border-radius:16px;padding:32px;width:400px;max-width:95vw;box-shadow:var(--sombra2);text-align:center">
+    <div style="font-size:40px;margin-bottom:16px">⚠️</div>
+    <h3 style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:10px">¿Eliminar fundo?</h3>
+    <p style="font-size:13px;color:var(--txt2);margin-bottom:24px">Esta acción no se puede deshacer.</p>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button onclick="cerrarModalEliminar()" style="padding:10px 20px;background:none;border:1.5px solid var(--v6);border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px">Cancelar</button>
+      <button onclick="confirmarEliminar()" id="btn-confirmar-eliminar" style="padding:10px 22px;background:#e74c3c;color:white;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const API = 'https://anticipalta-backend.onrender.com';
   let usuarioActual = null;
+  let modeloSeleccionado = 'xgboost';
+  let fundoEditandoId = null;
+  let fundoEliminandoId = null;
+
+  // Modelos disponibles con sus PKL y métricas
+  const MODELOS = {
+    xgboost:          { nombre: 'XGBoost',          r2: 0.8376, mae: 20.89, pkl: 'model_xgboost.pkl' },
+    gradient_boosting:{ nombre: 'Gradient Boosting', r2: 0.8312, mae: 21.14, pkl: 'model_gradient_boosting.pkl' },
+    random_forest:    { nombre: 'Random Forest',     r2: 0.7975, mae: 22.88, pkl: 'model_random_forest.pkl' },
+    ridge_regression: { nombre: 'Ridge Regression',  r2: 0.7360, mae: 27.75, pkl: 'model_ridge_regression.pkl' },
+  };
 
   document.getElementById('topbar-fecha').textContent =
           new Date().toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  // ── SELECTOR DE MODELO ──
+  function seleccionarModelo(el, key) {
+    document.querySelectorAll('.modelo-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    modeloSeleccionado = key;
+    document.getElementById('res-box').classList.remove('vis');
+  }
 
   // ── LOGIN ──
   async function iniciarSesion() {
@@ -425,6 +516,7 @@
       if (!u) throw new Error('credenciales');
       usuarioActual = u; iniciarApp();
     } catch(e) {
+      err.textContent = e.message==='backend' ? 'Error al conectar con el servidor.' : 'Correo o contraseña incorrectos.';
       err.style.display = 'block';
       btn.innerHTML = 'Ingresar al sistema'; btn.disabled = false;
     }
@@ -433,14 +525,14 @@
   function iniciarApp() {
     document.getElementById('login').classList.remove('activa');
     document.getElementById('app').classList.add('activa');
-    document.getElementById('sb-nombre').textContent = usuarioActual.nombreCompleto;
-    document.getElementById('sb-rol').textContent    = usuarioActual.rol?.tipo || 'Usuario';
+    document.getElementById('sb-nombre').textContent  = usuarioActual.nombreCompleto;
+    document.getElementById('sb-rol').textContent     = usuarioActual.rol?.tipo || 'Usuario';
     document.getElementById('bienvenida-n').textContent = `Buen día, ${usuarioActual.nombreCompleto.split(' ')[0]} 👋`;
-    document.getElementById('p-nombre').textContent  = usuarioActual.nombreCompleto;
-    document.getElementById('p-rol').textContent     = usuarioActual.rol?.tipo || '—';
-    document.getElementById('p-correo').textContent  = usuarioActual.correo;
-    document.getElementById('p-fecha').textContent   = usuarioActual.fechaRegistro || '—';
-    cargarDashboard(); cargarSelects();
+    document.getElementById('p-nombre').textContent   = usuarioActual.nombreCompleto;
+    document.getElementById('p-rol').textContent      = usuarioActual.rol?.tipo || '—';
+    document.getElementById('p-correo').textContent   = usuarioActual.correo;
+    document.getElementById('p-fecha').textContent    = usuarioActual.fechaRegistro || '—';
+    cargarDashboard(); cargarSelectFundos();
   }
 
   // ── NAVEGACIÓN ──
@@ -481,20 +573,13 @@
     } catch(e){ console.error('Dashboard:',e) }
   }
 
-  // ── SELECTS ──
-  async function cargarSelects() {
+  // ── SELECTS FUNDO ──
+  async function cargarSelectFundos() {
     try {
-      const [fundos,mods,suelos] = await Promise.all([
-        fetch(`${API}/api/fundos`).then(r=>r.json()),
-        fetch(`${API}/api/modelos-ml`).then(r=>r.json()),
-        fetch(`${API}/api/tipos-suelo`).then(r=>r.json()),
-      ]);
+      const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
       const sf = document.getElementById('pred-fundo');
+      sf.innerHTML = '<option value="">Seleccionar fundo...</option>';
       fundos.forEach(f=>{ const o=document.createElement('option'); o.value=f.idFundo; o.textContent=f.nombreFundo; sf.appendChild(o); });
-      const sm = document.getElementById('pred-modelo');
-      mods.forEach(m=>{ const o=document.createElement('option'); o.value=m.idModelo; o.textContent=m.nombreModelo+' (R²='+m.precision+')'; sm.appendChild(o); });
-      const ss = document.getElementById('pred-suelo');
-      suelos.forEach(s=>{ const o=document.createElement('option'); o.value=s.descripcion; o.textContent=s.descripcion; ss.appendChild(o); });
     } catch(e){ console.error('Selects:',e) }
   }
 
@@ -503,6 +588,7 @@
     const provincia  = document.getElementById('pred-provincia').value;
     const tipo_suelo = document.getElementById('pred-suelo').value;
     const anio       = parseInt(document.getElementById('pred-anio').value);
+    const mes        = parseInt(document.getElementById('pred-mes').value);
     const area_ha    = parseFloat(document.getElementById('pred-area').value);
     const edad_anios = parseInt(document.getElementById('pred-edad').value);
     const ph_suelo   = parseFloat(document.getElementById('pred-ph').value);
@@ -510,54 +596,80 @@
     const prec_mm    = parseFloat(document.getElementById('pred-precip').value);
     const rad_solar  = parseFloat(document.getElementById('pred-rad').value);
     const hum_rel    = parseFloat(document.getElementById('pred-hum').value);
+    const idFundo    = document.getElementById('pred-fundo').value;
 
-    if (!provincia||!tipo_suelo||[anio,area_ha,edad_anios,ph_suelo,temp_c,prec_mm,rad_solar,hum_rel].some(v=>isNaN(v))) {
+    if (!provincia||!tipo_suelo||!mes||[anio,area_ha,edad_anios,ph_suelo,temp_c,prec_mm,rad_solar,hum_rel].some(v=>isNaN(v))) {
       alert('Por favor completa todos los campos.'); return;
+    }
+
+    // Obtener fundo seleccionado para sacar nombre
+    let fundoNombre = '';
+    if (idFundo) {
+      const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
+      fundoNombre = fundos.find(f=>f.idFundo==idFundo)?.nombreFundo || '';
     }
 
     const btn = document.getElementById('btn-pred');
     btn.innerHTML='<span class="spin"></span>Procesando...'; btn.disabled=true;
 
     try {
-      const res = await fetch('https://anticipalta.onrender.com/predecir', {
+      const mlUrl = `https://anticipalta.onrender.com/predecir?modelo=${modeloSeleccionado}`;
+      const res = await fetch(mlUrl, {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({anio,provincia,area_ha,edad_anios,prec_mm,rad_solar,tipo_suelo,ph_suelo,temp_c,hum_rel})
+        body: JSON.stringify({
+          Anio: anio, Mes: mes, Fundo: fundoNombre||'Fundo San Fernando',
+          Lote: 'Lote_01', Provincia: provincia,
+          Area_Ha: area_ha, Edad_Anios: edad_anios,
+          Prec_mm: prec_mm, Rad_Solar: rad_solar,
+          Tipo_Suelo: tipo_suelo, pH_Suelo: ph_suelo,
+          Temp_C: temp_c, Hum_Rel: hum_rel
+        })
       });
       const r = await res.json();
-      const toneladas = r.rendimiento_toneladas;
+      const toneladas = r.rendimiento_toneladas ?? r.prediccion ?? '—';
+      const modelo = MODELOS[modeloSeleccionado];
 
       document.getElementById('res-v').textContent = toneladas;
       document.getElementById('res-d').textContent =
-              `Provincia: ${provincia} · Año: ${anio} · Área: ${area_ha} ha · Suelo: ${tipo_suelo} · Temp: ${temp_c}°C · Precip: ${prec_mm} mm`;
+              `Provincia: ${provincia} · Año: ${anio} · Mes: ${mes} · Área: ${area_ha} ha · Suelo: ${tipo_suelo} · Temp: ${temp_c}°C · Precip: ${prec_mm} mm`;
+      document.getElementById('res-modelo').textContent =
+              `Modelo: ${modelo.nombre} · R²=${modelo.r2} · MAE=${modelo.mae} t`;
       document.getElementById('res-box').classList.add('vis');
 
-      // Guardar en BD via backend
-      const idFundo  = document.getElementById('pred-fundo').value;
-      const idModelo = document.getElementById('pred-modelo').value;
-      if (idFundo && idModelo && usuarioActual) {
-        const idSuelo = (await fetch(`${API}/api/tipos-suelo`).then(r=>r.json()))
-                .find(s=>s.descripcion===tipo_suelo)?.idTipoSuelo;
+      // Guardar en BD
+      if (idFundo && usuarioActual) {
+        const mods = await fetch(`${API}/api/modelos-ml`).then(r=>r.json());
+        const idModelo = mods[0]?.idModelo;
         await fetch(`${API}/api/predicciones`, {
           method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({
-            anio, areaHa:area_ha, edadAnios:edad_anios, tempC:temp_c,
-            precipMm:prec_mm, radSolar:rad_solar, phSuelo:ph_suelo,
-            humRel:hum_rel, rendimientoEstimado:toneladas,
+            anio, mes, areaHa:area_ha, edadAnios:edad_anios,
+            tempC:temp_c, precMm:prec_mm, radSolar:rad_solar,
+            phSuelo:ph_suelo, humRel:hum_rel,
+            rendimientoEstimado:toneladas,
+            fechaEjecucion: new Date().toISOString(),
             usuario:{idUsuario:usuarioActual.idUsuario},
             fundo:{idFundo:parseInt(idFundo)},
-            modelo:{idModelo:parseInt(idModelo)},
-            tipoSuelo:{idTipoSuelo:idSuelo}
+            modelo:{idModelo:idModelo},
+            tipoSuelo:{idTipoSuelo: await obtenerIdTipoSuelo(tipo_suelo)}
           })
         }).catch(()=>{});
       }
+
+      const totalPreds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      document.getElementById('st-pred').textContent = totalPreds.length;
+
     } catch(e) {
+      console.error(e);
       alert('Error al conectar con el microservicio ML. Verifica que esté activo.');
     } finally {
       btn.innerHTML='🔮 Generar predicción'; btn.disabled=false;
     }
-    const totalPreds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
-    document.getElementById('st-pred').textContent = totalPreds.length;
+  }
 
+  async function obtenerIdTipoSuelo(descripcion) {
+    const suelos = await fetch(`${API}/api/tipos-suelo`).then(r=>r.json());
+    return suelos.find(s=>s.descripcion===descripcion)?.idTipoSuelo || null;
   }
 
   // ── HISTORIAL ──
@@ -587,43 +699,40 @@
       </tr>`).join('');
     } catch(e){ console.error(e) }
   }
+
   async function eliminarPrediccion(id) {
-    if (!confirm('¿Eliminar esta predicción? Esta acción no se puede deshacer.')) return;
+    if (!confirm('¿Eliminar esta predicción?')) return;
     try {
       await fetch(`${API}/api/predicciones/${id}`, { method:'DELETE' });
       cargarHistorial();
-    } catch(e) {
-      alert('Error al eliminar. Intenta nuevamente.');
-    }
+    } catch(e) { alert('Error al eliminar.'); }
   }
-
 
   // ── FUNDOS ──
   async function cargarFundos() {
     try {
       const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
       const tb = document.getElementById('tabla-fundos');
+      document.getElementById('st-fund').textContent = fundos.length;
       if (!fundos.length) {
-        tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--txt2);padding:22px">Sin fundos registrados.</td></tr>';
-        document.getElementById('st-fund').textContent = 0;
-        return;
+        tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--txt2);padding:22px">Sin fundos registrados.</td></tr>'; return;
       }
-      tb.innerHTML=fundos.map(f=>`...`).join('');
-      document.getElementById('st-fund').textContent = fundos.length; // ← agrega esto
+      tb.innerHTML=fundos.map(f=>`
+      <tr>
+        <td>#${f.idFundo}</td>
+        <td><strong>${f.nombreFundo}</strong></td>
+        <td>${f.ubicacion??'—'}</td>
+        <td>${f.provincia?.nombreProvincia??'—'}</td>
+        <td>${f.usuario?.nombreCompleto??'—'}</td>
+        <td style="display:flex;gap:8px">
+          <button onclick="abrirEditarFundo(${f.idFundo},'${f.nombreFundo}','${f.ubicacion??''}',${f.provincia?.idProvincia})"
+            style="padding:5px 12px;background:var(--v7);border:1px solid var(--v6);border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif">✏️ Editar</button>
+          <button onclick="abrirEliminarFundo(${f.idFundo})"
+            style="padding:5px 12px;background:#fdecea;border:1px solid #f5c6c6;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;color:#c0392b">🗑️ Eliminar</button>
+        </td>
+      </tr>`).join('');
     } catch(e){ console.error(e) }
   }
-
-  // ── LOGOUT ──
-  function cerrarSesion() {
-    usuarioActual=null;
-    document.getElementById('app').classList.remove('activa');
-    document.getElementById('login').classList.add('activa');
-    document.getElementById('inp-correo').value='';
-    document.getElementById('inp-pass').value='';
-    document.getElementById('res-box').classList.remove('vis');
-  }
-  let fundoEditandoId = null;
-  let fundoEliminandoId = null;
 
   async function abrirNuevoFundo() {
     fundoEditandoId = null;
@@ -654,15 +763,12 @@
     const provs = await fetch(`${API}/api/provincias`).then(r=>r.json());
     provs.forEach(p => {
       const o = document.createElement('option');
-      o.value = p.idProvincia;
-      o.textContent = p.nombreProvincia;
+      o.value = p.idProvincia; o.textContent = p.nombreProvincia;
       sel.appendChild(o);
     });
   }
 
-  function cerrarModalFundo() {
-    document.getElementById('modal-fundo').style.display = 'none';
-  }
+  function cerrarModalFundo() { document.getElementById('modal-fundo').style.display = 'none'; }
 
   async function guardarFundo() {
     const nombre    = document.getElementById('nf-nombre').value.trim();
@@ -670,106 +776,53 @@
     const idProv    = document.getElementById('nf-provincia').value;
     const errDiv    = document.getElementById('nf-error');
     errDiv.style.display = 'none';
-
-    if (!nombre || !idProv) {
-      errDiv.textContent = 'Nombre y provincia son obligatorios.';
-      errDiv.style.display = 'block'; return;
-    }
-
+    if (!nombre || !idProv) { errDiv.textContent='Nombre y provincia son obligatorios.'; errDiv.style.display='block'; return; }
     const btn = document.getElementById('btn-guardar-fundo');
     btn.innerHTML = '<span class="spin"></span>Guardando...'; btn.disabled = true;
-
-    const body = JSON.stringify({
-      nombreFundo: nombre,
-      ubicacion: ubicacion || null,
-      provincia: { idProvincia: parseInt(idProv) },
-      usuario: { idUsuario: usuarioActual.idUsuario }
-    });
-
     try {
       const url    = fundoEditandoId ? `${API}/api/fundos/${fundoEditandoId}` : `${API}/api/fundos`;
       const method = fundoEditandoId ? 'PUT' : 'POST';
-      const res = await fetch(url, { method, headers:{'Content-Type':'application/json'}, body });
+      const res = await fetch(url, {
+        method, headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ nombreFundo:nombre, ubicacion:ubicacion||null, provincia:{idProvincia:parseInt(idProv)}, usuario:{idUsuario:usuarioActual.idUsuario} })
+      });
       if (!res.ok) throw new Error();
-      cerrarModalFundo();
-      cargarFundos();
-      // Recargar selects de predicción
-      const sf = document.getElementById('pred-fundo');
-      sf.innerHTML = '<option value="">Seleccionar fundo...</option>';
-      const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
-      fundos.forEach(f=>{ const o=document.createElement('option'); o.value=f.idFundo; o.textContent=f.nombreFundo; sf.appendChild(o); });
+      cerrarModalFundo(); cargarFundos(); cargarSelectFundos();
     } catch(e) {
-      errDiv.textContent = 'Error al guardar. Intenta nuevamente.';
-      errDiv.style.display = 'block';
+      errDiv.textContent='Error al guardar. Intenta nuevamente.'; errDiv.style.display='block';
     } finally {
-      btn.innerHTML = fundoEditandoId ? 'Actualizar fundo' : 'Guardar fundo';
-      btn.disabled = false;
+      btn.innerHTML = fundoEditandoId ? 'Actualizar fundo' : 'Guardar fundo'; btn.disabled = false;
     }
   }
 
-  function abrirEliminarFundo(id) {
-    fundoEliminandoId = id;
-    document.getElementById('modal-eliminar').style.display = 'flex';
-  }
-
-  function cerrarModalEliminar() {
-    document.getElementById('modal-eliminar').style.display = 'none';
-    fundoEliminandoId = null;
-  }
+  function abrirEliminarFundo(id) { fundoEliminandoId=id; document.getElementById('modal-eliminar').style.display='flex'; }
+  function cerrarModalEliminar() { document.getElementById('modal-eliminar').style.display='none'; fundoEliminandoId=null; }
 
   async function confirmarEliminar() {
     const btn = document.getElementById('btn-confirmar-eliminar');
-    btn.textContent = 'Eliminando...'; btn.disabled = true;
+    btn.textContent='Eliminando...'; btn.disabled=true;
     try {
       await fetch(`${API}/api/fundos/${fundoEliminandoId}`, { method:'DELETE' });
-      cerrarModalEliminar();
-      cargarFundos();
-    } catch(e) {
-      alert('Error al eliminar. Intenta nuevamente.');
-    } finally {
-      btn.textContent = 'Sí, eliminar'; btn.disabled = false;
-    }
+      cerrarModalEliminar(); cargarFundos();
+    } catch(e) { alert('Error al eliminar.'); }
+    finally { btn.textContent='Sí, eliminar'; btn.disabled=false; }
   }
 
-  async function cargarFundos() {
-    try {
-      const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
-      const tb = document.getElementById('tabla-fundos');
-      if (!fundos.length) {
-        tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--txt2);padding:22px">Sin fundos registrados.</td></tr>'; return;
-      }
-      tb.innerHTML=fundos.map(f=>`
-      <tr>
-        <td>#${f.idFundo}</td>
-        <td><strong>${f.nombreFundo}</strong></td>
-        <td>${f.ubicacion??'—'}</td>
-        <td>${f.provincia?.nombreProvincia??'—'}</td>
-        <td>${f.usuario?.nombreCompleto??'—'}</td>
-        <td style="display:flex;gap:8px">
-          <button onclick="abrirEditarFundo(${f.idFundo},'${f.nombreFundo}','${f.ubicacion??''}',${f.provincia?.idProvincia})"
-            style="padding:5px 12px;background:var(--v7);border:1px solid var(--v6);border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif">✏️ Editar</button>
-          <button onclick="abrirEliminarFundo(${f.idFundo})"
-            style="padding:5px 12px;background:#fdecea;border:1px solid #f5c6c6;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;color:#c0392b">🗑️ Eliminar</button>
-        </td>
-      </tr>`).join('');
-    } catch(e){ console.error(e) }
-  }
-
-  // Promedios climáticos históricos por provincia (basados en dataset SENAMHI)
-  const CLIMA_REFERENCIA = {
+  // ── CLIMA REFERENCIA ──
+  const CLIMA = {
     "Chincha": {
-      2022: { temp_c: 21.5, prec_mm: 8.5,  rad_solar: 6.2, hum_rel: 74.0 },
-      2023: { temp_c: 22.0, prec_mm: 10.2, rad_solar: 6.4, hum_rel: 73.5 },
-      2024: { temp_c: 21.8, prec_mm: 9.0,  rad_solar: 6.3, hum_rel: 74.2 },
-      2025: { temp_c: 22.1, prec_mm: 9.5,  rad_solar: 6.3, hum_rel: 73.8 },
-      2026: { temp_c: 22.0, prec_mm: 9.5,  rad_solar: 6.3, hum_rel: 74.0 },
+      2022:{temp_c:21.5,prec_mm:8.5,rad_solar:6.2,hum_rel:74.0},
+      2023:{temp_c:22.0,prec_mm:10.2,rad_solar:6.4,hum_rel:73.5},
+      2024:{temp_c:21.8,prec_mm:9.0,rad_solar:6.3,hum_rel:74.2},
+      2025:{temp_c:22.1,prec_mm:9.5,rad_solar:6.3,hum_rel:73.8},
+      2026:{temp_c:22.0,prec_mm:9.5,rad_solar:6.3,hum_rel:74.0},
     },
     "Yauyos (Catahuasi)": {
-      2022: { temp_c: 14.2, prec_mm: 420.0, rad_solar: 5.0, hum_rel: 62.0 },
-      2023: { temp_c: 14.8, prec_mm: 390.5, rad_solar: 5.2, hum_rel: 61.5 },
-      2024: { temp_c: 14.5, prec_mm: 405.0, rad_solar: 5.1, hum_rel: 62.5 },
-      2025: { temp_c: 14.6, prec_mm: 400.0, rad_solar: 5.1, hum_rel: 62.0 },
-      2026: { temp_c: 14.6, prec_mm: 400.0, rad_solar: 5.1, hum_rel: 62.0 },
+      2022:{temp_c:14.2,prec_mm:420.0,rad_solar:5.0,hum_rel:62.0},
+      2023:{temp_c:14.8,prec_mm:390.5,rad_solar:5.2,hum_rel:61.5},
+      2024:{temp_c:14.5,prec_mm:405.0,rad_solar:5.1,hum_rel:62.5},
+      2025:{temp_c:14.6,prec_mm:400.0,rad_solar:5.1,hum_rel:62.0},
+      2026:{temp_c:14.6,prec_mm:400.0,rad_solar:5.1,hum_rel:62.0},
     }
   };
 
@@ -777,59 +830,30 @@
     const provincia = document.getElementById('pred-provincia').value;
     const anio      = parseInt(document.getElementById('pred-anio').value);
     const aviso     = document.getElementById('aviso-clima');
-
     if (!provincia || !anio) return;
-
-    const datos = CLIMA_REFERENCIA[provincia]?.[anio];
-
+    const datos = CLIMA[provincia]?.[anio];
     if (datos) {
       document.getElementById('pred-temp').value   = datos.temp_c;
       document.getElementById('pred-precip').value = datos.prec_mm;
       document.getElementById('pred-rad').value    = datos.rad_solar;
       document.getElementById('pred-hum').value    = datos.hum_rel;
-      aviso.style.display = 'block';
-      aviso.innerHTML = `✅ Datos climáticos precargados para <strong>${provincia} ${anio}</strong> — puedes ajustarlos si tienes datos más precisos.`;
+      aviso.style.display='block';
+      aviso.innerHTML=`✅ Datos climáticos precargados para <strong>${provincia} ${anio}</strong> — puedes ajustarlos si tienes datos más precisos.`;
     } else {
-      aviso.style.display = 'block';
-      aviso.innerHTML = `⚠️ No hay datos históricos para ${provincia} ${anio}. Ingresa los valores manualmente.`;
+      aviso.style.display='block';
+      aviso.innerHTML=`⚠️ No hay datos históricos para ${provincia} ${anio}. Ingresa los valores manualmente.`;
     }
-
   }
 
-
+  // ── LOGOUT ──
+  function cerrarSesion() {
+    usuarioActual=null;
+    document.getElementById('app').classList.remove('activa');
+    document.getElementById('login').classList.add('activa');
+    document.getElementById('inp-correo').value='';
+    document.getElementById('inp-pass').value='';
+    document.getElementById('res-box').classList.remove('vis');
+  }
 </script>
-<!-- MODAL NUEVO FUNDO -->
-<!-- MODAL FUNDO -->
-<div id="modal-fundo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center">
-  <div style="background:var(--blanco);border-radius:16px;padding:32px;width:480px;max-width:95vw;box-shadow:var(--sombra2)">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
-      <h3 id="modal-fundo-titulo" style="font-family:'DM Serif Display',serif;font-size:20px">Nuevo fundo</h3>
-      <button onclick="cerrarModalFundo()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--txt2)">✕</button>
-    </div>
-    <div class="fc"><label>Nombre del fundo</label><input type="text" id="nf-nombre" placeholder="Ej: Fundo San José"/></div>
-    <div class="fc"><label>Ubicación</label><input type="text" id="nf-ubicacion" placeholder="Ej: Valle de Chincha"/></div>
-    <div class="fc"><label>Provincia</label>
-      <select id="nf-provincia"><option value="">Seleccionar...</option></select>
-    </div>
-    <div id="nf-error" style="color:#c0392b;font-size:13px;margin-bottom:12px;display:none"></div>
-    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px">
-      <button onclick="cerrarModalFundo()" style="padding:10px 20px;background:none;border:1.5px solid var(--v6);border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px">Cancelar</button>
-      <button onclick="guardarFundo()" id="btn-guardar-fundo" class="btn-v" style="padding:10px 22px">Guardar fundo</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL CONFIRMAR ELIMINAR -->
-<div id="modal-eliminar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center">
-  <div style="background:var(--blanco);border-radius:16px;padding:32px;width:400px;max-width:95vw;box-shadow:var(--sombra2);text-align:center">
-    <div style="font-size:40px;margin-bottom:16px">⚠️</div>
-    <h3 style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:10px">¿Eliminar fundo?</h3>
-    <p style="font-size:13px;color:var(--txt2);margin-bottom:24px">Esta acción no se puede deshacer.</p>
-    <div style="display:flex;gap:12px;justify-content:center">
-      <button onclick="cerrarModalEliminar()" style="padding:10px 20px;background:none;border:1.5px solid var(--v6);border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px">Cancelar</button>
-      <button onclick="confirmarEliminar()" id="btn-confirmar-eliminar" style="padding:10px 22px;background:#e74c3c;color:white;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600">Sí, eliminar</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
