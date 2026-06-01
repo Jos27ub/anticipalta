@@ -329,8 +329,7 @@
         <div class="cstat"><div class="cstat-ico">🔮</div><div class="cstat-l">Predicciones</div><div class="cstat-n" id="st-pred">—</div><div class="cstat-s">Total registradas</div></div>
         <div class="cstat"><div class="cstat-ico">🌱</div><div class="cstat-l">Fundos</div><div class="cstat-n" id="st-fund">—</div><div class="cstat-s">Registrados</div></div>
         <div class="cstat"><div class="cstat-ico">📍</div><div class="cstat-l">Provincias</div><div class="cstat-n" id="st-prov">—</div><div class="cstat-s">Disponibles</div></div>
-        <div class="cstat"><div class="cstat-ico">⚖️</div><div class="cstat-l">Rend. promedio</div><div class="cstat-n" id="st-rend">—</div><div class="cstat-s">Toneladas est.</div></div>
-      </div>
+        <div class="cstat"><div class="cstat-ico">🏋️</div><div class="cstat-l">Total acumulado</div><div class="cstat-n" id="st-rend">—</div><div class="cstat-s">Toneladas estimadas</div></div>      </div>
       <div class="cards-2">
         <div class="card">
           <div class="card-t">📋 Últimas predicciones</div>
@@ -762,17 +761,26 @@
       document.getElementById('st-pred').textContent = preds.length;
       document.getElementById('st-fund').textContent = fundos.length;
       document.getElementById('st-prov').textContent = provs.length;
-      const rendProm = preds.length ? (preds.reduce((a,b)=>a+(b.rendimientoEstimado||0),0)/preds.length).toFixed(1) : '—';
-      document.getElementById('st-rend').textContent = rendProm;
+      const rendProm = preds.length ? preds.reduce((a,b)=>a+(b.rendimientoEstimado||0),0).toFixed(1) : '—';      document.getElementById('st-rend').textContent = rendProm;
       const lista = document.getElementById('lista-preds');
       if (!preds.length) {
         lista.innerHTML='<div style="color:var(--txt2);font-size:13px;text-align:center;padding:22px 0">Sin predicciones aún.</div>';
       } else {
         lista.innerHTML=preds.slice(-5).reverse().map(p=>`
-        <div class="pred-i">
-          <div><div class="pred-f">Predicción #${p.idPrediccion}</div><div class="pred-d">${p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—'}</div></div>
-          <div><div class="pred-v">${p.rendimientoEstimado??'—'}</div><div class="pred-u">toneladas</div></div>
-        </div>`).join('');
+  <div class="pred-i">
+    <div>
+      <div class="pred-f">${p.fundo?.nombreFundo ?? 'Sin fundo'}</div>
+      <div class="pred-d">
+        ${p.anio ? `Año ${p.anio}` : ''}
+        ${p.mes ? ` · Mes ${p.mes}` : ''}
+        ${p.fechaEjecucion ? ` · ${new Date(p.fechaEjecucion).toLocaleDateString('es-PE')}` : ''}
+      </div>
+    </div>
+    <div>
+      <div class="pred-v">${p.rendimientoEstimado??'—'}</div>
+      <div class="pred-u">toneladas</div>
+    </div>
+  </div>`).join('');
       }
     } catch(e){ console.error('Dashboard:',e) }
   }
