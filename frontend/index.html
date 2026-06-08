@@ -538,14 +538,86 @@
         <h2>⚙️ Panel de administración</h2>
         <p>Gestión de usuarios y reportes globales del sistema</p>
       </div>
+
+      <!-- STATS -->
       <div class="cards-4" style="margin-bottom:24px">
         <div class="cstat"><div class="cstat-ico">👥</div><div class="cstat-l">Usuarios</div><div class="cstat-n" id="adm-usuarios">—</div><div class="cstat-s">Registrados</div></div>
         <div class="cstat"><div class="cstat-ico">🔮</div><div class="cstat-l">Predicciones</div><div class="cstat-n" id="adm-preds">—</div><div class="cstat-s">Total sistema</div></div>
         <div class="cstat"><div class="cstat-ico">🌱</div><div class="cstat-l">Fundos</div><div class="cstat-n" id="adm-fundos">—</div><div class="cstat-s">Total sistema</div></div>
-        <div class="cstat"><div class="cstat-ico">🏋️</div><div class="cstat-l">Total acumulado</div><div class="cstat-n" id="adm-rend">—</div><div class="cstat-s">Toneladas sistema</div></div>
+        <div class="cstat"><div class="cstat-ico">📍</div><div class="cstat-l">Provincias</div><div class="cstat-n" id="adm-provs">—</div><div class="cstat-s">Registradas</div></div>
       </div>
+
+      <!-- FILA 1: gráfico predicciones por usuario + actividad reciente -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+        <div class="card">
+          <div class="card-t">📊 Predicciones por usuario</div>
+          <canvas id="chart-adm-usuarios" height="220"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-t">📅 Predicciones últimos 7 días</div>
+          <canvas id="chart-adm-7dias" height="220"></canvas>
+        </div>
+      </div>
+
+      <!-- FILA 2: métricas ML + top fundos -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+        <div class="card">
+          <div class="card-t">🤖 Métricas del modelo ML</div>
+          <div id="adm-metricas-ml">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+              <div style="background:var(--v7);border-radius:10px;padding:14px 16px">
+                <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">Mejor modelo</div>
+                <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--v3)">XGBoost</div>
+              </div>
+              <div style="background:var(--v7);border-radius:10px;padding:14px 16px">
+                <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">R² Score</div>
+                <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--v3)">0.8376</div>
+              </div>
+              <div style="background:var(--v7);border-radius:10px;padding:14px 16px">
+                <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">MAE promedio</div>
+                <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--v3)">20.89 t</div>
+              </div>
+              <div style="background:var(--v7);border-radius:10px;padding:14px 16px">
+                <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">Precisión CV</div>
+                <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--v3)">85.50%</div>
+              </div>
+            </div>
+            <div style="background:var(--v7);border-radius:10px;padding:14px 16px">
+              <div style="font-size:11px;color:var(--txt2);margin-bottom:8px">Comparativa de modelos</div>
+              <div id="adm-modelos-lista"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-t">🏆 Top fundos con más predicciones</div>
+          <div id="adm-top-fundos"></div>
+        </div>
+      </div>
+
+      <!-- TABLA USUARIOS -->
       <div class="card">
-        <div class="card-t">👥 Gestión de usuarios</div>
+        <div class="card-t" style="justify-content:space-between">
+          <span>👥 Gestión de usuarios</span>
+          <button onclick="exportarUsuariosPDF()" class="btn-v" style="padding:7px 14px;font-size:12px">📄 Exportar PDF</button>
+        </div>
+        <!-- Buscador -->
+        <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center;flex-wrap:wrap">
+          <input type="text" id="adm-busqueda" placeholder="🔍 Buscar por nombre o correo..."
+                 oninput="filtrarUsuariosAdmin()"
+                 style="flex:1;min-width:200px;padding:9px 14px;border:1.5px solid var(--v6);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--crema);outline:none"/>
+          <select id="adm-fil-rol" onchange="filtrarUsuariosAdmin()"
+                  style="padding:9px 12px;border:1.5px solid var(--v6);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--crema);outline:none">
+            <option value="">Todos los roles</option>
+            <option value="Admin">Admin</option>
+            <option value="Agricultor">Agricultor</option>
+          </select>
+          <select id="adm-fil-estado" onchange="filtrarUsuariosAdmin()"
+                  style="padding:9px 12px;border:1.5px solid var(--v6);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--crema);outline:none">
+            <option value="">Todos los estados</option>
+            <option value="activo">Activos</option>
+            <option value="inactivo">Inactivos</option>
+          </select>
+        </div>
         <div class="tabla-w">
           <table>
             <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Predicciones</th><th>Acciones</th></tr></thead>
@@ -844,37 +916,166 @@
     document.getElementById('login').classList.add('activa');
     cambiarTab('registro');
   }
+  let usuariosAdminCache = [];
+  let predsAdminCache = [];
+  let chartAdmUsuarios = null;
+  let chartAdm7dias = null;
+
   async function cargarAdmin() {
     try {
-      const [usuarios, preds, fundos] = await Promise.all([
+      const [usuarios, preds, fundos, provs, modelos] = await Promise.all([
         fetch(`${API}/api/usuarios`).then(r=>r.json()),
         fetch(`${API}/api/predicciones`).then(r=>r.json()),
         fetch(`${API}/api/fundos`).then(r=>r.json()),
+        fetch(`${API}/api/provincias`).then(r=>r.json()),
+        fetch(`${API}/api/modelos-ml`).then(r=>r.json()),
       ]);
+
+      usuariosAdminCache = usuarios;
+      predsAdminCache = preds;
+
+      // Stats
       document.getElementById('adm-usuarios').textContent = usuarios.length;
       document.getElementById('adm-preds').textContent    = preds.length;
       document.getElementById('adm-fundos').textContent   = fundos.length;
-      document.getElementById('adm-rend').textContent     = preds.reduce((a,b)=>a+(b.rendimientoEstimado||0),0).toFixed(1);
+      document.getElementById('adm-provs').textContent    = provs.length;
 
-      const tb = document.getElementById('tabla-admin-usuarios');
-      tb.innerHTML = usuarios.map(u => {
-        const misPreds = preds.filter(p=>p.usuario?.idUsuario===u.idUsuario).length;
-        return `<tr>
-        <td>#${u.idUsuario}</td>
-        <td><strong>${u.nombreCompleto}</strong></td>
-        <td>${u.correo}</td>
-        <td><span class="badge ${u.rol?.tipo==='Admin'?'b-d':'b-v'}">${u.rol?.tipo||'—'}</span></td>
-        <td><span class="badge b-v">${u.estado?'Activo':'Inactivo'}</span></td>
-        <td>${misPreds}</td>
-        <td>
-          <button onclick="toggleEstadoUsuario(${u.idUsuario},${!u.estado})"
-            style="padding:5px 10px;background:${u.estado?'#fdecea':'#d4edda'};border:1px solid ${u.estado?'#f5c6c6':'#b8dbb8'};border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:${u.estado?'#c0392b':'#1a5c2a'}">
-            ${u.estado?'🔴 Desactivar':'🟢 Activar'}
-          </button>
-        </td>
-      </tr>`;
-      }).join('');
-    } catch(e){ console.error('Admin:',e) }
+      // ── GRÁFICO: predicciones por usuario ──
+      const porUsuario = {};
+      preds.forEach(p => {
+        const nombre = p.usuario?.nombreCompleto?.split(' ')[0] || 'Sin usuario';
+        porUsuario[nombre] = (porUsuario[nombre] || 0) + 1;
+      });
+      if (chartAdmUsuarios) chartAdmUsuarios.destroy();
+      chartAdmUsuarios = new Chart(document.getElementById('chart-adm-usuarios'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(porUsuario),
+          datasets: [{ data: Object.values(porUsuario), backgroundColor: ['#2d6a35','#4a9e56','#c9a84c','#1e4a27','#7ec88a'], borderRadius: 6 }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+      });
+
+      // ── GRÁFICO: últimos 7 días ──
+      const hoy = new Date();
+      const dias = [];
+      const conteos = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(hoy);
+        d.setDate(hoy.getDate() - i);
+        const key = d.toISOString().split('T')[0];
+        dias.push(d.toLocaleDateString('es-PE', { weekday: 'short', day: 'numeric' }));
+        conteos.push(preds.filter(p => p.fechaEjecucion?.startsWith(key)).length);
+      }
+      if (chartAdm7dias) chartAdm7dias.destroy();
+      chartAdm7dias = new Chart(document.getElementById('chart-adm-7dias'), {
+        type: 'line',
+        data: {
+          labels: dias,
+          datasets: [{ data: conteos, borderColor: '#c9a84c', backgroundColor: 'rgba(201,168,76,0.12)', borderWidth: 2, fill: true, tension: 0.4, pointBackgroundColor: '#c9a84c', pointRadius: 5 }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+      });
+
+      // ── MÉTRICAS ML: comparativa modelos ──
+      const modelosData = [
+        { nombre: 'XGBoost',          r2: 0.8376, mae: 20.89 },
+        { nombre: 'Gradient Boosting', r2: 0.8312, mae: 21.14 },
+        { nombre: 'Random Forest',     r2: 0.7975, mae: 22.88 },
+        { nombre: 'Ridge Regression',  r2: 0.7360, mae: 27.75 },
+      ];
+      document.getElementById('adm-modelos-lista').innerHTML = modelosData.map(m => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f4f0">
+        <span style="font-size:12px;color:var(--txt);font-weight:500">${m.nombre}</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:100px;height:6px;background:#eef2ee;border-radius:99px;overflow:hidden">
+            <div style="width:${m.r2*100}%;height:100%;background:var(--v3);border-radius:99px"></div>
+          </div>
+          <span style="font-size:12px;font-weight:600;color:var(--v3);min-width:40px">R²=${m.r2}</span>
+        </div>
+      </div>`).join('');
+
+      // ── TOP FUNDOS ──
+      const porFundo = {};
+      preds.forEach(p => {
+        const f = p.fundo?.nombreFundo || 'Sin fundo';
+        porFundo[f] = (porFundo[f] || 0) + 1;
+      });
+      const topFundos = Object.entries(porFundo).sort((a,b) => b[1]-a[1]).slice(0,5);
+      const maxFundo = topFundos[0]?.[1] || 1;
+      document.getElementById('adm-top-fundos').innerHTML = topFundos.map(([nombre, cnt], i) => `
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+          <span style="font-size:13px;font-weight:500;color:var(--txt)">${i===0?'🥇':i===1?'🥈':'🥉'} ${nombre}</span>
+          <span style="font-size:12px;font-weight:600;color:var(--v3)">${cnt} pred.</span>
+        </div>
+        <div style="height:7px;background:#eef2ee;border-radius:99px;overflow:hidden">
+          <div style="width:${(cnt/maxFundo)*100}%;height:100%;background:${i===0?'#2d6a35':i===1?'#4a9e56':'#c9a84c'};border-radius:99px;transition:width .8s ease"></div>
+        </div>
+      </div>`).join('');
+
+      // ── TABLA USUARIOS ──
+      renderTablaAdmin(usuarios, preds);
+
+    } catch(e) { console.error('Admin:', e); }
+  }
+
+  function renderTablaAdmin(usuarios, preds) {
+    const tb = document.getElementById('tabla-admin-usuarios');
+    tb.innerHTML = usuarios.map(u => {
+      const misPreds = preds.filter(p => p.usuario?.idUsuario === u.idUsuario).length;
+      const rolTipo = u.rol?.tipo || (u.rol?.idRol === 1 ? 'Admin' : 'Agricultor');
+      return `<tr>
+      <td>#${u.idUsuario}</td>
+      <td><strong>${u.nombreCompleto}</strong></td>
+      <td>${u.correo}</td>
+      <td><span class="badge ${rolTipo==='Admin'?'b-d':'b-v'}">${rolTipo}</span></td>
+      <td><span class="badge ${u.estado?'b-v':'b-d'}">${u.estado?'Activo':'Inactivo'}</span></td>
+      <td>${misPreds}</td>
+      <td>
+        <button onclick="toggleEstadoUsuario(${u.idUsuario},${!u.estado})"
+          style="padding:5px 10px;background:${u.estado?'#fdecea':'#d4edda'};border:1px solid ${u.estado?'#f5c6c6':'#b8dbb8'};border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:${u.estado?'#c0392b':'#1a5c2a'}">
+          ${u.estado?'🔴 Desactivar':'🟢 Activar'}
+        </button>
+      </td>
+    </tr>`;
+    }).join('');
+  }
+
+  function filtrarUsuariosAdmin() {
+    const busq   = document.getElementById('adm-busqueda').value.toLowerCase();
+    const rol    = document.getElementById('adm-fil-rol').value.toLowerCase();
+    const estado = document.getElementById('adm-fil-estado').value;
+    const filtrados = usuariosAdminCache.filter(u => {
+      const matchBusq  = !busq  || u.nombreCompleto?.toLowerCase().includes(busq) || u.correo?.toLowerCase().includes(busq);
+      const matchRol   = !rol   || (u.rol?.tipo || '').toLowerCase().includes(rol);
+      const matchEstado = !estado || (estado==='activo' ? u.estado : !u.estado);
+      return matchBusq && matchRol && matchEstado;
+    });
+    renderTablaAdmin(filtrados, predsAdminCache);
+  }
+
+  function exportarUsuariosPDF() {
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFillColor(15,36,20); doc.rect(0,0,210,18,'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','bold');
+    doc.text('AnticiPalta — Listado de Usuarios',14,12);
+    doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.text(`Generado: ${new Date().toLocaleDateString('es-PE')}`,150,12);
+    const filas = usuariosAdminCache.map(u => [
+      `#${u.idUsuario}`, u.nombreCompleto, u.correo,
+      u.rol?.tipo || '—', u.estado ? 'Activo' : 'Inactivo'
+    ]);
+    doc.autoTable({
+      startY: 22,
+      head: [['ID','Nombre','Correo','Rol','Estado']],
+      body: filas,
+      styles: { fontSize: 9, cellPadding: 4 },
+      headStyles: { fillColor: [45,106,53], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [232,245,233] }
+    });
+    doc.save(`AnticiPalta_Usuarios_${new Date().toISOString().split('T')[0]}.pdf`);
   }
 
   async function toggleEstadoUsuario(id, nuevoEstado) {
