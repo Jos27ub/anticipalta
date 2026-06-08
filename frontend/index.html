@@ -487,6 +487,8 @@
       <div class="nav-i" onclick="irA('prediccion',this)"><span class="nav-ico">🔮</span> Nueva predicción</div>
       <div class="nav-i" onclick="irA('historial',this)"><span class="nav-ico">📋</span> Historial</div>
       <div class="nav-i" onclick="irA('reportes',this)"><span class="nav-ico">📈</span> Reportes</div>
+      <div class="nav-sec">Administración</div>
+      <div class="nav-i" onclick="irA('admin',this)"><span class="nav-ico">⚙️</span> Panel admin</div>
       <div class="nav-sec">Datos</div>
       <div class="nav-i" onclick="irA('fundos',this)"><span class="nav-ico">🌱</span> Mis fundos</div>
       <div class="nav-i" onclick="irA('perfil',this)"><span class="nav-ico">👤</span> Mi perfil</div>
@@ -495,7 +497,28 @@
       <button class="btn-out" onclick="cerrarSesion()">⬅ Cerrar sesión</button>
     </div>
   </nav>
-
+  <!-- ADMIN -->
+  <div id="pag-admin" class="pagina">
+    <div class="bienvenida">
+      <h2>⚙️ Panel de administración</h2>
+      <p>Gestión de usuarios y reportes globales del sistema</p>
+    </div>
+    <div class="cards-4" style="margin-bottom:24px">
+      <div class="cstat"><div class="cstat-ico">👥</div><div class="cstat-l">Usuarios</div><div class="cstat-n" id="adm-usuarios">—</div><div class="cstat-s">Registrados</div></div>
+      <div class="cstat"><div class="cstat-ico">🔮</div><div class="cstat-l">Predicciones</div><div class="cstat-n" id="adm-preds">—</div><div class="cstat-s">Total sistema</div></div>
+      <div class="cstat"><div class="cstat-ico">🌱</div><div class="cstat-l">Fundos</div><div class="cstat-n" id="adm-fundos">—</div><div class="cstat-s">Total sistema</div></div>
+      <div class="cstat"><div class="cstat-ico">🏋️</div><div class="cstat-l">Total acumulado</div><div class="cstat-n" id="adm-rend">—</div><div class="cstat-s">Toneladas sistema</div></div>
+    </div>
+    <div class="card">
+      <div class="card-t">👥 Gestión de usuarios</div>
+      <div class="tabla-w">
+        <table>
+          <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Predicciones</th><th>Acciones</th></tr></thead>
+          <tbody id="tabla-admin-usuarios"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
   <div class="contenido">
     <div class="topbar">
       <div class="topbar-t" id="topbar-t">Dashboard</div>
@@ -807,6 +830,49 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
+  async function cargarAdmin() {
+    try {
+      const [usuarios, preds, fundos] = await Promise.all([
+        fetch(`${API}/api/usuarios`).then(r=>r.json()),
+        fetch(`${API}/api/predicciones`).then(r=>r.json()),
+        fetch(`${API}/api/fundos`).then(r=>r.json()),
+      ]);
+      document.getElementById('adm-usuarios').textContent = usuarios.length;
+      document.getElementById('adm-preds').textContent    = preds.length;
+      document.getElementById('adm-fundos').textContent   = fundos.length;
+      document.getElementById('adm-rend').textContent     = preds.reduce((a,b)=>a+(b.rendimientoEstimado||0),0).toFixed(1);
+
+      const tb = document.getElementById('tabla-admin-usuarios');
+      tb.innerHTML = usuarios.map(u => {
+        const misPreds = preds.filter(p=>p.usuario?.idUsuario===u.idUsuario).length;
+        return `<tr>
+        <td>#${u.idUsuario}</td>
+        <td><strong>${u.nombreCompleto}</strong></td>
+        <td>${u.correo}</td>
+        <td><span class="badge ${u.rol?.tipo==='Admin'?'b-d':'b-v'}">${u.rol?.tipo||'—'}</span></td>
+        <td><span class="badge b-v">${u.estado?'Activo':'Inactivo'}</span></td>
+        <td>${misPreds}</td>
+        <td>
+          <button onclick="toggleEstadoUsuario(${u.idUsuario},${!u.estado})"
+            style="padding:5px 10px;background:${u.estado?'#fdecea':'#d4edda'};border:1px solid ${u.estado?'#f5c6c6':'#b8dbb8'};border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:${u.estado?'#c0392b':'#1a5c2a'}">
+            ${u.estado?'🔴 Desactivar':'🟢 Activar'}
+          </button>
+        </td>
+      </tr>`;
+      }).join('');
+    } catch(e){ console.error('Admin:',e) }
+  }
+
+  async function toggleEstadoUsuario(id, nuevoEstado) {
+    try {
+      await fetch(`${API}/api/usuarios/${id}`, {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({estado: nuevoEstado})
+      });
+      cargarAdmin();
+    } catch(e){ alert('Error al actualizar usuario.'); }
+  }
+  const titulos = {dashboard:'Dashboard', prediccion:'Nueva predicción', historial:'Historial', reportes:'Reportes', fundos:'Mis fundos', perfil:'Mi perfil', admin:'Panel admin'};
   function irALanding() {
     document.getElementById('login').classList.remove('activa');
     document.getElementById('app').classList.remove('activa');
@@ -901,6 +967,10 @@
     document.getElementById('p-correo').textContent   = usuarioActual.correo;
     document.getElementById('p-fecha').textContent    = usuarioActual.fechaRegistro || '—';
     cargarDashboard(); cargarSelectFundos();
+    // Mostrar panel admin si es administrador
+    if (usuarioActual.rol?.tipo === 'Admin') {
+      document.getElementById('nav-admin').style.display = 'block';
+    }
   }
 
   function cambiarTab(tab) {
@@ -954,6 +1024,7 @@
     if(p==='fundos')    cargarFundos();
     if(p==='reportes')  cargarReportes();
     if(p==='perfil')    cargarEstadisticasPerfil();
+    if(p==='admin') cargarAdmin();
   }
 
   // ── DASHBOARD ──
@@ -1149,7 +1220,9 @@
   async function cargarHistorial() {
     try {
       const todasPreds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
-      const preds = todasPreds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);
+      const preds = usuarioActual.rol?.tipo === 'Admin'
+              ? todasPreds
+              : todasPreds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);
       document.getElementById('st-pred').textContent = preds.length;
       predsCache = preds.reverse();
       filtrarHistorial();
