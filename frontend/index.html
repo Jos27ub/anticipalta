@@ -16,9 +16,11 @@
       --r:12px;--rb:8px;
     }
     html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--crema);color:var(--txt);font-size:15px}
-    .pantalla{display:none;min-height:100vh}
-    .pantalla.activa{display:flex}
-    #landing.activa{display:block}
+    .pantalla{display:none!important;min-height:100vh}
+    .pantalla.activa{display:flex!important}
+    #landing.activa{display:block!important;overflow-y:auto}
+    #app.activa{display:flex!important}
+    #login.activa{display:flex!important}
 
     /* LOGIN */
     #login{display:flex!important;align-items:stretch}
