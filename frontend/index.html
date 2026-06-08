@@ -209,10 +209,185 @@
       .cards-4{grid-template-columns:1fr 1fr}.cards-2{grid-template-columns:1fr}
       .pred-grid{grid-template-columns:1fr}.modelo-selector{grid-template-columns:1fr}
     }
+
+    /* LANDING */
+    .landing-nav{background:#0f2414;padding:16px 48px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .landing-nav-logo{font-family:'DM Serif Display',serif;font-size:20px;color:#fff;display:flex;align-items:center;gap:10px}
+    .landing-nav-ico{width:32px;height:32px;background:#c9a84c;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+    .landing-nav-logo span{color:#f0d78a}
+    .landing-nav-links{display:flex;align-items:center;gap:24px}
+    .landing-nav-links a{color:rgba(255,255,255,.65);font-size:13px;text-decoration:none;transition:color .2s}
+    .landing-nav-links a:hover{color:#fff}
+    .hero-landing{background:#0f2414;padding:100px 48px 80px;position:relative;overflow:hidden}
+    .hero-landing::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(74,158,86,.12) 0%,transparent 65%);top:-150px;right:-100px;pointer-events:none}
+    .hero-landing::after{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.08) 0%,transparent 65%);bottom:-50px;left:60px;pointer-events:none}
+    .hero-inner-l{max-width:900px;margin:0 auto;position:relative;z-index:1}
+    .hero-tag-l{display:inline-block;padding:6px 14px;background:rgba(74,158,86,.2);border:1px solid rgba(74,158,86,.3);border-radius:20px;font-size:12px;color:#7ec88a;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:28px}
+    .hero-h1{font-family:'DM Serif Display',serif;font-size:58px;line-height:1.08;color:#fff;margin-bottom:24px}
+    .hero-h1 em{color:#f0d78a;font-style:italic}
+    .hero-desc-l{font-size:17px;color:rgba(255,255,255,.6);line-height:1.75;max-width:560px;margin-bottom:40px}
+    .hero-btns-l{display:flex;gap:14px;flex-wrap:wrap}
+    .btn-hero-p{padding:14px 28px;background:#2d6a35;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+    .btn-hero-p:hover{background:#1e4a27}
+    .btn-hero-s{padding:14px 28px;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+    .btn-hero-s:hover{background:rgba(255,255,255,.14)}
+    .hero-stats-l{display:flex;gap:48px;margin-top:56px;padding-top:40px;border-top:1px solid rgba(255,255,255,.1)}
+    .l-stat-n{font-family:'DM Serif Display',serif;font-size:32px;color:#f0d78a}
+    .l-stat-l{font-size:12px;color:rgba(255,255,255,.45);margin-top:4px;letter-spacing:.5px;text-transform:uppercase}
+    .l-section{padding:80px 48px}
+    .l-section-inner{max-width:900px;margin:0 auto}
+    .l-section-tag{font-size:11px;font-weight:700;color:#2d6a35;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+    .l-section-title{font-family:'DM Serif Display',serif;font-size:38px;color:#1a1a18;margin-bottom:48px;line-height:1.2}
+    .l-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+    .l-step{background:#fff;border-radius:14px;padding:28px;border:1px solid #e8ede8}
+    .l-step-num{width:36px;height:36px;background:#e8f5e9;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:18px;color:#2d6a35;margin-bottom:16px}
+    .l-step h3{font-size:15px;font-weight:600;color:#1a1a18;margin-bottom:8px}
+    .l-step p{font-size:13px;color:#5a6b5a;line-height:1.65}
+    .l-step-ico{font-size:28px;margin-bottom:14px}
+    .l-features-bg{background:#fff;padding:80px 48px}
+    .l-features{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:900px;margin:0 auto}
+    .l-feature{background:#faf8f2;border-radius:14px;padding:26px;border:1px solid #e8ede8;display:flex;gap:16px}
+    .l-feature-ico{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .l-feature h4{font-size:14px;font-weight:600;color:#1a1a18;margin-bottom:6px}
+    .l-feature p{font-size:13px;color:#5a6b5a;line-height:1.6}
+    .l-faq{padding:80px 48px;background:#faf8f2}
+    .l-faq-inner{max-width:700px;margin:0 auto}
+    .l-faq-item{border-bottom:1px solid #e8ede8;padding:20px 0}
+    .l-faq-q{font-size:15px;font-weight:600;color:#1a1a18;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:12px}
+    .l-faq-q span{font-size:20px;color:#4a9e56;flex-shrink:0;transition:transform .2s}
+    .l-faq-a{font-size:13px;color:#5a6b5a;line-height:1.7;display:none;padding-top:4px}
+    .l-faq-item.abierto .l-faq-a{display:block}
+    .l-faq-item.abierto .l-faq-q span{transform:rotate(45deg)}
+    .l-cta{background:#0f2414;padding:80px 48px;text-align:center}
+    .l-cta h2{font-family:'DM Serif Display',serif;font-size:42px;color:#fff;margin-bottom:16px}
+    .l-cta h2 em{color:#f0d78a;font-style:italic}
+    .l-cta p{font-size:15px;color:rgba(255,255,255,.6);margin-bottom:32px}
+    .l-footer{background:#0a1c0e;padding:32px 48px;display:flex;align-items:center;justify-content:space-between}
+    .l-footer-logo{font-family:'DM Serif Display',serif;font-size:16px;color:#fff}
+    .l-footer-logo span{color:#f0d78a}
+    .l-footer p{font-size:12px;color:rgba(255,255,255,.35)}
+
   </style>
 </head>
 <body>
+<!-- LANDING -->
+<div id="landing" class="pantalla activa" style="align-items:stretch">
 
+  <nav class="landing-nav">
+    <div class="landing-nav-logo">
+      <div class="landing-nav-ico">🥑</div>
+      Antici<span>Palta</span>
+    </div>
+    <div class="landing-nav-links">
+      <a href="#l-como-funciona">Cómo funciona</a>
+      <a href="#l-caracteristicas">Características</a>
+      <a href="#l-faq">FAQ</a>
+      <button class="btn-v" style="padding:9px 20px;font-size:13px" onclick="irALogin()">Iniciar sesión</button>
+    </div>
+  </nav>
+
+  <div class="hero-landing">
+    <div class="hero-inner-l">
+      <div class="hero-tag-l">🌿 Sistema inteligente de predicción agrícola</div>
+      <h1 class="hero-h1">Predice tu cosecha<br/>de palta con <em>precisión</em></h1>
+      <p class="hero-desc-l">Plataforma web basada en Machine Learning para agricultores y agroexportadores del Perú. Conoce el rendimiento estimado de tu cultivo antes de la cosecha.</p>
+      <div class="hero-btns-l">
+        <button class="btn-hero-p" onclick="irARegistro()">Comenzar gratis →</button>
+        <button class="btn-hero-s" onclick="irALogin()">Iniciar sesión</button>
+      </div>
+      <div class="hero-stats-l">
+        <div><div class="l-stat-n">83.76%</div><div class="l-stat-l">Precisión R² XGBoost</div></div>
+        <div><div class="l-stat-n">1,572</div><div class="l-stat-l">Registros de entrenamiento</div></div>
+        <div><div class="l-stat-n">4</div><div class="l-stat-l">Modelos ML disponibles</div></div>
+        <div><div class="l-stat-n">2</div><div class="l-stat-l">Regiones productoras</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="l-section" id="l-como-funciona">
+    <div class="l-section-inner">
+      <div class="l-section-tag">Cómo funciona</div>
+      <div class="l-section-title">Simple, rápido y preciso</div>
+      <div class="l-steps">
+        <div class="l-step">
+          <div class="l-step-ico">🌱</div>
+          <div class="l-step-num">1</div>
+          <h3>Registra tu fundo</h3>
+          <p>Ingresa los datos de tu parcela: ubicación, área, tipo de suelo y edad del cultivo.</p>
+        </div>
+        <div class="l-step">
+          <div class="l-step-ico">🌡️</div>
+          <div class="l-step-num">2</div>
+          <h3>Datos climáticos automáticos</h3>
+          <p>El sistema precarga temperatura, precipitación, humedad y radiación solar según tu provincia y mes.</p>
+        </div>
+        <div class="l-step">
+          <div class="l-step-ico">🔮</div>
+          <div class="l-step-num">3</div>
+          <h3>Obtén tu predicción</h3>
+          <p>Nuestro modelo XGBoost calcula el rendimiento estimado en toneladas para tu campaña.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="l-features-bg" id="l-caracteristicas">
+    <div class="l-section-inner">
+      <div class="l-section-tag">Características</div>
+      <div class="l-section-title">Todo lo que necesitas</div>
+      <div class="l-features">
+        <div class="l-feature"><div class="l-feature-ico" style="background:#e8f5e9">🤖</div><div><h4>4 modelos de Machine Learning</h4><p>XGBoost, Gradient Boosting, Random Forest y Ridge Regression. Elige el más adecuado para tu análisis.</p></div></div>
+        <div class="l-feature"><div class="l-feature-ico" style="background:#fff3cd">📊</div><div><h4>Reportes y gráficos</h4><p>Visualiza el rendimiento por mes, fundo, año y tipo de suelo. Exporta tu historial en PDF.</p></div></div>
+        <div class="l-feature"><div class="l-feature-ico" style="background:#e8f5e9">🌡️</div><div><h4>Datos climáticos SENAMHI</h4><p>Temperatura, precipitación, humedad y radiación solar precargados automáticamente por provincia.</p></div></div>
+        <div class="l-feature"><div class="l-feature-ico" style="background:#fdecea">📈</div><div><h4>Predicho vs real</h4><p>Registra el rendimiento real obtenido y mide qué tan preciso fue el modelo en tu campaña.</p></div></div>
+        <div class="l-feature"><div class="l-feature-ico" style="background:#e8f5e9">🔒</div><div><h4>Gestión de usuarios</h4><p>Administradores con acceso total y usuarios con vista de sus propios datos y predicciones.</p></div></div>
+        <div class="l-feature"><div class="l-feature-ico" style="background:#fff3cd">⚡</div><div><h4>Indicador de confianza</h4><p>Detecta automáticamente si tu predicción es normal, alta o baja comparada con el historial.</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="l-faq" id="l-faq">
+    <div class="l-faq-inner">
+      <div style="text-align:center;margin-bottom:48px">
+        <div class="l-section-tag" style="text-align:center">FAQ</div>
+        <div class="l-section-title" style="margin-bottom:0">Preguntas frecuentes</div>
+      </div>
+      <div class="l-faq-item">
+        <div class="l-faq-q" onclick="toggleFaq(this)">¿Necesito conocimientos técnicos para usar AnticiPalta? <span>+</span></div>
+        <div class="l-faq-a">No. El sistema está diseñado para agricultores y técnicos agrícolas. Solo ingresa los datos de tu fundo y el sistema hace el resto.</div>
+      </div>
+      <div class="l-faq-item">
+        <div class="l-faq-q" onclick="toggleFaq(this)">¿Qué provincias cubre el sistema? <span>+</span></div>
+        <div class="l-faq-a">Actualmente cubre Chincha (Ica) y Yauyos — Catahuasi (Lima), las principales zonas productoras de palta Hass del Perú.</div>
+      </div>
+      <div class="l-faq-item">
+        <div class="l-faq-q" onclick="toggleFaq(this)">¿Qué tan preciso es el modelo? <span>+</span></div>
+        <div class="l-faq-a">El modelo XGBoost alcanza un R² de 0.8376, lo que significa que explica el 83.76% de la variación en el rendimiento real. El MAE promedio es de 20.89 toneladas.</div>
+      </div>
+      <div class="l-faq-item">
+        <div class="l-faq-q" onclick="toggleFaq(this)">¿Los datos climáticos son automáticos? <span>+</span></div>
+        <div class="l-faq-a">Sí. Al seleccionar tu provincia y mes, el sistema precarga automáticamente los promedios históricos de temperatura, precipitación, humedad y radiación solar de SENAMHI. Puedes ajustarlos manualmente.</div>
+      </div>
+      <div class="l-faq-item">
+        <div class="l-faq-q" onclick="toggleFaq(this)">¿Puedo registrar múltiples fundos? <span>+</span></div>
+        <div class="l-faq-a">Sí. Puedes registrar, editar y gestionar todos tus fundos desde la plataforma y generar predicciones independientes para cada uno.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="l-cta">
+    <h2>Empieza a predecir<br/>tu <em>cosecha hoy</em></h2>
+    <p>Regístrate gratis y genera tu primera predicción en minutos.</p>
+    <button class="btn-hero-p" style="font-size:15px;padding:14px 32px" onclick="irARegistro()">Crear cuenta gratis →</button>
+  </div>
+
+  <div class="l-footer">
+    <div class="l-footer-logo">Antici<span>Palta</span></div>
+    <p>© 2026 AnticiPalta · Tesis UPC · Leisy Quispe & Jossy Ubaldo</p>
+    <p>Powered by XGBoost · FastAPI · Spring Boot</p>
+  </div>
+
+</div>
 <!-- LOGIN -->
 <div id="login" class="pantalla activa">
   <div class="login-l">
@@ -1161,11 +1336,11 @@
 
   // ── LOGOUT ──
   function cerrarSesion() {
-    usuarioActual=null;
+    usuarioActual = null;
     document.getElementById('app').classList.remove('activa');
-    document.getElementById('login').classList.add('activa');
-    document.getElementById('inp-correo').value='';
-    document.getElementById('inp-pass').value='';
+    document.getElementById('landing').classList.add('activa'); // ← cambia login por landing
+    document.getElementById('inp-correo').value = '';
+    document.getElementById('inp-pass').value = '';
     document.getElementById('res-box').classList.remove('vis');
   }
 
@@ -1220,6 +1395,24 @@
 
     } catch(e){ console.error('Reportes:',e) }
   }
+  function irALogin() {
+    document.getElementById('landing').classList.remove('activa');
+    document.getElementById('login').classList.add('activa');
+    cambiarTab('login');
+  }
+
+  function irARegistro() {
+    document.getElementById('landing').classList.remove('activa');
+    document.getElementById('login').classList.add('activa');
+    cambiarTab('registro');
+  }
+
+  function toggleFaq(el) {
+    const item = el.parentElement;
+    item.classList.toggle('abierto');
+  }
+
+
 </script>
 <!-- MODAL INGRESAR REAL -->
 <div id="modal-real" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center">
