@@ -488,8 +488,9 @@
       <div class="nav-i" onclick="irA('historial',this)"><span class="nav-ico">📋</span> Historial</div>
       <div class="nav-i" onclick="irA('reportes',this)"><span class="nav-ico">📈</span> Reportes</div>
       <div class="nav-sec">Administración</div>
-      <div class="nav-i" onclick="irA('admin',this)"><span class="nav-ico">⚙️</span> Panel admin</div>
-      <div class="nav-sec">Datos</div>
+      <div class="nav-i" id="nav-admin" style="display:none" onclick="irA('admin',this)">
+        <span class="nav-ico">⚙️</span> Panel admin
+      </div>      <div class="nav-sec">Datos</div>
       <div class="nav-i" onclick="irA('fundos',this)"><span class="nav-ico">🌱</span> Mis fundos</div>
       <div class="nav-i" onclick="irA('perfil',this)"><span class="nav-ico">👤</span> Mi perfil</div>
     </div>
@@ -978,7 +979,6 @@
     document.getElementById('sb-rol').textContent = rolTipo;
     document.getElementById('p-rol').textContent   = rolTipo;    document.getElementById('bienvenida-n').textContent = `Buen día, ${usuarioActual.nombreCompleto.split(' ')[0]} 👋`;
     document.getElementById('p-nombre').textContent   = usuarioActual.nombreCompleto;
-    document.getElementById('p-rol').textContent      = usuarioActual.rol?.tipo || '—';
     document.getElementById('p-correo').textContent   = usuarioActual.correo;
     document.getElementById('p-fecha').textContent    = usuarioActual.fechaRegistro || '—';
     cargarDashboard(); cargarSelectFundos();
@@ -1080,8 +1080,11 @@
   // ── SELECTS FUNDO ──
   async function cargarSelectFundos() {
     try {
-      const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
-      fundosCache = fundos;
+      const todosFundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
+      const esAdmin = usuarioActual.rol?.tipo === 'Admin' || usuarioActual.rol?.idRol === 1;
+      const fundos = esAdmin
+              ? todosFundos
+              : todosFundos.filter(f => f.usuario?.idUsuario === usuarioActual.idUsuario);      fundosCache = fundos;
       const sf = document.getElementById('pred-fundo');
       sf.innerHTML = '<option value="">Seleccionar fundo...</option>';
       fundos.forEach(f=>{ const o=document.createElement('option'); o.value=f.idFundo; o.textContent=f.nombreFundo; sf.appendChild(o); });
@@ -1348,8 +1351,9 @@
     try {
       const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
       const tb = document.getElementById('tabla-fundos');
-      document.getElementById('st-fund').textContent = fundos.length;
-      if (!fundos.length) { tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--txt2);padding:22px">Sin fundos registrados.</td></tr>'; return; }
+      const esAdmin = usuarioActual.rol?.tipo === 'Admin' || usuarioActual.rol?.idRol === 1;
+      const misFundos = esAdmin ? fundos : fundos.filter(f => f.usuario?.idUsuario === usuarioActual.idUsuario);
+      document.getElementById('st-fund').textContent = misFundos.length;      if (!fundos.length) { tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--txt2);padding:22px">Sin fundos registrados.</td></tr>'; return; }
       tb.innerHTML=fundos.map(f=>`<tr>
       <td>#${f.idFundo}</td><td><strong>${f.nombreFundo}</strong></td>
       <td>${f.ubicacion??'—'}</td><td>${f.provincia?.nombreProvincia??'—'}</td><td>${f.usuario?.nombreCompleto??'—'}</td>
