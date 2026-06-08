@@ -16,9 +16,9 @@
       --r:12px;--rb:8px;
     }
     html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--crema);color:var(--txt);font-size:15px}
-    .pantalla{display:none!important;min-height:100vh}
+    .pantalla{display:none!important}
+    #landing.activa{min-height:100vh}
     .pantalla.activa{display:flex!important}
-    #landing.activa{display:block!important;overflow-y:auto}
     #app.activa{display:flex!important}
     #login.activa{display:flex!important}
 
@@ -408,6 +408,9 @@
   </div>
   <div class="login-r">
     <!-- TABS -->
+    <button onclick="irALanding()" style="background:none;border:none;cursor:pointer;color:var(--txt2);font-size:13px;font-family:'DM Sans',sans-serif;margin-bottom:20px;display:flex;align-items:center;gap:6px;padding:0">
+      ← Volver al inicio
+    </button>
     <div style="display:flex;gap:0;margin-bottom:28px;border-bottom:2px solid var(--v6)">
       <button id="tab-login" onclick="cambiarTab('login')"
               style="flex:1;padding:11px;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--v3);border-bottom:2px solid var(--v3);margin-bottom:-2px;cursor:pointer">
@@ -803,6 +806,11 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
+  function irALanding() {
+    document.getElementById('login').classList.remove('activa');
+    document.getElementById('app').classList.remove('activa');
+    document.getElementById('landing').classList.add('activa');
+  }
   function toggleFaq(el) {
     const item = el.parentElement;
     item.classList.toggle('abierto');
