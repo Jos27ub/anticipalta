@@ -17,10 +17,10 @@
     }
     html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--crema);color:var(--txt);font-size:15px}
     .pantalla{display:none;min-height:100vh}
-    .pantalla.activa{display:flex}
+    .pantalla.activa{display:block}
 
     /* LOGIN */
-    #login{align-items:stretch}
+    #login{display:flex!important;align-items:stretch}
     .login-l{
       flex:1;background:var(--v1);display:flex;flex-direction:column;justify-content:center;
       align-items:flex-start;padding:64px;position:relative;overflow:hidden;
@@ -67,7 +67,7 @@
     .login-err{background:#fdecea;border:1px solid #f5c6c6;color:#c0392b;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;display:none}
 
     /* APP */
-    #app{flex-direction:row;background:#f0f4f0}
+    #app{display:flex!important;flex-direction:row;background:#f0f4f0}
     .sidebar{
       width:248px;background:var(--v1);display:flex;flex-direction:column;
       flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:100;
