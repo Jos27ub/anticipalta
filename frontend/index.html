@@ -69,9 +69,10 @@
     /* APP */
     #app{display:flex!important;flex-direction:row;background:#f0f4f0}
     .sidebar{
-      width:248px;background:var(--v1);display:flex;flex-direction:column;
+      width:248px;background:var(--v1);display:none;flex-direction:column;
       flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:100;
     }
+    #app.activa .sidebar{display:flex}
     .sb-logo{padding:22px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.07)}
     .sb-logo-ico{width:34px;height:34px;background:var(--d1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
     .sb-logo-txt{font-family:'DM Serif Display',serif;font-size:16px;color:var(--blanco)}
@@ -947,6 +948,7 @@
         fetch(`${API}/api/fundos`).then(r=>r.json()),
         fetch(`${API}/api/provincias`).then(r=>r.json()),
       ]);
+      const preds = todasPreds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);
       document.getElementById('st-pred').textContent = preds.length;
       document.getElementById('st-fund').textContent = fundos.length;
       document.getElementById('st-prov').textContent = provs.length;
@@ -1130,7 +1132,8 @@
   // ── HISTORIAL ──
   async function cargarHistorial() {
     try {
-      const preds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      const todasPreds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      const preds = todasPreds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);
       document.getElementById('st-pred').textContent = preds.length;
       predsCache = preds.reverse();
       filtrarHistorial();
@@ -1317,8 +1320,8 @@
   // ── PERFIL ──
   async function cargarEstadisticasPerfil() {
     try {
-      const preds=await fetch(`${API}/api/predicciones`).then(r=>r.json());
-      const misPreds=preds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);
+      const todasPreds=await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      const preds=todasPreds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);      const misPreds=preds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);
       document.getElementById('p-total-preds').textContent=misPreds.length||'0';
       if(misPreds.length){
         const vals=misPreds.map(p=>p.rendimientoEstimado).filter(v=>v!=null);
