@@ -803,6 +803,10 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
+  function toggleFaq(el) {
+    const item = el.parentElement;
+    item.classList.toggle('abierto');
+  }
   const API = 'https://anticipalta-backend.onrender.com';
   let usuarioActual = null;
   let modeloSeleccionado = 'xgboost';
@@ -946,7 +950,7 @@
   // ── DASHBOARD ──
   async function cargarDashboard() {
     try {
-      const [preds,fundos,provs] = await Promise.all([
+      const [todasPreds,fundos,provs] = await Promise.all([
         fetch(`${API}/api/predicciones`).then(r=>r.json()),
         fetch(`${API}/api/fundos`).then(r=>r.json()),
         fetch(`${API}/api/provincias`).then(r=>r.json()),
