@@ -830,6 +830,17 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
+  function irALogin() {
+    document.getElementById('landing').classList.remove('activa');
+    document.getElementById('login').classList.add('activa');
+    cambiarTab('login');
+  }
+
+  function irARegistro() {
+    document.getElementById('landing').classList.remove('activa');
+    document.getElementById('login').classList.add('activa');
+    cambiarTab('registro');
+  }
   async function cargarAdmin() {
     try {
       const [usuarios, preds, fundos] = await Promise.all([
@@ -1013,7 +1024,6 @@
   }
 
   // ── NAVEGACIÓN ──
-  const titulos = {dashboard:'Dashboard',prediccion:'Nueva predicción',historial:'Historial',reportes:'Reportes',fundos:'Mis fundos',perfil:'Mi perfil'};
   function irA(p,el) {
     document.querySelectorAll('.pagina').forEach(x=>x.classList.remove('activa'));
     document.querySelectorAll('.nav-i').forEach(x=>x.classList.remove('activo'));
@@ -1487,17 +1497,7 @@
 
     } catch(e){ console.error('Reportes:',e) }
   }
-  function irALogin() {
-    document.getElementById('landing').classList.remove('activa');
-    document.getElementById('login').classList.add('activa');
-    cambiarTab('login');
-  }
 
-  function irARegistro() {
-    document.getElementById('landing').classList.remove('activa');
-    document.getElementById('login').classList.add('activa');
-    cambiarTab('registro');
-  }
 
   function toggleFaq(el) {
     const item = el.parentElement;
