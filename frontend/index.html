@@ -498,27 +498,7 @@
     </div>
   </nav>
   <!-- ADMIN -->
-  <div id="pag-admin" class="pagina">
-    <div class="bienvenida">
-      <h2>⚙️ Panel de administración</h2>
-      <p>Gestión de usuarios y reportes globales del sistema</p>
-    </div>
-    <div class="cards-4" style="margin-bottom:24px">
-      <div class="cstat"><div class="cstat-ico">👥</div><div class="cstat-l">Usuarios</div><div class="cstat-n" id="adm-usuarios">—</div><div class="cstat-s">Registrados</div></div>
-      <div class="cstat"><div class="cstat-ico">🔮</div><div class="cstat-l">Predicciones</div><div class="cstat-n" id="adm-preds">—</div><div class="cstat-s">Total sistema</div></div>
-      <div class="cstat"><div class="cstat-ico">🌱</div><div class="cstat-l">Fundos</div><div class="cstat-n" id="adm-fundos">—</div><div class="cstat-s">Total sistema</div></div>
-      <div class="cstat"><div class="cstat-ico">🏋️</div><div class="cstat-l">Total acumulado</div><div class="cstat-n" id="adm-rend">—</div><div class="cstat-s">Toneladas sistema</div></div>
-    </div>
-    <div class="card">
-      <div class="card-t">👥 Gestión de usuarios</div>
-      <div class="tabla-w">
-        <table>
-          <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Predicciones</th><th>Acciones</th></tr></thead>
-          <tbody id="tabla-admin-usuarios"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+
   <div class="contenido">
     <div class="topbar">
       <div class="topbar-t" id="topbar-t">Dashboard</div>
@@ -551,6 +531,27 @@
       </div>
     </div>
 
+    <div id="pag-admin" class="pagina">
+      <div class="bienvenida">
+        <h2>⚙️ Panel de administración</h2>
+        <p>Gestión de usuarios y reportes globales del sistema</p>
+      </div>
+      <div class="cards-4" style="margin-bottom:24px">
+        <div class="cstat"><div class="cstat-ico">👥</div><div class="cstat-l">Usuarios</div><div class="cstat-n" id="adm-usuarios">—</div><div class="cstat-s">Registrados</div></div>
+        <div class="cstat"><div class="cstat-ico">🔮</div><div class="cstat-l">Predicciones</div><div class="cstat-n" id="adm-preds">—</div><div class="cstat-s">Total sistema</div></div>
+        <div class="cstat"><div class="cstat-ico">🌱</div><div class="cstat-l">Fundos</div><div class="cstat-n" id="adm-fundos">—</div><div class="cstat-s">Total sistema</div></div>
+        <div class="cstat"><div class="cstat-ico">🏋️</div><div class="cstat-l">Total acumulado</div><div class="cstat-n" id="adm-rend">—</div><div class="cstat-s">Toneladas sistema</div></div>
+      </div>
+      <div class="card">
+        <div class="card-t">👥 Gestión de usuarios</div>
+        <div class="tabla-w">
+          <table>
+            <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Predicciones</th><th>Acciones</th></tr></thead>
+            <tbody id="tabla-admin-usuarios"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
     <!-- PREDICCIÓN -->
     <div id="pag-prediccion" class="pagina">
       <div class="card" style="max-width:860px">
@@ -971,15 +972,18 @@
     document.getElementById('login').classList.remove('activa');
     document.getElementById('app').classList.add('activa');
     document.getElementById('sb-nombre').textContent  = usuarioActual.nombreCompleto;
-    document.getElementById('sb-rol').textContent     = usuarioActual.rol?.tipo || 'Usuario';
-    document.getElementById('bienvenida-n').textContent = `Buen día, ${usuarioActual.nombreCompleto.split(' ')[0]} 👋`;
+    const rolTipo = usuarioActual.rol?.tipo ||
+            (usuarioActual.rol?.idRol === 1 ? 'Admin' :
+                    usuarioActual.rol?.idRol === 2 ? 'Agricultor' : 'Usuario');
+    document.getElementById('sb-rol').textContent = rolTipo;
+    document.getElementById('p-rol').textContent   = rolTipo;    document.getElementById('bienvenida-n').textContent = `Buen día, ${usuarioActual.nombreCompleto.split(' ')[0]} 👋`;
     document.getElementById('p-nombre').textContent   = usuarioActual.nombreCompleto;
     document.getElementById('p-rol').textContent      = usuarioActual.rol?.tipo || '—';
     document.getElementById('p-correo').textContent   = usuarioActual.correo;
     document.getElementById('p-fecha').textContent    = usuarioActual.fechaRegistro || '—';
     cargarDashboard(); cargarSelectFundos();
     // Mostrar panel admin si es administrador
-    if (usuarioActual.rol?.tipo === 'Admin') {
+    if (usuarioActual.rol?.tipo === 'Admin' || usuarioActual.rol?.idRol === 1) {
       document.getElementById('nav-admin').style.display = 'block';
     }
   }
@@ -1230,9 +1234,9 @@
   async function cargarHistorial() {
     try {
       const todasPreds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
-      const preds = usuarioActual.rol?.tipo === 'Admin'
+      const preds = (usuarioActual.rol?.tipo === 'Admin' || usuarioActual.rol?.idRol === 1)
               ? todasPreds
-              : todasPreds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);
+              : todasPreds.filter(p => p.usuario?.idUsuario === usuarioActual.idUsuario);
       document.getElementById('st-pred').textContent = preds.length;
       predsCache = preds.reverse();
       filtrarHistorial();
@@ -1449,7 +1453,12 @@
   // ── REPORTES ──
   async function cargarReportes() {
     try {
-      const preds=await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      const preds = (await fetch(`${API}/api/predicciones`).then(r=>r.json()))
+              .filter(p =>
+                      (usuarioActual.rol?.tipo === 'Admin' || usuarioActual.rol?.idRol === 1)
+                              ? true
+                              : p.usuario?.idUsuario === usuarioActual.idUsuario
+              );
       if(!preds.length) return;
       const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
