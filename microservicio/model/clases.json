@@ -45,7 +45,7 @@
         "Ridge Regression"
     ],
     "mejor_modelo": "XGBoost",
-    "r2": 0.9276,
-    "mae": 5.53,
-    "rmse": 8.29
+    "r2": 0.9461,
+    "mae": 3.48,
+    "rmse": 6.98
 }
