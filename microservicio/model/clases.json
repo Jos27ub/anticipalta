@@ -1,6 +1,10 @@
 {
     "provincias": [
+        "Casma",
         "Chincha",
+        "Huaral",
+        "Ica",
+        "Virú",
         "Yauyos (Catahuasi)"
     ],
     "tipos_suelo": [
@@ -10,10 +14,15 @@
         "Franco-Arenoso"
     ],
     "fundos": [
+        "Fundo Chavimochic",
         "Fundo El Mirador",
+        "Fundo El Sol",
+        "Fundo Huando",
         "Fundo La Palmera",
         "Fundo La Quebrada",
-        "Fundo San Fernando"
+        "Fundo Los Olivos",
+        "Fundo San Fernando",
+        "Fundo Vista Alegre"
     ],
     "features": [
         "Anio",
@@ -36,7 +45,7 @@
         "Ridge Regression"
     ],
     "mejor_modelo": "XGBoost",
-    "r2": 0.8376,
-    "mae": 20.89,
-    "rmse": 29.79
+    "r2": 0.9276,
+    "mae": 5.53,
+    "rmse": 8.29
 }
