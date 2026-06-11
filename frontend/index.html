@@ -1345,8 +1345,10 @@
 
     let fundoNombre = '';
     if (idFundo) {
-      const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
-      fundoNombre = fundos.find(f=>f.idFundo==idFundo)?.nombreFundo || '';
+      const todosFundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
+      const fundos = usuarioActual.rol?.tipo === 'Admin'
+              ? todosFundos
+              : todosFundos.filter(f => f.usuario?.idUsuario === usuarioActual.idUsuario);      fundoNombre = fundos.find(f=>f.idFundo==idFundo)?.nombreFundo || '';
     }
 
     const btn = document.getElementById('btn-pred');
@@ -1551,7 +1553,11 @@
   // ── FUNDOS ──
   async function cargarFundos() {
     try {
-      const fundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
+      const todosFundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
+      const fundos = usuarioActual.rol?.tipo === 'Admin'
+              ? todosFundos
+              : todosFundos.filter(f => f.usuario?.idUsuario === usuarioActual.idUsuario);
+      fundosCache = fundos;
       const tb = document.getElementById('tabla-fundos');
       const esAdmin = usuarioActual.rol?.tipo === 'Admin' || usuarioActual.rol?.idRol === 1;
       const misFundos = esAdmin ? fundos : fundos.filter(f => f.usuario?.idUsuario === usuarioActual.idUsuario);
