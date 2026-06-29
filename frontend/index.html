@@ -528,7 +528,7 @@
           <div class="card-t">⚡ Estado del sistema</div>
           <div class="act-i"><div class="act-dot"></div><div><div class="act-txt">Sistema activo</div><div class="act-t">Hace un momento</div></div></div>
           <div class="act-i"><div class="act-dot" style="background:var(--d1)"></div><div><div class="act-txt">Supabase conectado</div><div class="act-t">PostgreSQL OK</div></div></div>
-          <div class="act-i"><div class="act-dot" style="background:#4a90d9"></div><div><div class="act-txt">XGBoost · R²=0.8376 ★</div><div class="act-t">Mejor modelo</div></div></div>
+          <div class="act-i"><div class="act-dot" style="background:#4a90d9"></div><div><div class="act-txt">XGBoost · R²=0.90 ★</div><div class="act-t">Mejor modelo</div></div></div>
           <div class="act-i"><div class="act-dot" style="background:#9b59b6"></div><div><div class="act-txt">Microservicio ML</div><div class="act-t">anticipalta.onrender.com</div></div></div>
         </div>
       </div>
@@ -572,7 +572,7 @@
               </div>
               <div style="background:var(--v7);border-radius:10px;padding:14px 16px">
                 <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">R² Score</div>
-                <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--v3)">0.8376</div>
+                <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--v3)">0.90</div>
               </div>
               <div style="background:var(--v7);border-radius:10px;padding:14px 16px">
                 <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">MAE promedio</div>
@@ -843,8 +843,8 @@
         <div class="p-fila"><span class="p-l">Correo</span><span class="p-v" id="p-correo">—</span></div>
         <div class="p-fila"><span class="p-l">Estado</span><span class="p-v"><span class="badge b-v">Activo</span></span></div>
         <div class="p-fila"><span class="p-l">Fecha registro</span><span class="p-v" id="p-fecha">—</span></div>
-        <div class="p-fila"><span class="p-l">Mejor modelo</span><span class="p-v">XGBoost · R²=0.8376 ★</span></div>
-        <div class="p-fila"><span class="p-l">Dataset</span><span class="p-v">3,816 registros · 2022–2025</span></div>
+        <div class="p-fila"><span class="p-l">Mejor modelo</span><span class="p-v">XGBoost · R²=0.90 ★</span></div>
+        <div class="p-fila"><span class="p-l">Dataset</span><span class="p-v">1741 registros · 2022–2025</span></div>
         <div style="margin-top:24px;border-top:1px solid #f0f4f0;padding-top:20px">
           <div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.9px;margin-bottom:14px">Mi actividad</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -980,7 +980,7 @@
 
       // ── MÉTRICAS ML: comparativa modelos ──
       const modelosData = [
-        { nombre: 'XGBoost',          r2: 0.8376, mae: 20.89 },
+        { nombre: 'XGBoost',          r2: 0.90, mae: 20.89 },
         { nombre: 'Gradient Boosting', r2: 0.8312, mae: 21.14 },
         { nombre: 'Random Forest',     r2: 0.7975, mae: 22.88 },
         { nombre: 'Ridge Regression',  r2: 0.7360, mae: 27.75 },
@@ -1109,7 +1109,7 @@
   let chartMes = null, chartFundo = null, chartSuelo = null, chartAnual = null, chartScatter = null;
 
   const MODELOS = {
-    xgboost:          { nombre: 'XGBoost',          r2: 0.8376, mae: 20.89 },
+    xgboost:          { nombre: 'XGBoost',          r2: 0.90, mae: 20.89 },
     gradient_boosting:{ nombre: 'Gradient Boosting', r2: 0.8312, mae: 21.14 },
     random_forest:    { nombre: 'Random Forest',     r2: 0.7975, mae: 22.88 },
     ridge_regression: { nombre: 'Ridge Regression',  r2: 0.7360, mae: 27.75 },
