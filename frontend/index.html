@@ -119,6 +119,8 @@
     .bienvenida p{font-size:13px;color:var(--txt2);margin-top:4px}
     .cards-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
     .cstat{background:var(--blanco);border-radius:var(--r);padding:20px;box-shadow:var(--sombra);border:1px solid #edf2ed}
+    .cstat-clic{cursor:pointer;transition:transform .15s,box-shadow .15s}
+    .cstat-clic:hover{transform:translateY(-2px);box-shadow:var(--sombra2)}
     .cstat-ico{font-size:24px;margin-bottom:10px}
     .cstat-l{font-size:11px;color:var(--txt2);font-weight:600;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px}
     .cstat-n{font-family:'DM Serif Display',serif;font-size:30px;color:var(--txt)}
@@ -547,12 +549,12 @@
         <p>Resumen de tu actividad en AnticiPalta</p>
       </div>
       <div class="cards-4" style="grid-template-columns:repeat(3,1fr)">
-        <div class="cstat"><div class="cstat-ico">🔮</div><div class="cstat-l">Predicciones</div><div class="cstat-n" id="st-pred">—</div><div class="cstat-s">Total registradas</div></div>
-        <div class="cstat"><div class="cstat-ico">🌱</div><div class="cstat-l">Fundos</div><div class="cstat-n" id="st-fund">—</div><div class="cstat-s">Registrados</div></div>
+        <div class="cstat cstat-clic" onclick="irA('historial', document.querySelector('.nav-i[onclick*=historial]'))"><div class="cstat-ico">🔮</div><div class="cstat-l">Predicciones</div><div class="cstat-n" id="st-pred">—</div><div class="cstat-s">Total registradas</div></div>
+        <div class="cstat cstat-clic" onclick="irA('fundos', document.querySelector('.nav-i[onclick*=fundos]'))"><div class="cstat-ico">🌱</div><div class="cstat-l">Fundos</div><div class="cstat-n" id="st-fund">—</div><div class="cstat-s">Registrados</div></div>
         <div class="cstat"><div class="cstat-ico">📍</div><div class="cstat-l">Provincias</div><div class="cstat-n" id="st-prov">—</div><div class="cstat-s">Disponibles</div></div>
-        <div class="cstat"><div class="cstat-ico">🏋️</div><div class="cstat-l">Total acumulado</div><div class="cstat-n" id="st-rend">—</div><div class="cstat-s">Toneladas estimadas</div></div>
-        <div class="cstat"><div class="cstat-ico">📊</div><div class="cstat-l">Total estimado</div><div class="cstat-n" id="st-total-est">—</div><div class="cstat-s">Toneladas (t)</div></div>
-        <div class="cstat"><div class="cstat-ico">✅</div><div class="cstat-l">Total real</div><div class="cstat-n" id="st-total-real">—</div><div class="cstat-s">Toneladas (t)</div></div>
+        <div class="cstat cstat-clic" onclick="irA('reportes', document.querySelector('.nav-i[onclick*=reportes]'))"><div class="cstat-ico">🏋️</div><div class="cstat-l">Total acumulado</div><div class="cstat-n" id="st-rend">—</div><div class="cstat-s">Toneladas estimadas</div></div>
+        <div class="cstat cstat-clic" onclick="irA('reportes', document.querySelector('.nav-i[onclick*=reportes]'))"><div class="cstat-ico">📊</div><div class="cstat-l">Total estimado</div><div class="cstat-n" id="st-total-est">—</div><div class="cstat-s">Toneladas (t)</div></div>
+        <div class="cstat cstat-clic" onclick="irA('reportes', document.querySelector('.nav-i[onclick*=reportes]'))"><div class="cstat-ico">✅</div><div class="cstat-l">Total real</div><div class="cstat-n" id="st-total-real">—</div><div class="cstat-s">Toneladas (t)</div></div>
       </div><div class="cards-2">
         <div class="card">
           <div class="card-t">📋 Últimas predicciones</div>
