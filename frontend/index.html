@@ -646,12 +646,13 @@
         </div>
       <div id="adm-usuarios-resultado" style="font-size:12px;color:var(--txt2);margin-bottom:10px"></div>
       <div class="tabla-w">
-          <table>
-            <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Predicciones</th><th>Acciones</th></tr></thead>
-            <tbody id="tabla-admin-usuarios"></tbody>
-          </table>
-        </div>
+        <table>
+          <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Predicciones</th><th>Acciones</th></tr></thead>
+          <tbody id="tabla-admin-usuarios"></tbody>
+        </table>
       </div>
+      <div id="adm-usuarios-paginacion" style="display:flex;justify-content:center;align-items:center;gap:14px;margin-top:16px;font-size:13px"></div>
+    </div>
     </div>
     <!-- PREDICCIÓN -->
     <div id="pag-prediccion" class="pagina">
@@ -975,6 +976,8 @@
   }
   let usuariosAdminCache = [];
   let predsAdminCache = [];
+  let usuariosFiltradosAdmin = [];
+  let paginaAdminUsuarios = 1;
   let chartAdmUsuarios = null;
   let chartAdm7dias = null;
 
@@ -1054,8 +1057,10 @@
       </div>`).join('');
 
       // ── TABLA USUARIOS ──
-      renderTablaAdmin(usuarios, preds);
+      usuariosFiltradosAdmin = usuarios;
+      paginaAdminUsuarios = 1;
       document.getElementById('adm-usuarios-resultado').textContent = `${usuarios.length} usuarios en total`;
+      renderPaginaAdminUsuarios();
       document.getElementById('adm-ultima-sync').textContent = 'Última actualización: ' + new Date().toLocaleTimeString('es-PE');
     } catch(e) { console.error('Admin:', e); }
   }
@@ -1098,7 +1103,36 @@
     } else {
       resDiv.textContent = `${usuariosAdminCache.length} usuarios en total`;
     }
-    renderTablaAdmin(filtrados, predsAdminCache);
+    usuariosFiltradosAdmin = filtrados;
+    paginaAdminUsuarios = 1;
+    renderPaginaAdminUsuarios();
+  }
+
+  function renderPaginaAdminUsuarios() {
+    const total = usuariosFiltradosAdmin.length;
+    const totalPaginas = Math.max(1, Math.ceil(total / ITEMS_POR_PAGINA));
+    if (paginaAdminUsuarios > totalPaginas) paginaAdminUsuarios = totalPaginas;
+    const inicio = (paginaAdminUsuarios - 1) * ITEMS_POR_PAGINA;
+    const pagina = usuariosFiltradosAdmin.slice(inicio, inicio + ITEMS_POR_PAGINA);
+    renderTablaAdmin(pagina, predsAdminCache);
+    renderPaginacionAdminUsuarios(total, totalPaginas);
+  }
+
+  function cambiarPaginaAdminUsuarios(delta) {
+    paginaAdminUsuarios += delta;
+    renderPaginaAdminUsuarios();
+  }
+
+  function renderPaginacionAdminUsuarios(total, totalPaginas) {
+    const cont = document.getElementById('adm-usuarios-paginacion');
+    if (!total) { cont.innerHTML = ''; return; }
+    cont.innerHTML = `
+      <button onclick="cambiarPaginaAdminUsuarios(-1)" ${paginaAdminUsuarios<=1?'disabled':''}
+        style="padding:6px 14px;border:1.5px solid var(--v6);border-radius:8px;background:${paginaAdminUsuarios<=1?'#f0f4f0':'var(--blanco)'};cursor:${paginaAdminUsuarios<=1?'not-allowed':'pointer'};font-family:'DM Sans',sans-serif">← Anterior</button>
+      <span style="color:var(--txt2)">Página ${paginaAdminUsuarios} de ${totalPaginas}</span>
+      <button onclick="cambiarPaginaAdminUsuarios(1)" ${paginaAdminUsuarios>=totalPaginas?'disabled':''}
+        style="padding:6px 14px;border:1.5px solid var(--v6);border-radius:8px;background:${paginaAdminUsuarios>=totalPaginas?'#f0f4f0':'var(--blanco)'};cursor:${paginaAdminUsuarios>=totalPaginas?'not-allowed':'pointer'};font-family:'DM Sans',sans-serif">Siguiente →</button>
+    `;
   }
 
   function exportarUsuariosPDF() {
