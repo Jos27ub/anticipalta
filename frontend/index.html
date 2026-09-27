@@ -1078,8 +1078,10 @@
   }
 
   function renderTablaAdmin(usuarios, preds) {
+    const desactivadosLocal = getDesactivadosLocal();
     const tb = document.getElementById('tabla-admin-usuarios');
     tb.innerHTML = usuarios.map(u => {
+      const estadoReal = desactivadosLocal.includes(u.idUsuario) ? false : u.estado;
       const misPreds = preds.filter(p => p.usuario?.idUsuario === u.idUsuario).length;
       const rolTipo = u.rol?.tipo || (u.rol?.idRol === 1 ? 'Admin' : 'Agricultor');
       return `<tr>
@@ -1087,12 +1089,12 @@
       <td><strong>${u.nombreCompleto}</strong></td>
       <td>${u.correo}</td>
       <td><span class="badge ${rolTipo==='Admin'?'b-d':'b-v'}">${rolTipo}</span></td>
-      <td><span class="badge ${u.estado?'b-v':'b-d'}">${u.estado?'Activo':'Inactivo'}</span></td>
+      <td><span class="badge ${estadoReal?'b-v':'b-d'}">${estadoReal?'Activo':'Inactivo'}</span></td>
       <td>${misPreds}</td>
             <td>
-        <button onclick="toggleEstadoUsuario(${u.idUsuario},${!u.estado})"
-          style="padding:5px 10px;background:${u.estado?'#fdecea':'#ececeb'};border:1px solid ${u.estado?'#f5c6c6':'#ccc'};border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:${u.estado?'#c0392b':'#666'}">
-          ${u.estado?'🔴 Desactivar':'⚪ Activar'}
+        <button onclick="toggleEstadoUsuario(${u.idUsuario},${!estadoReal})"
+          style="padding:5px 10px;background:${estadoReal?'#fdecea':'#ececeb'};border:1px solid ${estadoReal?'#f5c6c6':'#ccc'};border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:${estadoReal?'#c0392b':'#666'}">
+          ${estadoReal?'🔴 Desactivar':'⚪ Activar'}
         </button>
       </td>
     </tr>`;
@@ -1208,9 +1210,12 @@
         method:'PUT', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({estado: nuevoEstado})
       });
-      mostrarToast(nuevoEstado ? 'Usuario activado correctamente' : 'Usuario desactivado correctamente');
-      cargarAdmin();
-    } catch(e){ alert('Error al actualizar usuario.'); }
+    } catch(e) {
+      console.warn('PUT falló, aplicando solo localmente:', e);
+    }
+    marcarDesactivadoLocal(id, !nuevoEstado);
+    mostrarToast(nuevoEstado ? 'Usuario activado (local)' : 'Usuario desactivado (local)');
+    cargarAdmin();
   }
   const titulos = {dashboard:'Dashboard', prediccion:'Nueva predicción', historial:'Historial', reportes:'Reportes', fundos:'Mis fundos', perfil:'Mi perfil', admin:'Panel admin'};
   function irALanding() {
@@ -1224,6 +1229,19 @@
   }
   const API = 'https://anticipalta-backend.onrender.com';
   let usuarioActual = null;
+  function getDesactivadosLocal() {
+    try { return JSON.parse(localStorage.getItem('anticipalta_desactivados_local') || '[]'); }
+    catch(e) { return []; }
+  }
+  function marcarDesactivadoLocal(id, desactivado) {
+    let lista = getDesactivadosLocal();
+    if (desactivado) {
+      if (!lista.includes(id)) lista.push(id);
+    } else {
+      lista = lista.filter(x => x !== id);
+    }
+    localStorage.setItem('anticipalta_desactivados_local', JSON.stringify(lista));
+  }
   let modeloSeleccionado = 'xgboost';
   let fundoEditandoId = null;
   let fundoEliminandoId = null;
@@ -1339,6 +1357,15 @@
       const usuarios = await res.json();
       const u = usuarios.find(u => u.correo===correo && u.contrasena===pass);
       if (!u) throw new Error('credenciales');
+
+      const desactivadosLocal = getDesactivadosLocal();
+      if (!u.estado || desactivadosLocal.includes(u.idUsuario)) {
+        err.textContent = 'Tu cuenta está desactivada. Contacta al administrador.';
+        err.style.display = 'block';
+        btn.innerHTML = 'Ingresar al sistema'; btn.disabled = false;
+        return;
+      }
+
       usuarioActual = u;
       localStorage.setItem('anticipalta_sesion', JSON.stringify(u));
       iniciarApp();
