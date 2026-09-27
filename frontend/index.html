@@ -109,6 +109,7 @@
     }
     .topbar-t{font-family:'DM Serif Display',serif;font-size:19px;color:var(--txt)}
     .pagina{display:none;padding:32px;flex:1}
+    #pag-admin{padding:18px 24px}
     .pagina.activa{display:block}
 
     /* DASHBOARD */
@@ -185,6 +186,20 @@
 
     /* TABLA */
     .tabla-w{overflow-x:auto}
+    #pag-admin .bienvenida{margin-bottom:14px}
+    #pag-admin .cards-4{gap:10px;margin-bottom:14px}
+    #pag-admin .cstat{padding:12px}
+    #pag-admin .cstat-ico{font-size:17px;margin-bottom:4px}
+    #pag-admin .cstat-n{font-size:20px}
+    #pag-admin .cstat-l{font-size:9px;margin-bottom:2px}
+    #pag-admin .cstat-s{font-size:9px}
+    #pag-admin .card{padding:12px 14px}
+    #pag-admin .card-t{font-size:12px;margin-bottom:8px}
+    #pag-admin > div[style*="grid"]{gap:10px!important;margin-bottom:10px!important}
+    #pag-admin canvas{max-height:130px!important}
+    #pag-admin .tabla-w table{font-size:11px}
+    #pag-admin .tabla-w th{padding:7px 10px}
+    #pag-admin .tabla-w td{padding:7px 10px}
     table{width:100%;border-collapse:collapse;font-size:13px}
     thead tr{background:var(--v7)}
     th{padding:11px 15px;text-align:left;font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
@@ -574,11 +589,11 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
         <div class="card">
           <div class="card-t">📊 Predicciones por usuario</div>
-          <canvas id="chart-adm-usuarios" height="220"></canvas>
+          <canvas id="chart-adm-usuarios" height="130"></canvas>
         </div>
         <div class="card">
           <div class="card-t">📅 Predicciones últimos 7 días</div>
-          <canvas id="chart-adm-7dias" height="220"></canvas>
+          <canvas id="chart-adm-7dias" height="130"></canvas>
         </div>
       </div>
 
