@@ -25,7 +25,6 @@ public class UsuarioController {
     public Usuario update(@PathVariable Long id, @RequestBody Usuario datos) {
         return service.update(id, datos);
     }
-
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) { service.delete(id); }
 }
