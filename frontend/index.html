@@ -1310,6 +1310,7 @@
   }
 
   function iniciarApp() {
+    document.getElementById('landing').classList.remove('activa');
     document.getElementById('login').classList.remove('activa');
     document.getElementById('app').classList.add('activa');
     document.getElementById('sb-nombre').textContent  = usuarioActual.nombreCompleto;
