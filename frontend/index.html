@@ -110,6 +110,7 @@
     .topbar-t{font-family:'DM Serif Display',serif;font-size:19px;color:var(--txt)}
     .pagina{display:none;padding:32px;flex:1}
     #pag-admin{padding:18px 24px}
+    #pag-reportes{padding:18px 24px}
     .pagina.activa{display:block}
 
     /* DASHBOARD */
@@ -200,6 +201,15 @@
     #pag-admin .tabla-w table{font-size:11px}
     #pag-admin .tabla-w th{padding:7px 10px}
     #pag-admin .tabla-w td{padding:7px 10px}
+    #pag-reportes .card{padding:12px 14px}
+    #pag-reportes .card-t{font-size:12px;margin-bottom:6px}
+    #pag-reportes > #reportes-contenido > div[style*="grid"]{gap:10px!important;margin-bottom:10px!important}
+    #pag-reportes canvas{max-height:110px!important}
+    #heatmap-wrap table{font-size:9px}
+    #heatmap-wrap th,#heatmap-wrap td{padding:4px 3px!important}
+    #pag-reportes .tabla-w table{font-size:11px}
+    #pag-reportes .tabla-w th{padding:6px 10px}
+    #pag-reportes .tabla-w td{padding:6px 10px}
     table{width:100%;border-collapse:collapse;font-size:13px}
     thead tr{background:var(--v7)}
     th{padding:11px 15px;text-align:left;font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
@@ -814,22 +824,22 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
         <div class="card">
           <div class="card-t">📈 Rendimiento promedio por mes</div>
-          <canvas id="chart-mes" height="200"></canvas>
+          <canvas id="chart-mes" height="110"></canvas>
         </div>
         <div class="card">
           <div class="card-t">🥧 Distribución por tipo de suelo</div>
-          <canvas id="chart-suelo" height="100"></canvas>
+          <canvas id="chart-suelo" height="90"></canvas>
         </div>
       </div>
       <!-- Fila 2: evolución anual + dispersión temp -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
         <div class="card">
           <div class="card-t">📅 Evolución anual de rendimiento</div>
-          <canvas id="chart-anual" height="200"></canvas>
+          <canvas id="chart-anual" height="110"></canvas>
         </div>
         <div class="card">
           <div class="card-t">🌡️ Dispersión rendimiento vs temperatura</div>
-          <canvas id="chart-scatter" height="200"></canvas>
+          <canvas id="chart-scatter" height="110"></canvas>
         </div>
       </div>
       <!-- Fila 3: heatmap + tabla resumen -->
@@ -840,7 +850,7 @@
         </div>
         <div class="card">
           <div class="card-t">🌱 Rendimiento por fundo</div>
-          <canvas id="chart-fundo" height="200"></canvas>
+          <canvas id="chart-fundo" height="110"></canvas>
         </div>
       </div>
       <!-- Tabla resumen -->
