@@ -195,7 +195,9 @@
     .b-d{background:#fff3cd;color:#7d5a00}
 
     /* PERFIL */
-    .perfil-card{max-width:540px;background:var(--blanco);border-radius:16px;padding:34px;box-shadow:var(--sombra)}
+    .perfil-card{width:100%;max-width:1100px;background:var(--blanco);border-radius:16px;padding:28px 32px;box-shadow:var(--sombra);display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
+    .perfil-col-izq .p-fila{padding:9px 0}
+    @media(max-width:800px){.perfil-card{grid-template-columns:1fr}}
     .p-avatar{width:68px;height:68px;background:var(--v7);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px;border:3px solid var(--v6)}
     .p-nombre{font-family:'DM Serif Display',serif;font-size:21px;color:var(--txt)}
     .p-rol{font-size:12px;color:var(--txt2);margin-top:3px;margin-bottom:22px}
@@ -887,15 +889,17 @@
     <!-- PERFIL -->
     <div id="pag-perfil" class="pagina">
       <div class="perfil-card">
-        <div class="p-avatar">👤</div>
-        <div class="p-nombre" id="p-nombre">—</div>
-        <div class="p-rol" id="p-rol">—</div>
-        <div class="p-fila"><span class="p-l">Correo</span><span class="p-v" id="p-correo">—</span></div>
-        <div class="p-fila"><span class="p-l">Estado</span><span class="p-v"><span class="badge b-v">Activo</span></span></div>
-        <div class="p-fila"><span class="p-l">Fecha registro</span><span class="p-v" id="p-fecha">—</span></div>
-        <div class="p-fila"><span class="p-l">Mejor modelo</span><span class="p-v">XGBoost · R²=0.90 ★</span></div>
-        <div class="p-fila"><span class="p-l">Dataset</span><span class="p-v">1741 registros · 2022–2025</span></div>
-        <div style="margin-top:24px;border-top:1px solid #f0f4f0;padding-top:20px">
+        <div class="perfil-col-izq">
+          <div class="p-avatar">👤</div>
+          <div class="p-nombre" id="p-nombre">—</div>
+          <div class="p-rol" id="p-rol">—</div>
+          <div class="p-fila"><span class="p-l">Correo</span><span class="p-v" id="p-correo">—</span></div>
+          <div class="p-fila"><span class="p-l">Estado</span><span class="p-v"><span class="badge b-v">Activo</span></span></div>
+          <div class="p-fila"><span class="p-l">Fecha registro</span><span class="p-v" id="p-fecha">—</span></div>
+          <div class="p-fila"><span class="p-l">Mejor modelo</span><span class="p-v">XGBoost · R²=0.90 ★</span></div>
+          <div class="p-fila"><span class="p-l">Dataset</span><span class="p-v">1741 registros · 2022–2025</span></div>
+        </div>
+        <div class="perfil-col-der">
           <div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.9px;margin-bottom:14px">Mi actividad</div>
           <div id="p-sin-actividad" style="display:none;font-size:12px;color:var(--txt2);margin-bottom:14px">Aún no hay actividad registrada.</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
