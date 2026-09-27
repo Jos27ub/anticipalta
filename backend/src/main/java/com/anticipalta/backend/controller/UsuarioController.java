@@ -21,6 +21,11 @@ public class UsuarioController {
     @PostMapping
     public Usuario save(@RequestBody Usuario u) { return service.save(u); }
 
+    @PutMapping("/{id}")
+    public Usuario update(@PathVariable Long id, @RequestBody Usuario datos) {
+        return service.update(id, datos);
+    }
+
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) { service.delete(id); }
 }

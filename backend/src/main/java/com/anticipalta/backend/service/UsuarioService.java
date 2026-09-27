@@ -14,4 +14,12 @@ public class UsuarioService {
     public Usuario findById(Long id) { return repo.findById(id).orElseThrow(); }
     public Usuario save(Usuario u) { return repo.save(u); }
     public void delete(Long id) { repo.deleteById(id); }
+
+    public Usuario update(Long id, Usuario datos) {
+        Usuario existente = repo.findById(id).orElseThrow();
+        if (datos.getEstado() != null) {
+            existente.setEstado(datos.getEstado());
+        }
+        return repo.save(existente);
+    }
 }

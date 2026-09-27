@@ -961,6 +961,18 @@
     </div>
   </div>
 </div>
+<!-- MODAL CONFIRMAR ELIMINAR PREDICCIÓN -->
+<div id="modal-eliminar-pred" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center">
+  <div style="background:var(--blanco);border-radius:16px;padding:32px;width:400px;max-width:95vw;box-shadow:var(--sombra2);text-align:center">
+    <div style="font-size:40px;margin-bottom:16px">⚠️</div>
+    <h3 style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:10px">¿Eliminar predicción?</h3>
+    <p style="font-size:13px;color:var(--txt2);margin-bottom:24px">Esta acción no se puede deshacer.</p>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button onclick="cerrarModalEliminarPred()" style="padding:10px 20px;background:none;border:1.5px solid var(--v6);border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px">Cancelar</button>
+      <button onclick="confirmarEliminarPred()" id="btn-confirmar-eliminar-pred" style="padding:10px 22px;background:#e74c3c;color:white;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
   function irALogin() {
@@ -1814,10 +1826,28 @@
     }).join('');
   }
 
-  async function eliminarPrediccion(id) {
-    if (!confirm('¿Eliminar esta predicción?')) return;
-    try { await fetch(`${API}/api/predicciones/${id}`,{method:'DELETE'}); cargarHistorial(); }
-    catch(e){ alert('Error al eliminar.'); }
+  let prediccionEliminandoId = null;
+
+  function eliminarPrediccion(id) {
+    prediccionEliminandoId = id;
+    document.getElementById('modal-eliminar-pred').style.display = 'flex';
+  }
+
+  function cerrarModalEliminarPred() {
+    document.getElementById('modal-eliminar-pred').style.display = 'none';
+    prediccionEliminandoId = null;
+  }
+
+  async function confirmarEliminarPred() {
+    const btn = document.getElementById('btn-confirmar-eliminar-pred');
+    btn.textContent = 'Eliminando...'; btn.disabled = true;
+    try {
+      await fetch(`${API}/api/predicciones/${prediccionEliminandoId}`,{method:'DELETE'});
+      cerrarModalEliminarPred();
+      mostrarToast('Predicción eliminada correctamente');
+      cargarHistorial();
+    } catch(e){ alert('Error al eliminar.'); }
+    finally { btn.textContent = 'Sí, eliminar'; btn.disabled = false; }
   }
 
   function abrirIngresarReal(id) {
