@@ -642,7 +642,8 @@
             <option value="inactivo">Inactivos</option>
           </select>
         </div>
-        <div class="tabla-w">
+      <div id="adm-usuarios-resultado" style="font-size:12px;color:var(--txt2);margin-bottom:10px"></div>
+      <div class="tabla-w">
           <table>
             <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Predicciones</th><th>Acciones</th></tr></thead>
             <tbody id="tabla-admin-usuarios"></tbody>
@@ -1052,6 +1053,7 @@
 
       // ── TABLA USUARIOS ──
       renderTablaAdmin(usuarios, preds);
+      document.getElementById('adm-usuarios-resultado').textContent = `${usuarios.length} usuarios en total`;
       document.getElementById('adm-ultima-sync').textContent = 'Última actualización: ' + new Date().toLocaleTimeString('es-PE');
     } catch(e) { console.error('Admin:', e); }
   }
@@ -1088,6 +1090,12 @@
       const matchEstado = !estado || (estado==='activo' ? u.estado : !u.estado);
       return matchBusq && matchRol && matchEstado;
     });
+    const resDiv = document.getElementById('adm-usuarios-resultado');
+    if (busq || rol || estado) {
+      resDiv.textContent = `Mostrando ${filtrados.length} de ${usuariosAdminCache.length} usuarios`;
+    } else {
+      resDiv.textContent = `${usuariosAdminCache.length} usuarios en total`;
+    }
     renderTablaAdmin(filtrados, predsAdminCache);
   }
 
