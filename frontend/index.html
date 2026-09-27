@@ -446,22 +446,27 @@
       <div class="campo">
         <label>Nombre completo</label>
         <input type="text" id="reg-nombre" placeholder="Ej: Juan Pérez"/>
+        <div class="campo-err" id="err-reg-nombre" style="display:none;color:#c0392b;font-size:11px;margin-top:4px">Campo obligatorio</div>
       </div>
       <div class="campo">
         <label>Fecha de nacimiento</label>
         <input type="date" id="reg-fecha-nac"/>
+        <div class="campo-err" id="err-reg-fecha-nac" style="display:none;color:#c0392b;font-size:11px;margin-top:4px">Campo obligatorio</div>
       </div>
       <div class="campo">
         <label>Correo electrónico</label>
         <input type="email" id="reg-correo" placeholder="correo@ejemplo.com"/>
+        <div class="campo-err" id="err-reg-correo" style="display:none;color:#c0392b;font-size:11px;margin-top:4px">Campo obligatorio</div>
       </div>
       <div class="campo">
         <label>Contraseña</label>
         <input type="password" id="reg-pass" placeholder="••••••••"/>
+        <div class="campo-err" id="err-reg-pass" style="display:none;color:#c0392b;font-size:11px;margin-top:4px">Campo obligatorio</div>
       </div>
       <div class="campo">
         <label>Confirmar contraseña</label>
         <input type="password" id="reg-pass2" placeholder="••••••••" onkeydown="if(event.key==='Enter')registrarUsuario()"/>
+        <div class="campo-err" id="err-reg-pass2" style="display:none;color:#c0392b;font-size:11px;margin-top:4px">Campo obligatorio</div>
       </div>
       <button class="btn-p" onclick="registrarUsuario()" id="btn-registro">Crear cuenta</button>
       <div class="login-err" id="registro-err"></div>
@@ -514,31 +519,45 @@
         <h2 id="bienvenida-n">Buen día 👋</h2>
         <p>Resumen de tu actividad en AnticipAlta</p>
       </div>
-      <div class="cards-4">
+      <div class="cards-4" style="grid-template-columns:repeat(3,1fr)">
         <div class="cstat"><div class="cstat-ico">🔮</div><div class="cstat-l">Predicciones</div><div class="cstat-n" id="st-pred">—</div><div class="cstat-s">Total registradas</div></div>
         <div class="cstat"><div class="cstat-ico">🌱</div><div class="cstat-l">Fundos</div><div class="cstat-n" id="st-fund">—</div><div class="cstat-s">Registrados</div></div>
         <div class="cstat"><div class="cstat-ico">📍</div><div class="cstat-l">Provincias</div><div class="cstat-n" id="st-prov">—</div><div class="cstat-s">Disponibles</div></div>
-        <div class="cstat"><div class="cstat-ico">🏋️</div><div class="cstat-l">Total acumulado</div><div class="cstat-n" id="st-rend">—</div><div class="cstat-s">Toneladas estimadas</div></div>      </div>
-      <div class="cards-2">
+        <div class="cstat"><div class="cstat-ico">🏋️</div><div class="cstat-l">Total acumulado</div><div class="cstat-n" id="st-rend">—</div><div class="cstat-s">Toneladas estimadas</div></div>
+        <div class="cstat"><div class="cstat-ico">📊</div><div class="cstat-l">Total estimado</div><div class="cstat-n" id="st-total-est">—</div><div class="cstat-s">Toneladas (t)</div></div>
+        <div class="cstat"><div class="cstat-ico">✅</div><div class="cstat-l">Total real</div><div class="cstat-n" id="st-total-real">—</div><div class="cstat-s">Toneladas (t)</div></div>
+      </div><div class="cards-2">
         <div class="card">
           <div class="card-t">📋 Últimas predicciones</div>
           <div id="lista-preds"><div style="color:var(--txt2);font-size:13px;text-align:center;padding:22px 0">Cargando...</div></div>
         </div>
         <div class="card">
           <div class="card-t">⚡ Estado del sistema</div>
-          <div class="act-i"><div class="act-dot"></div><div><div class="act-txt">Sistema activo</div><div class="act-t">Hace un momento</div></div></div>
-          <div class="act-i"><div class="act-dot" style="background:var(--d1)"></div><div><div class="act-txt">Supabase conectado</div><div class="act-t">PostgreSQL OK</div></div></div>
-          <div class="act-i"><div class="act-dot" style="background:#4a90d9"></div><div><div class="act-txt">XGBoost · R²=0.90 ★</div><div class="act-t">Mejor modelo</div></div></div>
-          <div class="act-i"><div class="act-dot" style="background:#9b59b6"></div><div><div class="act-txt">Microservicio ML</div><div class="act-t">anticipalta.onrender.com</div></div></div>
+          <div class="act-i">
+            <div class="act-dot" id="dot-backend"></div>
+            <div><div class="act-txt" id="txt-backend">Verificando backend...</div><div class="act-t">Base de datos</div></div>
+          </div>
+          <div class="act-i">
+            <div class="act-dot" id="dot-ml"></div>
+            <div><div class="act-txt" id="txt-ml">Verificando microservicio ML...</div><div class="act-t">anticipalta.onrender.com</div></div>
+          </div>
+          <div class="act-i">
+            <div class="act-dot" style="background:#4a90d9"></div>
+            <div><div class="act-txt">XGBoost · R²=0.90 ★</div><div class="act-t">Mejor modelo</div></div>
+          </div>
         </div>
       </div>
     </div>
-
-    <div id="pag-admin" class="pagina">
-      <div class="bienvenida">
+    <div class="bienvenida" style="display:flex;justify-content:space-between;align-items:flex-end">
+      <div>
         <h2>⚙️ Panel de administración</h2>
         <p>Gestión de usuarios y reportes globales del sistema</p>
       </div>
+      <div style="text-align:right">
+        <button onclick="cargarAdmin()" class="btn-v" style="padding:7px 14px;font-size:12px;margin-bottom:4px">🔄 Actualizar</button>
+        <div style="font-size:11px;color:var(--txt2)" id="adm-ultima-sync">—</div>
+      </div>
+    </div>
 
       <!-- STATS -->
       <div class="cards-4" style="margin-bottom:24px">
@@ -590,17 +609,20 @@
           </div>
         </div>
         <div class="card">
-          <div class="card-t">🏆 Top fundos con más predicciones</div>
+          <div class="card-t" style="justify-content:space-between">
+            <span>🏆 Top fundos con más predicciones</span>
+            <button onclick="exportarPrediccionesAdminPDF()" id="btn-export-preds-admin" class="btn-v" style="padding:7px 14px;font-size:12px">📄 Exportar predicciones</button>
+          </div>
           <div id="adm-top-fundos"></div>
         </div>
       </div>
 
       <!-- TABLA USUARIOS -->
-      <div class="card">
-        <div class="card-t" style="justify-content:space-between">
-          <span>👥 Gestión de usuarios</span>
-          <button onclick="exportarUsuariosPDF()" class="btn-v" style="padding:7px 14px;font-size:12px">📄 Exportar PDF</button>
-        </div>
+    <div class="card">
+      <div class="card-t" style="justify-content:space-between">
+        <span>👥 Gestión de usuarios</span>
+        <button onclick="exportarUsuariosPDF()" id="btn-export-usuarios-admin" class="btn-v" style="padding:7px 14px;font-size:12px">📄 Exportar PDF</button>
+      </div>
         <!-- Buscador -->
         <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center;flex-wrap:wrap">
           <input type="text" id="adm-busqueda" placeholder="🔍 Buscar por nombre o correo..."
@@ -709,10 +731,24 @@
             📄 Exportar PDF
           </button>
         </div>
-        <!-- FILTROS -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:10px;margin-bottom:16px;align-items:end">
+        <!-- BÚSQUEDA Y RANGO DE FECHAS -->
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:10px;align-items:end">
           <div>
-            <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:5px">AÑO</label>
+            <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:5px">BUSCAR</label>
+            <input type="text" id="fil-busqueda" placeholder="🔍 Buscar por fundo..." oninput="filtrarHistorial()"
+                   style="width:100%;padding:8px 10px;border:1.5px solid var(--v6);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--crema);outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:5px">DESDE</label>
+            <input type="date" id="fil-fecha-desde" onchange="filtrarHistorial()"
+                   style="width:100%;padding:8px 10px;border:1.5px solid var(--v6);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--crema);outline:none"/>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--txt2);display:block;margin-bottom:5px">HASTA</label>
+            <input type="date" id="fil-fecha-hasta" onchange="filtrarHistorial()"
+                   style="width:100%;padding:8px 10px;border:1.5px solid var(--v6);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--crema);outline:none"/>
+          </div>
+        </div>
             <select id="fil-anio" onchange="filtrarHistorial()" style="width:100%;padding:8px 10px;border:1.5px solid var(--v6);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--crema);outline:none">
               <option value="">Todos</option>
               <option value="2022">2022</option>
@@ -757,23 +793,29 @@
           </button>
         </div>
         <div id="fil-resultado" style="font-size:12px;color:var(--txt2);margin-bottom:10px;display:none"></div>
-        <div class="tabla-w">
-          <table>
-            <thead>
-            <tr>
-              <th>ID</th><th>Fecha</th><th>Año</th><th>Mes</th><th>Fundo</th>
-              <th>Área (ha)</th><th>Temp (°C)</th><th>Predicho (t)</th>
-              <th>Real (t)</th><th>Error %</th><th>Estado</th><th>Acciones</th>
-            </tr>
-            </thead>
-            <tbody id="tabla-hist"><tr><td colspan="10" style="text-align:center;color:var(--txt2);padding:22px">Cargando historial...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
+    <div class="tabla-w">
+      <table>
+        <thead>
+        <tr>
+          <th>ID</th><th>Fecha</th><th>Año</th><th>Mes</th><th>Fundo</th>
+          <th>Área (ha)</th><th>Temp (°C)</th><th>Predicho (t)</th>
+          <th>Real (t)</th><th>Error %</th><th>Estado</th><th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody id="tabla-hist"><tr><td colspan="10" style="text-align:center;color:var(--txt2);padding:22px">Cargando historial...</td></tr></tbody>
+      </table>
     </div>
+    <div id="hist-paginacion" style="display:flex;justify-content:center;align-items:center;gap:14px;margin-top:16px;font-size:13px"></div>
+  </div>
+</div>
 
     <!-- REPORTES -->
-    <div id="pag-reportes" class="pagina">
+<div id="pag-reportes" class="pagina">
+  <div id="reportes-sin-datos" style="display:none;text-align:center;padding:60px 20px;color:var(--txt2)">
+    <div style="font-size:40px;margin-bottom:12px">📊</div>
+    <p>No hay datos disponibles para generar los reportes. Genera predicciones para ver estadísticas aquí.</p>
+  </div>
+  <div id="reportes-contenido">
       <!-- Fila 1: línea por mes + donut suelo -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
         <div class="card">
@@ -809,7 +851,10 @@
       </div>
       <!-- Tabla resumen -->
       <div class="card">
-        <div class="card-t">📋 Resumen por fundo</div>
+        <div class="card-t" style="justify-content:space-between">
+          <span>📋 Resumen por fundo</span>
+          <button onclick="exportarReportePDF()" id="btn-export-reportes" class="btn-v" style="padding:7px 14px;font-size:12px" disabled>📄 Exportar PDF</button>
+        </div>
         <div class="tabla-w">
           <table>
             <thead><tr><th>Fundo</th><th>Predicciones</th><th>Promedio (t)</th><th>Máximo (t)</th><th>Mínimo (t)</th></tr></thead>
@@ -847,6 +892,7 @@
         <div class="p-fila"><span class="p-l">Dataset</span><span class="p-v">1741 registros · 2022–2025</span></div>
         <div style="margin-top:24px;border-top:1px solid #f0f4f0;padding-top:20px">
           <div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.9px;margin-bottom:14px">Mi actividad</div>
+          <div id="p-sin-actividad" style="display:none;font-size:12px;color:var(--txt2);margin-bottom:14px">Aún no hay actividad registrada.</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div style="background:var(--v7);border-radius:10px;padding:14px 16px">
               <div style="font-size:11px;color:var(--txt2);margin-bottom:4px">Total predicciones</div>
@@ -1017,7 +1063,7 @@
 
       // ── TABLA USUARIOS ──
       renderTablaAdmin(usuarios, preds);
-
+      document.getElementById('adm-ultima-sync').textContent = 'Última actualización: ' + new Date().toLocaleTimeString('es-PE');
     } catch(e) { console.error('Admin:', e); }
   }
 
@@ -1033,10 +1079,10 @@
       <td><span class="badge ${rolTipo==='Admin'?'b-d':'b-v'}">${rolTipo}</span></td>
       <td><span class="badge ${u.estado?'b-v':'b-d'}">${u.estado?'Activo':'Inactivo'}</span></td>
       <td>${misPreds}</td>
-      <td>
+            <td>
         <button onclick="toggleEstadoUsuario(${u.idUsuario},${!u.estado})"
-          style="padding:5px 10px;background:${u.estado?'#fdecea':'#d4edda'};border:1px solid ${u.estado?'#f5c6c6':'#b8dbb8'};border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:${u.estado?'#c0392b':'#1a5c2a'}">
-          ${u.estado?'🔴 Desactivar':'🟢 Activar'}
+          style="padding:5px 10px;background:${u.estado?'#fdecea':'#ececeb'};border:1px solid ${u.estado?'#f5c6c6':'#ccc'};border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:${u.estado?'#c0392b':'#666'}">
+          ${u.estado?'🔴 Desactivar':'⚪ Activar'}
         </button>
       </td>
     </tr>`;
@@ -1057,6 +1103,9 @@
   }
 
   function exportarUsuariosPDF() {
+    const btn = document.getElementById('btn-export-usuarios-admin');
+    const original = btn.innerHTML;
+    btn.innerHTML = '<span class="spin"></span>Generando...'; btn.disabled = true;
     const {jsPDF} = window.jspdf;
     const doc = new jsPDF();
     doc.setFillColor(15,36,20); doc.rect(0,0,210,18,'F');
@@ -1077,6 +1126,35 @@
       alternateRowStyles: { fillColor: [232,245,233] }
     });
     doc.save(`AnticiPalta_Usuarios_${new Date().toISOString().split('T')[0]}.pdf`);
+    btn.innerHTML = original; btn.disabled = false;
+    mostrarToast('Descarga completada');
+  }
+
+  async function exportarPrediccionesAdminPDF() {
+    const btn = document.getElementById('btn-export-preds-admin');
+    const original = btn.innerHTML;
+    btn.innerHTML = '<span class="spin"></span>Generando...'; btn.disabled = true;
+    try {
+      const preds = predsAdminCache.length ? predsAdminCache : await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      const {jsPDF} = window.jspdf;
+      const doc = new jsPDF('landscape');
+      doc.setFillColor(15,36,20); doc.rect(0,0,297,20,'F');
+      doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
+      doc.text('AnticiPalta — Predicciones (Admin)',14,13);
+      doc.setFontSize(8); doc.setFont('helvetica','normal');
+      doc.text(`Generado: ${new Date().toLocaleDateString('es-PE')}`,220,13);
+      const filas = preds.map(p => {
+        const error = (p.rendimientoEstimado&&p.rendimientoReal) ? Math.abs((p.rendimientoEstimado-p.rendimientoReal)/p.rendimientoReal*100).toFixed(1)+'%' : '—';
+        return [`#${p.idPrediccion}`,p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—',p.anio??'—',p.mes??'—',p.fundo?.nombreFundo??'Sin fundo',p.areaHa??'—',p.tempC??'—',p.rendimientoEstimado??'—',p.rendimientoReal??'Pendiente',error,p.rendimientoReal?'Completada':'En curso'];
+      });
+      doc.autoTable({startY:26,head:[['ID','Fecha','Año','Mes','Fundo','Área (ha)','Temp (°C)','Predicho (t)','Real (t)','Error %','Estado']],body:filas,styles:{fontSize:8,cellPadding:3},headStyles:{fillColor:[45,106,53],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[232,245,233]}});
+      doc.save(`AnticiPalta_Predicciones_${new Date().toISOString().split('T')[0]}.pdf`);
+      mostrarToast('Descarga completada');
+    } catch(e) {
+      alert('Error al generar el reporte.');
+    } finally {
+      btn.innerHTML = original; btn.disabled = false;
+    }
   }
 
   async function toggleEstadoUsuario(id, nuevoEstado) {
@@ -1085,6 +1163,7 @@
         method:'PUT', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({estado: nuevoEstado})
       });
+      mostrarToast(nuevoEstado ? 'Usuario activado correctamente' : 'Usuario desactivado correctamente');
       cargarAdmin();
     } catch(e){ alert('Error al actualizar usuario.'); }
   }
@@ -1105,9 +1184,17 @@
   let fundoEliminandoId = null;
   let fundosCache = [];
   let predsCache = [];
+  let reportesPredsCache = [];
   let prediccionRealId = null;
   let chartMes = null, chartFundo = null, chartSuelo = null, chartAnual = null, chartScatter = null;
 
+  function mostrarToast(mensaje, tipo='exito') {
+    const t = document.createElement('div');
+    t.textContent = mensaje;
+    t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${tipo==='exito'?'#1a5c2a':'#c0392b'};color:#fff;padding:12px 20px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;box-shadow:var(--sombra2);z-index:999;animation:fadeIn .3s ease`;
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(), 3000);
+  }
   const MODELOS = {
     xgboost:          { nombre: 'XGBoost',          r2: 0.90, mae: 20.89 },
     gradient_boosting:{ nombre: 'Gradient Boosting', r2: 0.8312, mae: 21.14 },
@@ -1143,12 +1230,55 @@
       10: { temp_c:15.5, prec_mm:20.0, rad_solar:4.9, hum_rel:62.0 },
       11: { temp_c:16.0, prec_mm:35.0, rad_solar:4.6, hum_rel:65.0 },
       12: { temp_c:16.5, prec_mm:70.0, rad_solar:4.3, hum_rel:67.0 },
+    },
+    "Viru": {
+      1:{temp_c:23.0,prec_mm:2.0,rad_solar:6.5,hum_rel:72.0}, 2:{temp_c:23.8,prec_mm:1.5,rad_solar:6.7,hum_rel:73.0},
+      3:{temp_c:23.2,prec_mm:1.0,rad_solar:6.4,hum_rel:71.0}, 4:{temp_c:21.5,prec_mm:0.5,rad_solar:6.0,hum_rel:70.0},
+      5:{temp_c:19.0,prec_mm:0.2,rad_solar:5.5,hum_rel:69.0}, 6:{temp_c:17.5,prec_mm:0.0,rad_solar:5.0,hum_rel:68.0},
+      7:{temp_c:16.8,prec_mm:0.0,rad_solar:4.8,hum_rel:67.0}, 8:{temp_c:16.9,prec_mm:0.0,rad_solar:4.9,hum_rel:67.0},
+      9:{temp_c:17.8,prec_mm:0.0,rad_solar:5.3,hum_rel:68.0}, 10:{temp_c:19.3,prec_mm:0.3,rad_solar:5.9,hum_rel:69.0},
+      11:{temp_c:20.8,prec_mm:0.5,rad_solar:6.2,hum_rel:70.0}, 12:{temp_c:22.4,prec_mm:1.2,rad_solar:6.4,hum_rel:71.0}
+    },
+    "Huaral": {
+      1:{temp_c:23.8,prec_mm:6.0,rad_solar:6.9,hum_rel:78.0}, 2:{temp_c:24.3,prec_mm:5.0,rad_solar:7.0,hum_rel:79.0},
+      3:{temp_c:23.7,prec_mm:3.0,rad_solar:6.8,hum_rel:77.0}, 4:{temp_c:21.8,prec_mm:1.0,rad_solar:6.3,hum_rel:76.0},
+      5:{temp_c:19.2,prec_mm:0.3,rad_solar:5.7,hum_rel:75.0}, 6:{temp_c:17.3,prec_mm:0.0,rad_solar:5.1,hum_rel:73.0},
+      7:{temp_c:16.4,prec_mm:0.0,rad_solar:4.8,hum_rel:72.0}, 8:{temp_c:16.5,prec_mm:0.0,rad_solar:4.9,hum_rel:72.0},
+      9:{temp_c:17.4,prec_mm:0.0,rad_solar:5.4,hum_rel:73.0}, 10:{temp_c:19.4,prec_mm:0.5,rad_solar:6.1,hum_rel:74.0},
+      11:{temp_c:21.3,prec_mm:1.0,rad_solar:6.5,hum_rel:75.0}, 12:{temp_c:23.0,prec_mm:4.0,rad_solar:6.8,hum_rel:77.0}
+    },
+    "Casma": {
+      1:{temp_c:24.5,prec_mm:1.0,rad_solar:7.0,hum_rel:70.0}, 2:{temp_c:25.2,prec_mm:1.0,rad_solar:7.1,hum_rel:71.0},
+      3:{temp_c:24.6,prec_mm:0.5,rad_solar:6.9,hum_rel:69.0}, 4:{temp_c:22.5,prec_mm:0.2,rad_solar:6.4,hum_rel:68.0},
+      5:{temp_c:19.8,prec_mm:0.0,rad_solar:5.8,hum_rel:66.0}, 6:{temp_c:18.0,prec_mm:0.0,rad_solar:5.2,hum_rel:65.0},
+      7:{temp_c:17.2,prec_mm:0.0,rad_solar:5.0,hum_rel:64.0}, 8:{temp_c:17.3,prec_mm:0.0,rad_solar:5.1,hum_rel:64.0},
+      9:{temp_c:18.2,prec_mm:0.0,rad_solar:5.6,hum_rel:65.0}, 10:{temp_c:19.9,prec_mm:0.2,rad_solar:6.2,hum_rel:66.0},
+      11:{temp_c:21.6,prec_mm:0.3,rad_solar:6.6,hum_rel:67.0}, 12:{temp_c:23.4,prec_mm:0.8,rad_solar:6.9,hum_rel:69.0}
+    },
+    "Ica": {
+      1:{temp_c:24.8,prec_mm:0.5,rad_solar:7.2,hum_rel:65.0}, 2:{temp_c:25.5,prec_mm:0.3,rad_solar:7.3,hum_rel:66.0},
+      3:{temp_c:24.7,prec_mm:0.2,rad_solar:7.0,hum_rel:64.0}, 4:{temp_c:22.3,prec_mm:0.0,rad_solar:6.5,hum_rel:62.0},
+      5:{temp_c:19.3,prec_mm:0.0,rad_solar:5.9,hum_rel:60.0}, 6:{temp_c:17.2,prec_mm:0.0,rad_solar:5.3,hum_rel:58.0},
+      7:{temp_c:16.3,prec_mm:0.0,rad_solar:5.0,hum_rel:57.0}, 8:{temp_c:16.5,prec_mm:0.0,rad_solar:5.1,hum_rel:57.0},
+      9:{temp_c:17.6,prec_mm:0.0,rad_solar:5.6,hum_rel:59.0}, 10:{temp_c:19.5,prec_mm:0.0,rad_solar:6.3,hum_rel:60.0},
+      11:{temp_c:21.4,prec_mm:0.1,rad_solar:6.7,hum_rel:62.0}, 12:{temp_c:23.3,prec_mm:0.3,rad_solar:7.0,hum_rel:64.0}
     }
   };
 
   document.getElementById('topbar-fecha').textContent =
           new Date().toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
+  // ── RECUPERAR SESIÓN GUARDADA (HU22) ──
+  (function recuperarSesion() {
+    const guardada = localStorage.getItem('anticipalta_sesion');
+    if (!guardada) return;
+    try {
+      usuarioActual = JSON.parse(guardada);
+      iniciarApp();
+    } catch(e) {
+      localStorage.removeItem('anticipalta_sesion');
+    }
+  })();
   // ── LOGIN ──
   async function iniciarSesion() {
     const correo = document.getElementById('inp-correo').value.trim();
@@ -1164,7 +1294,9 @@
       const usuarios = await res.json();
       const u = usuarios.find(u => u.correo===correo && u.contrasena===pass);
       if (!u) throw new Error('credenciales');
-      usuarioActual = u; iniciarApp();
+      usuarioActual = u;
+      localStorage.setItem('anticipalta_sesion', JSON.stringify(u));
+      iniciarApp();
     } catch(e) {
       err.textContent = e.message==='backend' ? 'Error al conectar con el servidor.' : 'Correo o contraseña incorrectos.';
       err.style.display = 'block';
@@ -1210,12 +1342,49 @@
     const errDiv   = document.getElementById('registro-err');
     const okDiv    = document.getElementById('registro-ok');
     errDiv.style.display = 'none'; okDiv.style.display = 'none';
-    if (!nombre || !fechaNac || !correo || !pass || !pass2) { errDiv.textContent='Por favor completa todos los campos.'; errDiv.style.display='block'; return; }
-    if (pass !== pass2) { errDiv.textContent='Las contraseñas no coinciden.'; errDiv.style.display='block'; return; }
-    if (pass.length < 6) { errDiv.textContent='La contraseña debe tener al menos 6 caracteres.'; errDiv.style.display='block'; return; }
+
+    const campos = ['reg-nombre','reg-fecha-nac','reg-correo','reg-pass','reg-pass2'];
+    campos.forEach(id => {
+      document.getElementById(id).style.borderColor = 'var(--v6)';
+      const errEl = document.getElementById('err-'+id);
+      errEl.style.display = 'none';
+      errEl.textContent = 'Campo obligatorio';
+    });
+
+    let faltantes = false;
+    campos.forEach(id => {
+      if (!document.getElementById(id).value.trim()) {
+        document.getElementById(id).style.borderColor = '#c0392b';
+        document.getElementById('err-'+id).style.display = 'block';
+        faltantes = true;
+      }
+    });
+    if (faltantes) return;
+
+    const passValida = pass.length >= 8 && /[A-Z]/.test(pass) && /[0-9]/.test(pass);
+    if (!passValida) {
+      errDiv.textContent = 'La contraseña debe tener al menos 8 caracteres, una mayúscula y un número.';
+      errDiv.style.display = 'block';
+      document.getElementById('reg-pass').style.borderColor = '#c0392b';
+      return;
+    }
+    if (pass !== pass2) {
+      errDiv.textContent = 'Las contraseñas no coinciden.';
+      errDiv.style.display = 'block';
+      return;
+    }
+
     const btn = document.getElementById('btn-registro');
     btn.innerHTML = '<span class="spin"></span>Registrando...'; btn.disabled = true;
     try {
+      const usuariosExistentes = await fetch(`${API}/api/usuarios`).then(r=>r.json());
+      if (usuariosExistentes.some(u => u.correo?.toLowerCase() === correo.toLowerCase())) {
+        document.getElementById('err-reg-correo').textContent = 'Este correo ya está registrado';
+        document.getElementById('err-reg-correo').style.display = 'block';
+        document.getElementById('reg-correo').style.borderColor = '#c0392b';
+        btn.innerHTML = 'Crear cuenta'; btn.disabled = false;
+        return;
+      }
       const res = await fetch(`${API}/api/usuarios`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ nombreCompleto:nombre, fechaNac, correo, contrasena:pass, estado:true, fechaRegistro:new Date().toISOString().split('T')[0], rol:{idRol:2} })
@@ -1223,10 +1392,10 @@
       if (!res.ok) throw new Error();
       okDiv.textContent = '✅ Cuenta creada exitosamente. Ya puedes iniciar sesión.';
       okDiv.style.display = 'block';
-      ['reg-nombre','reg-fecha-nac','reg-correo','reg-pass','reg-pass2'].forEach(id => document.getElementById(id).value = '');
+      campos.forEach(id => document.getElementById(id).value = '');
       setTimeout(() => cambiarTab('login'), 2000);
     } catch(e) {
-      errDiv.textContent = 'Error al registrar. Verifica que el correo no esté en uso.'; errDiv.style.display = 'block';
+      errDiv.textContent = 'Error al registrar. Intenta nuevamente.'; errDiv.style.display = 'block';
     } finally { btn.innerHTML = 'Crear cuenta'; btn.disabled = false; }
   }
 
@@ -1244,8 +1413,41 @@
     if(p==='admin') cargarAdmin();
   }
 
+  // ── ESTADO DEL SISTEMA (HU21) ──
+  async function fetchConTimeout(url, ms = 6000) {
+    const ctrl = new AbortController();
+    const id = setTimeout(() => ctrl.abort(), ms);
+    try {
+      const res = await fetch(url, { signal: ctrl.signal });
+      clearTimeout(id);
+      return res.ok;
+    } catch (e) {
+      clearTimeout(id);
+      return false;
+    }
+  }
+
+  function pintarEstado(dotId, txtId, ok, textoOk, textoFail) {
+    const dot = document.getElementById(dotId);
+    const txt = document.getElementById(txtId);
+    if (!dot || !txt) return;
+    dot.style.background = ok ? '#4a9e56' : '#e74c3c';
+    txt.textContent = ok ? textoOk : textoFail;
+    txt.style.color = ok ? '' : '#c0392b';
+  }
+
+  async function verificarEstadoSistema() {
+    const backendOk = await fetchConTimeout(`${API}/api/provincias`);
+    pintarEstado('dot-backend', 'txt-backend', backendOk,
+            'Supabase conectado', 'Backend desconectado');
+
+    const mlOk = await fetchConTimeout('https://anticipalta.onrender.com/');
+    pintarEstado('dot-ml', 'txt-ml', mlOk,
+            'Microservicio ML activo', 'Microservicio ML desconectado');
+  }
   // ── DASHBOARD ──
   async function cargarDashboard() {
+    verificarEstadoSistema(); // ← agregar esta línea
     try {
       const [todasPreds,fundos,provs] = await Promise.all([
         fetch(`${API}/api/predicciones`).then(r=>r.json()),
@@ -1257,6 +1459,10 @@
       document.getElementById('st-fund').textContent = fundos.length;
       document.getElementById('st-prov').textContent = provs.length;
       const rendProm = preds.length ? preds.reduce((a,b)=>a+(b.rendimientoEstimado||0),0).toFixed(1) : '—';      document.getElementById('st-rend').textContent = rendProm;
+      const totalEstimado = preds.reduce((a,b)=>a+(b.rendimientoEstimado||0),0);
+      const totalReal = preds.reduce((a,b)=>a+(b.rendimientoReal||0),0);
+      document.getElementById('st-total-est').textContent = totalEstimado ? totalEstimado.toFixed(2) : '—';
+      document.getElementById('st-total-real').textContent = totalReal ? totalReal.toFixed(2) : '—';
       const lista = document.getElementById('lista-preds');
       if (!preds.length) {
         lista.innerHTML='<div style="color:var(--txt2);font-size:13px;text-align:center;padding:22px 0">Sin predicciones aún.</div>';
@@ -1310,7 +1516,17 @@
     const provincia = document.getElementById('pred-provincia').value;
     const mes       = parseInt(document.getElementById('pred-mes').value);
     const aviso     = document.getElementById('aviso-clima');
-    if (!provincia || !mes) return;
+    if (!provincia && !mes) { aviso.style.display='none'; return; }
+    if (!provincia) {
+      aviso.style.display = 'block';
+      aviso.innerHTML = `⚠️ Debes seleccionar una provincia para precargar los datos climáticos.`;
+      return;
+    }
+    if (!mes) {
+      aviso.style.display = 'block';
+      aviso.innerHTML = `⚠️ Debes seleccionar un mes para precargar los datos climáticos.`;
+      return;
+    }
     const datos = CLIMA[provincia]?.[mes];
     if (datos) {
       document.getElementById('pred-temp').value   = datos.temp_c;
@@ -1322,7 +1538,7 @@
       aviso.innerHTML = `✅ Datos climáticos precargados para <strong>${provincia} — ${meses[mes]}</strong> (fuente: SENAMHI) — puedes ajustarlos si tienes datos más precisos.`;
     } else {
       aviso.style.display = 'block';
-      aviso.innerHTML = `⚠️ Selecciona provincia y mes para precargar datos climáticos.`;
+      aviso.innerHTML = `⚠️ No hay datos climáticos disponibles para esta provincia y mes.`;
     }
   }
   // ── PREDICCIÓN ──
@@ -1340,6 +1556,9 @@
     const hum_rel    = parseFloat(document.getElementById('pred-hum').value);
     const idFundo    = document.getElementById('pred-fundo').value;
 
+    if (!idFundo) {
+      alert('Por favor selecciona un fundo antes de generar la predicción.'); return;
+    }
     if (!provincia||!tipo_suelo||!mes||[anio,area_ha,edad_anios,ph_suelo,temp_c,prec_mm,rad_solar,hum_rel].some(v=>isNaN(v))) {
       alert('Por favor completa todos los campos.'); return;
     }
@@ -1386,7 +1605,7 @@
       } else { confDiv.style.display='none'; }
 
       // Guardar en BD
-      if (idFundo && usuarioActual) {
+      if (usuarioActual) {
         const mods = await fetch(`${API}/api/modelos-ml`).then(r=>r.json());
         const idModelo = mods[0]?.idModelo;
         const idSuelo  = await obtenerIdTipoSuelo(tipo_suelo);
@@ -1407,8 +1626,7 @@
         }).catch(()=>{});
       }
 
-      const totalPreds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
-      document.getElementById('st-pred').textContent = totalPreds.length;
+      await cargarDashboard();
 
     } catch(e) {
       console.error(e);
@@ -1430,11 +1648,17 @@
       if (delFundo.length < 3) return null;
       const prom = delFundo.reduce((a,b)=>a+b,0)/delFundo.length;
       const std  = Math.sqrt(delFundo.reduce((a,b)=>a+(b-prom)**2,0)/delFundo.length);
-      const min  = prom - 2*std;
-      const max  = prom + 2*std;
-      if (rendimiento >= min && rendimiento <= max) return { nivel:'normal', color:'#1a5c2a', bg:'#d4edda', texto:`✅ Resultado dentro del rango histórico normal (${min.toFixed(1)}–${max.toFixed(1)} t)` };
-      if (rendimiento < min) return { nivel:'bajo', color:'#7d5a00', bg:'#fff3cd', texto:`⚠️ Resultado por debajo del rango histórico normal (mín. ${min.toFixed(1)} t)` };
-      return { nivel:'alto', color:'#1a5c2a', bg:'#d4edda', texto:`🚀 Resultado por encima del rango histórico (máx. ${max.toFixed(1)} t)` };
+      const desv = std ? Math.abs(rendimiento - prom) / std : 0;
+
+      if (desv <= 1) {
+        return { color:'#1a5c2a', bg:'#d4edda', texto:`✅ Dentro del rango histórico normal (±1σ: ${(prom-std).toFixed(1)}–${(prom+std).toFixed(1)} t)` };
+      }
+      if (desv <= 2) {
+        const icono = rendimiento < prom ? '⚠️' : '🚀';
+        return { color:'#7d5a00', bg:'#fff3cd', texto:`${icono} Alerta leve: resultado entre ±1σ y ±2σ del historial del fundo` };
+      }
+      const icono = rendimiento < prom ? '🔻' : '🚀';
+      return { color:'#c0392b', bg:'#fdecea', texto:`${icono} Alerta severa: resultado más allá de ±2σ del historial del fundo` };
     } catch(e) { return null; }
   }
 
@@ -1447,37 +1671,92 @@
               : todasPreds.filter(p => p.usuario?.idUsuario === usuarioActual.idUsuario);
       document.getElementById('st-pred').textContent = preds.length;
       predsCache = preds.reverse();
+      document.getElementById('btn-export-historial').disabled = !predsCache.length;
       filtrarHistorial();
     } catch(e){ console.error(e) }
   }
 
+  let historialFiltrado = [];
+  let paginaHistorial = 1;
+  const ITEMS_POR_PAGINA = 10;
+
   function filtrarHistorial() {
-    const anio   = document.getElementById('fil-anio').value;
-    const mes    = document.getElementById('fil-mes').value;
-    const fundo  = document.getElementById('fil-fundo').value;
-    const estado = document.getElementById('fil-estado').value;
+    const anio    = document.getElementById('fil-anio').value;
+    const mes     = document.getElementById('fil-mes').value;
+    const fundo   = document.getElementById('fil-fundo').value;
+    const estado  = document.getElementById('fil-estado').value;
+    const busq    = document.getElementById('fil-busqueda').value.trim().toLowerCase();
+    const desde   = document.getElementById('fil-fecha-desde').value;
+    const hasta   = document.getElementById('fil-fecha-hasta').value;
+
     let filtrados = predsCache.filter(p => {
       if (anio   && String(p.anio) !== anio) return false;
       if (mes    && String(p.mes)  !== mes)  return false;
       if (fundo  && p.fundo?.nombreFundo !== fundo) return false;
       if (estado === 'completada' && !p.rendimientoReal) return false;
       if (estado === 'en_curso'   &&  p.rendimientoReal) return false;
+      if (busq   && !(p.fundo?.nombreFundo || '').toLowerCase().includes(busq)) return false;
+      if (desde  && (!p.fechaEjecucion || p.fechaEjecucion.split('T')[0] < desde)) return false;
+      if (hasta  && (!p.fechaEjecucion || p.fechaEjecucion.split('T')[0] > hasta)) return false;
       return true;
     });
+
+    historialFiltrado = filtrados;
+    paginaHistorial = 1;
+
     const resDiv = document.getElementById('fil-resultado');
-    if (anio || mes || fundo || estado) {
+    if (anio || mes || fundo || estado || busq || desde || hasta) {
       resDiv.style.display='block';
       resDiv.textContent=`Mostrando ${filtrados.length} de ${predsCache.length} predicciones`;
     } else { resDiv.style.display='none'; }
-    renderTablaHistorial(filtrados);
+
+    renderPaginaHistorial();
   }
 
   function limpiarFiltros() {
-    ['fil-anio','fil-mes','fil-fundo','fil-estado'].forEach(id => document.getElementById(id).value='');
+    ['fil-anio','fil-mes','fil-fundo','fil-estado','fil-busqueda','fil-fecha-desde','fil-fecha-hasta']
+            .forEach(id => document.getElementById(id).value='');
     document.getElementById('fil-resultado').style.display='none';
-    renderTablaHistorial(predsCache);
+    historialFiltrado = predsCache;
+    paginaHistorial = 1;
+    renderPaginaHistorial();
   }
 
+  function renderPaginaHistorial() {
+    const total = historialFiltrado.length;
+    const totalPaginas = Math.max(1, Math.ceil(total / ITEMS_POR_PAGINA));
+    if (paginaHistorial > totalPaginas) paginaHistorial = totalPaginas;
+    const inicio = (paginaHistorial - 1) * ITEMS_POR_PAGINA;
+    const pagina = historialFiltrado.slice(inicio, inicio + ITEMS_POR_PAGINA);
+    renderTablaHistorial(pagina);
+    renderPaginacionHistorial(total, totalPaginas);
+  }
+
+  function cambiarPaginaHistorial(delta) {
+    paginaHistorial += delta;
+    renderPaginaHistorial();
+  }
+
+  function renderPaginacionHistorial(total, totalPaginas) {
+    const cont = document.getElementById('hist-paginacion');
+    if (!total) { cont.innerHTML = ''; return; }
+    cont.innerHTML = `
+      <button onclick="cambiarPaginaHistorial(-1)" ${paginaHistorial<=1?'disabled':''}
+        style="padding:6px 14px;border:1.5px solid var(--v6);border-radius:8px;background:${paginaHistorial<=1?'#f0f4f0':'var(--blanco)'};cursor:${paginaHistorial<=1?'not-allowed':'pointer'};font-family:'DM Sans',sans-serif">← Anterior</button>
+      <span style="color:var(--txt2)">Página ${paginaHistorial} de ${totalPaginas}</span>
+      <button onclick="cambiarPaginaHistorial(1)" ${paginaHistorial>=totalPaginas?'disabled':''}
+        style="padding:6px 14px;border:1.5px solid var(--v6);border-radius:8px;background:${paginaHistorial>=totalPaginas?'#f0f4f0':'var(--blanco)'};cursor:${paginaHistorial>=totalPaginas?'not-allowed':'pointer'};font-family:'DM Sans',sans-serif">Siguiente →</button>
+    `;
+  }
+
+  function formatNombreFundo(nombre) {
+    if (!nombre) return '<span style="color:var(--txt3);font-style:italic">Sin fundo asignado</span>';
+    if (nombre.length > 20) {
+      const truncado = nombre.slice(0, 20) + '...';
+      return `<span title="${nombre}">${truncado}</span>`;
+    }
+    return nombre;
+  }
   function renderTablaHistorial(preds) {
     const tb = document.getElementById('tabla-hist');
     if (!preds.length) { tb.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones para los filtros seleccionados.</td></tr>'; return; }
@@ -1492,7 +1771,7 @@
       <td>#${p.idPrediccion}</td>
       <td>${p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—'}</td>
       <td>${p.anio??'—'}</td><td>${p.mes??'—'}</td>
-      <td>${p.fundo?.nombreFundo??'—'}</td>
+      <td>${formatNombreFundo(p.fundo?.nombreFundo)}</td>
       <td>${p.areaHa??'—'}</td><td>${p.tempC??'—'}</td>
       <td><strong>${predicho??'—'}</strong></td>
       <td>${botonReal}</td><td>${errorTexto}</td><td>${estadoBadge}</td>
@@ -1534,6 +1813,7 @@
   }
 
   function exportarPDF() {
+    if (!predsCache.length) return;
     const {jsPDF} = window.jspdf;
     const doc = new jsPDF('landscape');
     doc.setFillColor(15,36,20); doc.rect(0,0,297,22,'F');
@@ -1549,6 +1829,39 @@
     const totalPags = doc.internal.getNumberOfPages();
     for(let i=1;i<=totalPags;i++){ doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150); doc.text(`AnticiPalta · JL Monteverde · Página ${i} de ${totalPags}`,14,doc.internal.pageSize.height-8); }
     doc.save(`AnticiPalta_Historial_${new Date().toISOString().split('T')[0]}.pdf`);
+  }
+  function exportarReportePDF() {
+    if (!reportesPredsCache.length) return;
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFillColor(15,36,20); doc.rect(0,0,210,20,'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
+    doc.text('AnticiPalta — Reporte de Rendimiento',14,13);
+    doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.text(`Generado: ${new Date().toLocaleDateString('es-PE')} · Usuario: ${usuarioActual?.nombreCompleto||'—'}`,120,13);
+
+    const porFundo = {};
+    reportesPredsCache.forEach(p => {
+      const n = p.fundo?.nombreFundo || 'Sin fundo';
+      if (!porFundo[n]) porFundo[n] = [];
+      if (p.rendimientoEstimado) porFundo[n].push(p.rendimientoEstimado);
+    });
+    const filas = Object.entries(porFundo).map(([nombre, vals]) => [
+      nombre, vals.length,
+      (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2),
+      Math.max(...vals).toFixed(2),
+      Math.min(...vals).toFixed(2)
+    ]);
+
+    doc.autoTable({
+      startY: 26,
+      head: [['Fundo','Predicciones','Promedio (t)','Máximo (t)','Mínimo (t)']],
+      body: filas,
+      styles: { fontSize: 9, cellPadding: 4 },
+      headStyles: { fillColor: [45,106,53], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [232,245,233] }
+    });
+    doc.save(`AnticiPalta_Reporte_${new Date().toISOString().split('T')[0]}.pdf`);
   }
 
   // ── FUNDOS ──
@@ -1628,7 +1941,12 @@
   async function confirmarEliminar() {
     const btn=document.getElementById('btn-confirmar-eliminar');
     btn.textContent='Eliminando...'; btn.disabled=true;
-    try { await fetch(`${API}/api/fundos/${fundoEliminandoId}`,{method:'DELETE'}); cerrarModalEliminar(); cargarFundos(); }
+    try {
+      await fetch(`${API}/api/fundos/${fundoEliminandoId}`,{method:'DELETE'});
+      cerrarModalEliminar();
+      mostrarToast('Fundo eliminado correctamente');
+      cargarFundos();
+    }
     catch(e){ alert('Error al eliminar.'); }
     finally { btn.textContent='Sí, eliminar'; btn.disabled=false; }
   }
@@ -1638,8 +1956,9 @@
     try {
       const todasPreds=await fetch(`${API}/api/predicciones`).then(r=>r.json());
       const preds=todasPreds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);      const misPreds=preds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);
-      document.getElementById('p-total-preds').textContent=misPreds.length||'0';
+      document.getElementById('p-total-preds').textContent = misPreds.length ? misPreds.length : '—';
       if(misPreds.length){
+        document.getElementById('p-sin-actividad').style.display='none';
         const vals=misPreds.map(p=>p.rendimientoEstimado).filter(v=>v!=null);
         document.getElementById('p-rend-prom').textContent=vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):'—';
         document.getElementById('p-rend-max').textContent=vals.length?Math.max(...vals).toFixed(1):'—';
@@ -1648,7 +1967,8 @@
       } else {
         document.getElementById('p-rend-prom').textContent='—';
         document.getElementById('p-rend-max').textContent='—';
-        document.getElementById('p-ultima-pred').textContent='Sin predicciones';
+        document.getElementById('p-ultima-pred').textContent='—';
+        document.getElementById('p-sin-actividad').style.display='block';
       }
     } catch(e){ console.error('Perfil:',e) }
   }
@@ -1656,8 +1976,10 @@
   // ── LOGOUT ──
   function cerrarSesion() {
     usuarioActual = null;
+    localStorage.removeItem('anticipalta_sesion');
     document.getElementById('app').classList.remove('activa');
-    document.getElementById('landing').classList.add('activa'); // ← cambia login por landing
+    document.getElementById('login').classList.add('activa');
+    cambiarTab('login');
     document.getElementById('inp-correo').value = '';
     document.getElementById('inp-pass').value = '';
     document.getElementById('res-box').classList.remove('vis');
@@ -1672,16 +1994,38 @@
                               ? true
                               : p.usuario?.idUsuario === usuarioActual.idUsuario
               );
-      if(!preds.length) return;
+      const btnExport = document.getElementById('btn-export-reportes');
+      if(!preds.length) {
+        document.getElementById('reportes-sin-datos').style.display='block';
+        document.getElementById('reportes-contenido').style.display='none';
+        if(btnExport) btnExport.disabled = true;
+        return;
+      }
+      document.getElementById('reportes-sin-datos').style.display='none';
+      document.getElementById('reportes-contenido').style.display='block';
+      if(btnExport) btnExport.disabled = false;
+      reportesPredsCache = preds;
       const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
       const porMes={};
       for(let m=1;m<=12;m++) porMes[m]=[];
       preds.forEach(p=>{ if(p.mes&&p.rendimientoEstimado) porMes[p.mes].push(p.rendimientoEstimado); });
-      const promediosMes=Object.values(porMes).map(arr=>arr.length?(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2):0);
+      const promediosMes=Object.values(porMes).map(arr=>arr.length?parseFloat((arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2)):0);
+      const valoresValidos = promediosMes.filter(v=>v>0);
+      const maxVal = valoresValidos.length ? Math.max(...valoresValidos) : null;
+      const minVal = valoresValidos.length ? Math.min(...valoresValidos) : null;
+      const coloresBarras = promediosMes.map(v => {
+        if (v===0) return '#eef2ee';
+        if (v===maxVal) return '#2d6a35';
+        if (v===minVal) return '#c9a84c';
+        return '#7ec88a';
+      });
       if(chartMes) chartMes.destroy();
-      chartMes=new Chart(document.getElementById('chart-mes'),{type:'line',data:{labels:meses,datasets:[{label:'Rend. promedio (t)',data:promediosMes,borderColor:'#2d6a35',backgroundColor:'rgba(74,158,86,0.1)',borderWidth:2,fill:true,tension:0.4,pointBackgroundColor:'#2d6a35'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});
-
+      chartMes=new Chart(document.getElementById('chart-mes'),{
+        type:'bar',
+        data:{labels:meses,datasets:[{label:'Rend. promedio (t)',data:promediosMes,backgroundColor:coloresBarras,borderRadius:6}]},
+        options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+      });
       const porSuelo={};
       preds.forEach(p=>{ const s=p.tipoSuelo?.descripcion||'Sin datos'; porSuelo[s]=(porSuelo[s]||0)+1; });
       if(chartSuelo) chartSuelo.destroy();
