@@ -809,11 +809,11 @@
         <thead>
         <tr>
           <th>ID</th><th>Fecha</th><th>Año</th><th>Mes</th><th>Fundo</th>
-          <th>Área (ha)</th><th>Temp (°C)</th><th>Predicho (t)</th>
+          <th>Área (ha)</th><th>Edad (años)</th><th>Temp (°C)</th><th>Predicho (t)</th>
           <th>Real (t)</th><th>Error %</th><th>Estado</th><th>Acciones</th>
         </tr>
         </thead>
-        <tbody id="tabla-hist"><tr><td colspan="10" style="text-align:center;color:var(--txt2);padding:22px">Cargando historial...</td></tr></tbody>
+        <tbody id="tabla-hist"><tr><td colspan="13" style="text-align:center;color:var(--txt2);padding:22px">Cargando historial...</td></tr></tbody>
       </table>
     </div>
     <div id="hist-paginacion" style="display:flex;justify-content:center;align-items:center;gap:14px;margin-top:16px;font-size:13px"></div>
@@ -1877,7 +1877,7 @@
   }
   function renderTablaHistorial(preds) {
     const tb = document.getElementById('tabla-hist');
-    if (!preds.length) { tb.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones para los filtros seleccionados.</td></tr>'; return; }
+    if (!preds.length) { tb.innerHTML='<tr><td colspan="13" style="text-align:center;color:var(--txt2);padding:22px">Sin predicciones para los filtros seleccionados.</td></tr>'; return; }
     tb.innerHTML = preds.map(p => {
       const predicho = p.rendimientoEstimado;
       const real     = p.rendimientoReal;
@@ -1890,7 +1890,7 @@
       <td>${p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—'}</td>
       <td>${p.anio??'—'}</td><td>${p.mes??'—'}</td>
       <td>${formatNombreFundo(p.fundo?.nombreFundo)}</td>
-      <td>${p.areaHa??'—'}</td><td>${p.tempC??'—'}</td>
+      <td>${p.areaHa??'—'}</td><td>${p.edadAnios??'—'}</td><td>${p.tempC??'—'}</td>
       <td><strong>${predicho??'—'}</strong></td>
       <td>${botonReal}</td><td>${errorTexto}</td><td>${estadoBadge}</td>
       <td><button onclick="eliminarPrediccion(${p.idPrediccion})" style="padding:5px 10px;background:#fdecea;border:1px solid #f5c6c6;border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:#c0392b">🗑️</button></td>
@@ -1959,9 +1959,9 @@
     doc.text(`Generado: ${new Date().toLocaleDateString('es-PE')} · Usuario: ${usuarioActual?.nombreCompleto||'—'}`,200,14);
     const filas = predsCache.map(p => {
       const error = (p.rendimientoEstimado&&p.rendimientoReal) ? Math.abs((p.rendimientoEstimado-p.rendimientoReal)/p.rendimientoReal*100).toFixed(1)+'%' : '—';
-      return [`#${p.idPrediccion}`,p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—',p.anio??'—',p.mes??'—',p.fundo?.nombreFundo??'—',p.areaHa??'—',p.tempC??'—',p.rendimientoEstimado??'—',p.rendimientoReal??'Pendiente',error,p.rendimientoReal?'Completada':'En curso'];
+      return [`#${p.idPrediccion}`,p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—',p.anio??'—',p.mes??'—',p.fundo?.nombreFundo??'—',p.areaHa??'—',p.edadAnios??'—',p.tempC??'—',p.rendimientoEstimado??'—',p.rendimientoReal??'Pendiente',error,p.rendimientoReal?'Completada':'En curso'];
     });
-    doc.autoTable({startY:28,head:[['ID','Fecha','Año','Mes','Fundo','Área (ha)','Temp (°C)','Predicho (t)','Real (t)','Error %','Estado']],body:filas,styles:{fontSize:8,cellPadding:3},headStyles:{fillColor:[45,106,53],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[232,245,233]}});
+    doc.autoTable({startY:28,head:[['ID','Fecha','Año','Mes','Fundo','Área (ha)','Edad (años)','Temp (°C)','Predicho (t)','Real (t)','Error %','Estado']],body:filas,styles:{fontSize:8,cellPadding:3},headStyles:{fillColor:[45,106,53],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[232,245,233]}});
     const totalPags = doc.internal.getNumberOfPages();
     for(let i=1;i<=totalPags;i++){ doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150); doc.text(`AnticiPalta · JL Monteverde · Página ${i} de ${totalPags}`,14,doc.internal.pageSize.height-8); }
     doc.save(`AnticiPalta_Historial_${fechaLocalYMD()}.pdf`);
