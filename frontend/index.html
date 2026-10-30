@@ -1162,11 +1162,12 @@
     doc.text(`Generado: ${new Date().toLocaleDateString('es-PE')}`,150,12);
     const filas = usuariosAdminCache.map(u => [
       `#${u.idUsuario}`, u.nombreCompleto, u.correo,
-      u.rol?.tipo || '—', u.estado ? 'Activo' : 'Inactivo'
+      u.rol?.tipo || '—', u.estado ? 'Activo' : 'Inactivo',
+      predsAdminCache.filter(p => p.usuario?.idUsuario === u.idUsuario).length
     ]);
     doc.autoTable({
       startY: 22,
-      head: [['ID','Nombre','Correo','Rol','Estado']],
+      head: [['ID','Nombre','Correo','Rol','Estado','Predicciones']],
       body: filas,
       styles: { fontSize: 9, cellPadding: 4 },
       headStyles: { fillColor: [45,106,53], textColor: 255, fontStyle: 'bold' },
@@ -1528,7 +1529,9 @@
       ]);
       const preds = todasPreds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);
       document.getElementById('st-pred').textContent = preds.length;
-      document.getElementById('st-fund').textContent = fundos.length;
+      const esAdminDash = usuarioActual.rol?.tipo === 'Admin' || usuarioActual.rol?.idRol === 1;
+      const misFundosDash = esAdminDash ? fundos : fundos.filter(f => f.usuario?.idUsuario === usuarioActual.idUsuario);
+      document.getElementById('st-fund').textContent = misFundosDash.length;
       document.getElementById('st-prov').textContent = provs.length;
       const rendProm = preds.length ? preds.reduce((a,b)=>a+(b.rendimientoEstimado||0),0).toFixed(1) : '—';      document.getElementById('st-rend').textContent = rendProm;
       const totalEstimado = preds.reduce((a,b)=>a+(b.rendimientoEstimado||0),0);
@@ -1635,6 +1638,11 @@
       alert('Por favor completa todos los campos.'); return;
     }
 
+    if (area_ha < 1 || area_ha > 100) { alert('El área debe estar entre 1 y 100 ha.'); return; }
+    if (edad_anios < 1 || edad_anios > 30) { alert('La edad del cultivo debe estar entre 1 y 30 años.'); return; }
+    if (ph_suelo < 3 || ph_suelo > 10) { alert('El pH debe estar entre 3 y 10.'); return; }
+    if (hum_rel < 0 || hum_rel > 100) { alert('La humedad relativa debe estar entre 0 y 100 %.'); return; }
+
     let fundoNombre = '';
     if (idFundo) {
       const todosFundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
@@ -1660,8 +1668,11 @@
         })
       });
       const r = await res.json();
-      const toneladas = r.rendimiento_toneladas ?? r.prediccion ?? '—';
-      const modelo = MODELOS[modeloSeleccionado];
+      const toneladas = r.rendimiento_toneladas ?? r.prediccion;
+      if (typeof toneladas !== 'number' || !isFinite(toneladas) || toneladas <= 0) {
+        alert('El modelo devolvió un valor no válido (' + toneladas + ' t). Revisa los datos ingresados.');
+        return; // no muestra ni guarda la predicción
+      }      const modelo = MODELOS[modeloSeleccionado];
 
       document.getElementById('res-v').textContent = toneladas;
       document.getElementById('res-d').textContent = `Provincia: ${provincia} · Año: ${anio} · Mes: ${mes} · Área: ${area_ha} ha · Suelo: ${tipo_suelo} · Temp: ${temp_c}°C · Precip: ${prec_mm} mm`;
@@ -1669,7 +1680,7 @@
       document.getElementById('res-box').classList.add('vis');
 
       // Indicador de confianza
-      const confianza = await calcularConfianza(fundoNombre, toneladas);
+      const confianza = await calcularConfianza(fundoNombre, toneladas, area_ha);
       const confDiv = document.getElementById('res-confianza');
       if (confianza) {
         confDiv.style.display='block'; confDiv.style.background=confianza.bg;
@@ -1951,6 +1962,25 @@
       headStyles: { fillColor: [45,106,53], textColor: 255, fontStyle: 'bold' },
       alternateRowStyles: { fillColor: [232,245,233] }
     });
+    const graficos = [
+      ['Rendimiento promedio por mes', 'chart-mes'],
+      ['Distribución por tipo de suelo', 'chart-suelo'],
+      ['Evolución anual de rendimiento', 'chart-anual'],
+      ['Rendimiento vs temperatura', 'chart-scatter'],
+      ['Rendimiento por fundo', 'chart-fundo'],
+    ];
+    let y = doc.lastAutoTable.finalY + 12;
+    const w = 130;
+    graficos.forEach(([titulo, id]) => {
+      const canvas = document.getElementById(id);
+      if (!canvas || !canvas.width) return;
+      const h = Math.min(w * canvas.height / canvas.width, 80);
+      if (y + h + 10 > 285) { doc.addPage(); y = 20; }
+      doc.setTextColor(40); doc.setFontSize(10); doc.setFont('helvetica','bold');
+      doc.text(titulo, 14, y);
+      doc.addImage(canvas.toDataURL('image/png'), 'PNG', 14, y + 3, w, h);
+      y += h + 14;
+    });
     doc.save(`AnticiPalta_Reporte_${new Date().toISOString().split('T')[0]}.pdf`);
   }
 
@@ -2101,7 +2131,7 @@
       for(let m=1;m<=12;m++) porMes[m]=[];
       preds.forEach(p=>{ if(p.mes&&p.rendimientoEstimado) porMes[p.mes].push(p.rendimientoEstimado); });
       const promediosMes=Object.values(porMes).map(arr=>arr.length?parseFloat((arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2)):0);
-      const valoresValidos = promediosMes.filter(v=>v>0);
+      const valoresValidos = promediosMes.filter(v=>v!==0);
       const maxVal = valoresValidos.length ? Math.max(...valoresValidos) : null;
       const minVal = valoresValidos.length ? Math.min(...valoresValidos) : null;
       const coloresBarras = promediosMes.map(v => {
