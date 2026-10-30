@@ -220,6 +220,8 @@
     .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
     .b-v{background:#d4edda;color:#1a5c2a}
     .b-d{background:#fff3cd;color:#7d5a00}
+    .b-r{background:#fdecea;color:#c0392b}
+    .btn-v:disabled,.btn-v:disabled:hover{opacity:.5;cursor:not-allowed;background:var(--v3);box-shadow:none}
 
     /* PERFIL */
     .perfil-card{width:100%;max-width:1100px;background:var(--blanco);border-radius:16px;padding:28px 32px;box-shadow:var(--sombra);display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
@@ -716,6 +718,7 @@
         </div>
 
         <button class="btn-v" onclick="generarPrediccion()" id="btn-pred">🔮 Generar predicción</button>
+        <div id="pred-error" role="alert" style="display:none;margin-top:14px;padding:12px 14px;border-radius:8px;background:#fdecea;border:1px solid #f5c6c6;color:#c0392b;font-size:13px"></div>
 
         <div class="res-box" id="res-box">
           <div class="res-l">RENDIMIENTO ESTIMADO</div>
@@ -822,6 +825,7 @@
   <div id="reportes-sin-datos" style="display:none;text-align:center;padding:60px 20px;color:var(--txt2)">
     <div style="font-size:40px;margin-bottom:12px">📊</div>
     <p>No hay datos disponibles para generar los reportes. Genera predicciones para ver estadísticas aquí.</p>
+    <button class="btn-v" style="margin-top:18px;padding:7px 14px;font-size:12px" disabled>📄 Exportar PDF</button>
   </div>
   <div id="reportes-contenido">
       <!-- Fila 1: línea por mes + donut suelo -->
@@ -1035,7 +1039,7 @@
       for (let i = 6; i >= 0; i--) {
         const d = new Date(hoy);
         d.setDate(hoy.getDate() - i);
-        const key = d.toISOString().split('T')[0];
+        const key = fechaLocalYMD(d);
         dias.push(d.toLocaleDateString('es-PE', { weekday: 'short', day: 'numeric' }));
         conteos.push(preds.filter(p => p.fechaEjecucion?.startsWith(key)).length);
       }
@@ -1173,7 +1177,7 @@
       headStyles: { fillColor: [45,106,53], textColor: 255, fontStyle: 'bold' },
       alternateRowStyles: { fillColor: [232,245,233] }
     });
-    doc.save(`AnticiPalta_Usuarios_${new Date().toISOString().split('T')[0]}.pdf`);
+    doc.save(`AnticiPalta_Usuarios_${fechaLocalYMD()}.pdf`);
     btn.innerHTML = original; btn.disabled = false;
     mostrarToast('Descarga completada');
   }
@@ -1196,7 +1200,7 @@
         return [`#${p.idPrediccion}`,p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—',p.anio??'—',p.mes??'—',p.fundo?.nombreFundo??'Sin fundo',p.areaHa??'—',p.tempC??'—',p.rendimientoEstimado??'—',p.rendimientoReal??'Pendiente',error,p.rendimientoReal?'Completada':'En curso'];
       });
       doc.autoTable({startY:26,head:[['ID','Fecha','Año','Mes','Fundo','Área (ha)','Temp (°C)','Predicho (t)','Real (t)','Error %','Estado']],body:filas,styles:{fontSize:8,cellPadding:3},headStyles:{fillColor:[45,106,53],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[232,245,233]}});
-      doc.save(`AnticiPalta_Predicciones_${new Date().toISOString().split('T')[0]}.pdf`);
+      doc.save(`AnticiPalta_Predicciones_${fechaLocalYMD()}.pdf`);
       mostrarToast('Descarga completada');
     } catch(e) {
       alert('Error al generar el reporte.');
@@ -1252,13 +1256,16 @@
   let prediccionRealId = null;
   let chartMes = null, chartFundo = null, chartSuelo = null, chartAnual = null, chartScatter = null;
 
-  function mostrarToast(mensaje, tipo='exito') {
-    const t = document.createElement('div');
-    t.textContent = mensaje;
-    t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${tipo==='exito'?'#1a5c2a':'#c0392b'};color:#fff;padding:12px 20px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;box-shadow:var(--sombra2);z-index:999;animation:fadeIn .3s ease`;
-    document.body.appendChild(t);
-    setTimeout(()=>t.remove(), 3000);
+    function fechaLocalYMD(d = new Date()) {
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
   }
+  function fechaLocalISO(d = new Date()) {
+    const p = n => String(n).padStart(2, '0');
+    return `${fechaLocalYMD(d)}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  }
+
+  function mostrarToast(mensaje, tipo='exito') {
   const MODELOS = {
     xgboost:          { nombre: 'XGBoost',          r2: 0.90, mae: 20.89 },
     gradient_boosting:{ nombre: 'Gradient Boosting', r2: 0.8312, mae: 21.14 },
@@ -1460,7 +1467,7 @@
       }
       const res = await fetch(`${API}/api/usuarios`, {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ nombreCompleto:nombre, fechaNac, correo, contrasena:pass, estado:true, fechaRegistro:new Date().toISOString().split('T')[0], rol:{idRol:2} })
+        body: JSON.stringify({ nombreCompleto:nombre, fechaNac, correo, contrasena:pass, estado:true, fechaRegistro:fechaLocalYMD(), rol:{idRol:2} })
       });
       if (!res.ok) throw new Error();
       okDiv.textContent = '✅ Cuenta creada exitosamente. Ya puedes iniciar sesión.';
@@ -1667,12 +1674,19 @@
           Temp_C:temp_c, Hum_Rel:hum_rel
         })
       });
+            if (!res.ok) {
+        let detalle = '';
+        try { const e = await res.json(); detalle = typeof e.detail === 'string' ? e.detail : ''; } catch(_) {}
+        mostrarErrorPrediccion('No se pudo generar la predicción' + (detalle ? ': ' + detalle : '.') + ' Verifica los datos ingresados (código ' + res.status + ').');
+        return;
+      }
       const r = await res.json();
       const toneladas = r.rendimiento_toneladas ?? r.prediccion;
       if (typeof toneladas !== 'number' || !isFinite(toneladas) || toneladas <= 0) {
-        alert('El modelo devolvió un valor no válido (' + toneladas + ' t). Revisa los datos ingresados.');
-        return; // no muestra ni guarda la predicción
-      }      
+        mostrarErrorPrediccion('El modelo no pudo estimar una producción válida para ' + area_ha + ' ha, ' + edad_anios + ' años y suelo ' + tipo_suelo + '. Prueba con otros valores de área o edad.');
+        return;
+      }
+      ocultarErrorPrediccion();
       const modelo = MODELOS[modeloSeleccionado];
 
       document.getElementById('res-v').textContent = toneladas;
@@ -1701,7 +1715,7 @@
             phSuelo:ph_suelo, humRel:hum_rel,
             rendimientoEstimado:toneladas,
             modeloNombre:MODELOS[modeloSeleccionado].nombre,
-            fechaEjecucion:new Date().toISOString(),
+            fechaEjecucion:fechaLocalISO(),
             usuario:{idUsuario:usuarioActual.idUsuario},
             fundo:{idFundo:parseInt(idFundo)},
             modelo:{idModelo},
@@ -1714,16 +1728,23 @@
 
     } catch(e) {
       console.error(e);
-      alert('Error al conectar con el microservicio ML.');
+            mostrarErrorPrediccion('No se pudo conectar con el microservicio ML. Intenta de nuevo en unos segundos (Render puede tardar en despertar).');
     } finally {
       btn.innerHTML='🔮 Generar predicción'; btn.disabled=false;
     }
   }
 
-  async function obtenerIdTipoSuelo(descripcion) {
-    const suelos = await fetch(`${API}/api/tipos-suelo`).then(r=>r.json());
-    return suelos.find(s=>s.descripcion===descripcion)?.idTipoSuelo || null;
+    function mostrarErrorPrediccion(msg) {
+    document.getElementById('res-box').classList.remove('vis');
+    const d = document.getElementById('pred-error');
+    d.textContent = '⚠️ ' + msg;
+    d.style.display = 'block';
   }
+  function ocultarErrorPrediccion() {
+    document.getElementById('pred-error').style.display = 'none';
+  }
+
+  async function obtenerIdTipoSuelo(descripcion) {
 
     async function calcularConfianza(fundoNombre, rendimiento, areaHa) {
     try {
@@ -1758,7 +1779,7 @@
               ? todasPreds
               : todasPreds.filter(p => p.usuario?.idUsuario === usuarioActual.idUsuario);
       document.getElementById('st-pred').textContent = preds.length;
-      predsCache = preds.reverse();
+      predsCache = preds.sort((a,b) => (new Date(b.fechaEjecucion||0) - new Date(a.fechaEjecucion||0)) || (b.idPrediccion - a.idPrediccion));
       document.getElementById('btn-export-historial').disabled = !predsCache.length;
       filtrarHistorial();
     } catch(e){ console.error(e) }
@@ -1853,7 +1874,7 @@
       const real     = p.rendimientoReal;
       const error    = (predicho && real) ? Math.abs((predicho-real)/real*100).toFixed(1) : null;
       const botonReal = real ? real : `<button onclick="abrirIngresarReal(${p.idPrediccion})" style="padding:4px 10px;background:var(--v7);border:1px solid var(--v6);border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;color:var(--v3)">+ Ingresar</button>`;
-      const errorTexto = error ? `<span class="badge ${parseFloat(error)<=10?'b-v':'b-d'}">${error}%</span>` : `<span style="color:var(--txt3);font-size:12px">—</span>`;
+      const errorTexto = error ? `<span class="badge ${parseFloat(error)<=10?'b-v':'b-r'}">${error}%</span>` : `<span style="color:var(--txt3);font-size:12px">—</span>`;
       const estadoBadge = real ? `<span class="badge b-v">Completada</span>` : `<span class="badge b-d">En curso</span>`;
       return `<tr>
       <td>#${p.idPrediccion}</td>
@@ -1934,7 +1955,7 @@
     doc.autoTable({startY:28,head:[['ID','Fecha','Año','Mes','Fundo','Área (ha)','Temp (°C)','Predicho (t)','Real (t)','Error %','Estado']],body:filas,styles:{fontSize:8,cellPadding:3},headStyles:{fillColor:[45,106,53],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[232,245,233]}});
     const totalPags = doc.internal.getNumberOfPages();
     for(let i=1;i<=totalPags;i++){ doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150); doc.text(`AnticiPalta · JL Monteverde · Página ${i} de ${totalPags}`,14,doc.internal.pageSize.height-8); }
-    doc.save(`AnticiPalta_Historial_${new Date().toISOString().split('T')[0]}.pdf`);
+    doc.save(`AnticiPalta_Historial_${fechaLocalYMD()}.pdf`);
   }
   function exportarReportePDF() {
     if (!reportesPredsCache.length) return;
@@ -1986,7 +2007,7 @@
       doc.addImage(canvas.toDataURL('image/png'), 'PNG', 14, y + 3, w, h);
       y += h + 14;
     });
-    doc.save(`AnticiPalta_Reporte_${new Date().toISOString().split('T')[0]}.pdf`);
+    doc.save(`AnticiPalta_Reporte_${fechaLocalYMD()}.pdf`);
   }
 
   // ── FUNDOS ──
