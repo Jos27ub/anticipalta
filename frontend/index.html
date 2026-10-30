@@ -1266,6 +1266,12 @@
   }
 
   function mostrarToast(mensaje, tipo='exito') {
+        const t = document.createElement('div');
+    t.textContent = mensaje;
+    t.style.cssText = `position:fixed;bottom:24px;right:24px;background:${tipo==='exito'?'#1a5c2a':'#c0392b'};color:#fff;padding:12px 20px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;box-shadow:var(--sombra2);z-index:999;animation:fadeIn .3s ease`;
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(), 3000);
+  }
   const MODELOS = {
     xgboost:          { nombre: 'XGBoost',          r2: 0.90, mae: 20.89 },
     gradient_boosting:{ nombre: 'Gradient Boosting', r2: 0.8312, mae: 21.14 },
@@ -1745,6 +1751,9 @@
   }
 
   async function obtenerIdTipoSuelo(descripcion) {
+        const suelos = await fetch(`${API}/api/tipos-suelo`).then(r=>r.json());
+    return suelos.find(s=>s.descripcion===descripcion)?.idTipoSuelo || null;
+  }
 
     async function calcularConfianza(fundoNombre, rendimiento, areaHa) {
     try {
