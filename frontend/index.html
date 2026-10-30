@@ -1672,7 +1672,8 @@
       if (typeof toneladas !== 'number' || !isFinite(toneladas) || toneladas <= 0) {
         alert('El modelo devolvió un valor no válido (' + toneladas + ' t). Revisa los datos ingresados.');
         return; // no muestra ni guarda la predicción
-      }      const modelo = MODELOS[modeloSeleccionado];
+      }      
+      const modelo = MODELOS[modeloSeleccionado];
 
       document.getElementById('res-v').textContent = toneladas;
       document.getElementById('res-d').textContent = `Provincia: ${provincia} · Año: ${anio} · Mes: ${mes} · Área: ${area_ha} ha · Suelo: ${tipo_suelo} · Temp: ${temp_c}°C · Precip: ${prec_mm} mm`;
@@ -1724,23 +1725,27 @@
     return suelos.find(s=>s.descripcion===descripcion)?.idTipoSuelo || null;
   }
 
-  async function calcularConfianza(fundoNombre, rendimiento) {
+    async function calcularConfianza(fundoNombre, rendimiento, areaHa) {
     try {
       const preds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
-      const delFundo = preds.filter(p=>p.fundo?.nombreFundo===fundoNombre && p.rendimientoEstimado).map(p=>p.rendimientoEstimado);
-      if (delFundo.length < 3) return null;
-      const prom = delFundo.reduce((a,b)=>a+b,0)/delFundo.length;
-      const std  = Math.sqrt(delFundo.reduce((a,b)=>a+(b-prom)**2,0)/delFundo.length);
-      const desv = std ? Math.abs(rendimiento - prom) / std : 0;
+      const delFundo = preds
+        .filter(p => p.fundo?.nombreFundo === fundoNombre && p.rendimientoEstimado > 0 && p.areaHa > 0)
+        .map(p => p.rendimientoEstimado / p.areaHa);          // t/ha
+      if (delFundo.length < 3 || !(areaHa > 0)) return null;
+
+      const actual = rendimiento / areaHa;
+      const prom = delFundo.reduce((a,b)=>a+b,0) / delFundo.length;
+      const std  = Math.sqrt(delFundo.reduce((a,b)=>a+(b-prom)**2,0) / delFundo.length);
+      const desv = std > 1e-6 ? Math.abs(actual - prom) / std : (Math.abs(actual - prom) < 1e-6 ? 0 : 99);
 
       if (desv <= 1) {
-        return { color:'#1a5c2a', bg:'#d4edda', texto:`✅ Dentro del rango histórico normal (±1σ: ${(prom-std).toFixed(1)}–${(prom+std).toFixed(1)} t)` };
+        return { color:'#1a5c2a', bg:'#d4edda', texto:`✅ Dentro del rango histórico normal (±1σ: ${(prom-std).toFixed(2)}–${(prom+std).toFixed(2)} t/ha)` };
       }
       if (desv <= 2) {
-        const icono = rendimiento < prom ? '⚠️' : '🚀';
+        const icono = actual < prom ? '⚠️' : '🚀';
         return { color:'#7d5a00', bg:'#fff3cd', texto:`${icono} Alerta leve: resultado entre ±1σ y ±2σ del historial del fundo` };
       }
-      const icono = rendimiento < prom ? '🔻' : '🚀';
+      const icono = actual < prom ? '🔻' : '🚀';
       return { color:'#c0392b', bg:'#fdecea', texto:`${icono} Alerta severa: resultado más allá de ±2σ del historial del fundo` };
     } catch(e) { return null; }
   }
