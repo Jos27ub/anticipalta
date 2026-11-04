@@ -2259,6 +2259,9 @@
     document.getElementById('inp-correo').value = '';
     document.getElementById('inp-pass').value = '';
     document.getElementById('res-box').classList.remove('vis');
+    // Reiniciar también el DOM, los gráficos y las solicitudes de la cuenta anterior.
+    // La sesión ya se eliminó: la siguiente carga comienza sin datos de otro usuario.
+    window.location.reload();
   }
 
   // ── REPORTES ──
