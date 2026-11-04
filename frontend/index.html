@@ -1241,10 +1241,10 @@
 
   // Reglas confirmadas para los fundos admitidos por esta aplicación.
   const FUNDOS_PERMITIDOS = Object.freeze({
-    'El Mirador': { provincia: 'Yauyos (Catahuasi)', ubicacion: 'Catahuasi' },
-    'San Fernando': { provincia: 'Chincha', ubicacion: 'Valle de Chincha, Ica' },
-    'La Palmera': { provincia: 'Chincha', ubicacion: 'Valle de Chincha, Ica' },
-    'La Quebrada': { provincia: 'Yauyos (Catahuasi)', ubicacion: 'Catahuasi' }
+    'El Mirador': { nombreModelo: 'Fundo El Mirador', provincia: 'Yauyos (Catahuasi)', ubicacion: 'Catahuasi' },
+    'San Fernando': { nombreModelo: 'Fundo San Fernando', provincia: 'Chincha', ubicacion: 'Valle de Chincha, Ica' },
+    'La Palmera': { nombreModelo: 'Fundo La Palmera', provincia: 'Chincha', ubicacion: 'Valle de Chincha, Ica' },
+    'La Quebrada': { nombreModelo: 'Fundo La Quebrada', provincia: 'Yauyos (Catahuasi)', ubicacion: 'Catahuasi' }
   });
   function normalizarTexto(valor) {
     return String(valor ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase().replace(/\s+/g, ' ');
@@ -1750,7 +1750,7 @@
       const res = await fetch(mlUrl, {
         method:'POST', headers:{'Content-Type':'application/json'}, signal:controladorML.signal,
         body: JSON.stringify({
-          Anio:anio, Mes:mes, Fundo:fundoNombre,
+          Anio:anio, Mes:mes, Fundo:FUNDOS_PERMITIDOS[fundoNombre].nombreModelo,
           Lote:'Lote_01', Provincia:provincia,
           Area_Ha:area_ha, Edad_Anios:edad_anios,
           Prec_mm:prec_mm, Rad_Solar:rad_solar,
