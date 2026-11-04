@@ -1252,6 +1252,9 @@
       normalizarTexto(n) === valor || normalizarTexto(FUNDOS_PERMITIDOS[n].nombreModelo) === valor
     ) || null;
   }
+  function nombreFundoVisible(nombre) {
+    return nombreFundoPermitido(nombre) || String(nombre ?? '').trim();
+  }
   function etiquetaFundo(fundo, fundos) {
     const nombre = nombreFundoPermitido(fundo.nombreFundo);
     const repetido = fundos.some(f => String(f.idFundo) !== String(fundo.idFundo) &&
@@ -1881,9 +1884,9 @@
       document.getElementById('st-pred').textContent = preds.length;
       predsCache = preds.sort((a,b) => (new Date(b.fechaEjecucion||0) - new Date(a.fechaEjecucion||0)) || (b.idPrediccion - a.idPrediccion));
       const filtroFundo = document.getElementById('fil-fundo');
-      const anterior = filtroFundo.value;
+      const anterior = nombreFundoVisible(filtroFundo.value);
       filtroFundo.innerHTML='<option value="">Todos los fundos</option>';
-      [...new Set(preds.map(p=>p.fundo?.nombreFundo).filter(Boolean))].sort().forEach(nombre=>{
+      [...new Set(preds.map(p=>nombreFundoVisible(p.fundo?.nombreFundo)).filter(Boolean))].sort().forEach(nombre=>{
         const o=document.createElement('option'); o.value=nombre; o.textContent=nombre; filtroFundo.appendChild(o);
       });
       filtroFundo.value=[...filtroFundo.options].some(o=>o.value===anterior)?anterior:'';
@@ -1908,10 +1911,11 @@
     let filtrados = predsCache.filter(p => {
       if (anio   && String(p.anio) !== anio) return false;
       if (mes    && String(p.mes)  !== mes)  return false;
-      if (fundo  && p.fundo?.nombreFundo !== fundo) return false;
+      if (fundo  && nombreFundoVisible(p.fundo?.nombreFundo) !== fundo) return false;
       if (estado === 'completada' && !p.rendimientoReal) return false;
       if (estado === 'en_curso'   &&  p.rendimientoReal) return false;
-      if (busq   && !(p.fundo?.nombreFundo || '').toLowerCase().includes(busq)) return false;
+      if (busq && ![nombreFundoVisible(p.fundo?.nombreFundo), p.fundo?.nombreFundo || '']
+              .some(nombre => nombre.toLowerCase().includes(busq))) return false;
       if (desde  && (!p.fechaEjecucion || p.fechaEjecucion.split('T')[0] < desde)) return false;
       if (hasta  && (!p.fechaEjecucion || p.fechaEjecucion.split('T')[0] > hasta)) return false;
       return true;
@@ -1966,6 +1970,7 @@
   }
 
   function formatNombreFundo(nombre) {
+    nombre = nombreFundoVisible(nombre);
     if (!nombre) return '<span style="color:var(--txt3);font-style:italic">Sin fundo asignado</span>';
     if (nombre.length > 20) {
       const truncado = nombre.slice(0, 20) + '...';
@@ -2058,7 +2063,7 @@
     doc.text(`Generado: ${new Date().toLocaleDateString('es-PE')} · Usuario: ${usuarioActual?.nombreCompleto||'—'}`,200,14);
     const filas = predsCache.map(p => {
       const error = (p.rendimientoEstimado&&p.rendimientoReal) ? Math.abs((p.rendimientoEstimado-p.rendimientoReal)/p.rendimientoReal*100).toFixed(1)+'%' : '—';
-      return [`#${p.idPrediccion}`,p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—',p.anio??'—',p.mes??'—',p.fundo?.nombreFundo??'—',p.areaHa??'—',p.edadAnios??'—',p.tempC??'—',p.rendimientoEstimado??'—',p.rendimientoReal??'Pendiente',error,p.rendimientoReal?'Completada':'En curso'];
+      return [`#${p.idPrediccion}`,p.fechaEjecucion?new Date(p.fechaEjecucion).toLocaleDateString('es-PE'):'—',p.anio??'—',p.mes??'—',nombreFundoVisible(p.fundo?.nombreFundo)||'Sin fundo asignado',p.areaHa??'—',p.edadAnios??'—',p.tempC??'—',p.rendimientoEstimado??'—',p.rendimientoReal??'Pendiente',error,p.rendimientoReal?'Completada':'En curso'];
     });
     doc.autoTable({startY:28,head:[['ID','Fecha','Año','Mes','Fundo','Área (ha)','Edad (años)','Temp (°C)','Predicho (t)','Real (t)','Error %','Estado']],body:filas,styles:{fontSize:8,cellPadding:3},headStyles:{fillColor:[45,106,53],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[232,245,233]}});
     const totalPags = doc.internal.getNumberOfPages();
