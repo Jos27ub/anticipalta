@@ -1074,10 +1074,7 @@
       </div>`).join('');
 
       // ── TABLA USUARIOS ──
-      usuariosFiltradosAdmin = usuarios;
-      paginaAdminUsuarios = 1;
-      document.getElementById('adm-usuarios-resultado').textContent = `${usuarios.length} usuarios en total`;
-      renderPaginaAdminUsuarios();
+      filtrarUsuariosAdmin();
       document.getElementById('adm-ultima-sync').textContent = 'Última actualización: ' + new Date().toLocaleTimeString('es-PE');
     } catch(e) { console.error('Admin:', e); }
   }
