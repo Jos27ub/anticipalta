@@ -394,7 +394,7 @@
       </div>
       <div class="l-faq-item">
         <div class="l-faq-q" onclick="toggleFaq(this)">¿Qué provincias cubre el sistema? <span>+</span></div>
-        <div class="l-faq-a">Actualmente cubre Chincha, Yauyos, Viru, Huaral, Casma e Ica, las principales zonas productoras de palta Hass del Perú.</div>
+        <div class="l-faq-a">Los fundos habilitados son San Fernando y La Palmera (Chincha), y El Mirador y La Quebrada (Yauyos, Catahuasi).</div>
       </div>
       <div class="l-faq-item">
         <div class="l-faq-q" onclick="toggleFaq(this)">¿Qué tan preciso es el modelo? <span>+</span></div>
@@ -942,8 +942,9 @@
       <h3 id="modal-fundo-titulo" style="font-family:'DM Serif Display',serif;font-size:20px">Nuevo fundo</h3>
       <button onclick="cerrarModalFundo()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--txt2)">✕</button>
     </div>
-    <div class="fc"><label>Nombre del fundo</label><input type="text" id="nf-nombre" placeholder="Ej: Fundo San José"/></div>
-    <div class="fc"><label>Ubicación</label><input type="text" id="nf-ubicacion" placeholder="Ej: Valle de Chincha"/></div>
+    <div class="fc"><label>Nombre del fundo</label><input type="text" id="nf-nombre" list="nombres-fundos-permitidos" placeholder="Ej: San Fernando" required/></div>
+    <datalist id="nombres-fundos-permitidos"><option value="El Mirador"><option value="San Fernando"><option value="La Palmera"><option value="La Quebrada"></datalist>
+    <div class="fc"><label>Ubicación</label><input type="text" id="nf-ubicacion" required placeholder="Ej: Valle de Chincha"/></div>
     <div class="fc"><label>Provincia</label><select id="nf-provincia"><option value="">Seleccionar...</option></select></div>
     <div id="nf-error" style="color:#c0392b;font-size:13px;margin-bottom:12px;display:none"></div>
     <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px">
@@ -1000,11 +1001,11 @@
   async function cargarAdmin() {
     try {
       const [usuarios, preds, fundos, provs, modelos] = await Promise.all([
-        fetch(`${API}/api/usuarios`).then(r=>r.json()),
-        fetch(`${API}/api/predicciones`).then(r=>r.json()),
-        fetch(`${API}/api/fundos`).then(r=>r.json()),
-        fetch(`${API}/api/provincias`).then(r=>r.json()),
-        fetch(`${API}/api/modelos-ml`).then(r=>r.json()),
+        obtenerJSON(`${API}/api/usuarios`),
+        obtenerJSON(`${API}/api/predicciones`),
+        obtenerJSON(`${API}/api/fundos`),
+        obtenerJSON(`${API}/api/provincias`),
+        obtenerJSON(`${API}/api/modelos-ml`),
       ]);
 
       usuariosAdminCache = usuarios;
@@ -1082,10 +1083,9 @@
   }
 
   function renderTablaAdmin(usuarios, preds) {
-    const desactivadosLocal = getDesactivadosLocal();
     const tb = document.getElementById('tabla-admin-usuarios');
     tb.innerHTML = usuarios.map(u => {
-      const estadoReal = desactivadosLocal.includes(u.idUsuario) ? false : u.estado;
+      const estadoReal = u.estado === true;
       const misPreds = preds.filter(p => p.usuario?.idUsuario === u.idUsuario).length;
       const rolTipo = u.rol?.tipo || (u.rol?.idRol === 1 ? 'Admin' : 'Agricultor');
       return `<tr>
@@ -1187,7 +1187,7 @@
     const original = btn.innerHTML;
     btn.innerHTML = '<span class="spin"></span>Generando...'; btn.disabled = true;
     try {
-      const preds = predsAdminCache.length ? predsAdminCache : await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      const preds = predsAdminCache.length ? predsAdminCache : await obtenerJSON(`${API}/api/predicciones`);
       const {jsPDF} = window.jspdf;
       const doc = new jsPDF('landscape');
       doc.setFillColor(15,36,20); doc.rect(0,0,297,20,'F');
@@ -1210,18 +1210,23 @@
   }
 
   async function toggleEstadoUsuario(id, nuevoEstado) {
+    if (!esAdminActual()) { mostrarToast('Se requiere una cuenta Admin.', 'error'); return; }
     try {
-      await fetch(`${API}/api/usuarios/${id}`, {
+      const respuesta = await fetch(`${API}/api/usuarios/${id}`, {
         method:'PUT', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({estado: nuevoEstado})
+        body:JSON.stringify({estado:nuevoEstado})
       });
-    } catch(e) {
-      console.warn('PUT falló, aplicando solo localmente:', e);
-    }
-    marcarDesactivadoLocal(id, !nuevoEstado);
-    mostrarToast(nuevoEstado ? 'Usuario activado (local)' : 'Usuario desactivado (local)');
-    cargarAdmin();
+      if (!respuesta.ok) throw new Error('No se pudo guardar el estado (HTTP ' + respuesta.status + ').');
+      const usuarios = await obtenerJSON(`${API}/api/usuarios`);
+      const actualizado = usuarios.find(u => String(u.idUsuario) === String(id));
+      if (!actualizado || actualizado.estado !== nuevoEstado)
+        throw new Error('La API no confirmó el cambio de estado. Actualiza y verifica antes de reintentar.');
+      mostrarToast(nuevoEstado ? 'Usuario activado correctamente' : 'Usuario desactivado correctamente');
+      await cargarAdmin();
+    } catch(e) { mostrarToast(e.message || 'No se pudo actualizar el usuario.', 'error'); }
   }
+
+
   const titulos = {dashboard:'Dashboard', prediccion:'Nueva predicción', historial:'Historial', reportes:'Reportes', fundos:'Mis fundos', perfil:'Mi perfil', admin:'Panel admin'};
   function irALanding() {
     document.getElementById('login').classList.remove('activa');
@@ -1233,20 +1238,56 @@
     item.classList.toggle('abierto');
   }
   const API = 'https://anticipalta-backend.onrender.com';
+
+  // Reglas confirmadas para los fundos admitidos por esta aplicación.
+  const FUNDOS_PERMITIDOS = Object.freeze({
+    'El Mirador': { provincia: 'Yauyos (Catahuasi)', ubicacion: 'Catahuasi' },
+    'San Fernando': { provincia: 'Chincha', ubicacion: 'Valle de Chincha, Ica' },
+    'La Palmera': { provincia: 'Chincha', ubicacion: 'Valle de Chincha, Ica' },
+    'La Quebrada': { provincia: 'Yauyos (Catahuasi)', ubicacion: 'Catahuasi' }
+  });
+  function normalizarTexto(valor) {
+    return String(valor ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+  function nombreFundoPermitido(nombre) {
+    return Object.keys(FUNDOS_PERMITIDOS).find(n => normalizarTexto(n) === normalizarTexto(nombre)) || null;
+  }
+  function provinciaCanonica(nombre) {
+    const valor = normalizarTexto(nombre);
+    if (valor === 'chincha') return 'Chincha';
+    if (['yauyos', 'yauyos (catahuasi)', 'yauyos catahuasi'].includes(valor)) return 'Yauyos (Catahuasi)';
+    return null;
+  }
+  function esAdminActual() {
+    return usuarioActual?.rol?.tipo === 'Admin' || Number(usuarioActual?.rol?.idRol) === 1;
+  }
+  async function obtenerJSON(url, opciones = {}) {
+    const respuesta = await fetch(url, opciones);
+    if (!respuesta.ok) throw new Error('La API rechazó la operación (HTTP ' + respuesta.status + ').');
+    return respuesta.json();
+  }
+  function limpiarDatosClimaticos() {
+    ['pred-temp', 'pred-precip', 'pred-rad', 'pred-hum'].forEach(id => document.getElementById(id).value = '');
+  }
+  function idModeloSeleccionado(modelos, clave) {
+    const normalizar = x => normalizarTexto(x).replace(/[^a-z0-9]/g, '');
+    const esperado = normalizar(MODELOS[clave]?.nombre);
+    const coincidencias = modelos.filter(m => [m.nombreModelo, m.nombre, m.modeloNombre, m.tipo, m.codigo]
+      .some(n => n && normalizar(n) === esperado));
+    if (coincidencias.length !== 1 || !coincidencias[0].idModelo)
+      throw new Error('El catálogo de modelos no identifica de forma única ' + (MODELOS[clave]?.nombre || clave) + '.');
+    return coincidencias[0].idModelo;
+  }
+
   let usuarioActual = null;
-  function getDesactivadosLocal() {
-    try { return JSON.parse(localStorage.getItem('anticipalta_desactivados_local') || '[]'); }
-    catch(e) { return []; }
+  function getDesactivadosLocal() { return []; }
+
+
+  function marcarDesactivadoLocal() {
+    localStorage.removeItem('anticipalta_desactivados_local');
   }
-  function marcarDesactivadoLocal(id, desactivado) {
-    let lista = getDesactivadosLocal();
-    if (desactivado) {
-      if (!lista.includes(id)) lista.push(id);
-    } else {
-      lista = lista.filter(x => x !== id);
-    }
-    localStorage.setItem('anticipalta_desactivados_local', JSON.stringify(lista));
-  }
+
+
   let modeloSeleccionado = 'xgboost';
   let fundoEditandoId = null;
   let fundoEliminandoId = null;
@@ -1346,13 +1387,19 @@
           new Date().toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
   // ── RECUPERAR SESIÓN GUARDADA (HU22) ──
-  (function recuperarSesion() {
+  (async function recuperarSesion() {
     const guardada = localStorage.getItem('anticipalta_sesion');
     if (!guardada) return;
     try {
-      usuarioActual = JSON.parse(guardada);
+      const previa = JSON.parse(guardada);
+      const usuarios = await obtenerJSON(`${API}/api/usuarios`);
+      const vigente = usuarios.find(u => String(u.idUsuario) === String(previa.idUsuario));
+      if (!vigente || vigente.estado !== true) throw new Error('Sesión no vigente');
+      usuarioActual = vigente;
+      localStorage.setItem('anticipalta_sesion', JSON.stringify(vigente));
       iniciarApp();
     } catch(e) {
+      usuarioActual = null;
       localStorage.removeItem('anticipalta_sesion');
     }
   })();
@@ -1372,8 +1419,7 @@
       const u = usuarios.find(u => u.correo===correo && u.contrasena===pass);
       if (!u) throw new Error('credenciales');
 
-      const desactivadosLocal = getDesactivadosLocal();
-      if (!u.estado || desactivadosLocal.includes(u.idUsuario)) {
+      if (u.estado !== true) {
         err.textContent = 'Tu cuenta está desactivada. Contacta al administrador.';
         err.style.display = 'block';
         btn.innerHTML = 'Ingresar al sistema'; btn.disabled = false;
@@ -1402,6 +1448,14 @@
     document.getElementById('p-nombre').textContent   = usuarioActual.nombreCompleto;
     document.getElementById('p-correo').textContent   = usuarioActual.correo;
     document.getElementById('p-fecha').textContent    = usuarioActual.fechaRegistro || '—';
+    document.querySelectorAll('.pagina').forEach(p => p.classList.remove('activa'));
+    document.getElementById('pag-dashboard').classList.add('activa');
+    document.querySelectorAll('.nav-i').forEach(p => p.classList.remove('activo'));
+    document.querySelector('.nav-i[onclick*="dashboard"]')?.classList.add('activo');
+    document.getElementById('topbar-t').textContent = 'Dashboard';
+    document.getElementById('nav-admin').style.display = 'none';
+    document.getElementById('btn-login').disabled = false;
+    document.getElementById('btn-login').textContent = 'Ingresar al sistema';
     cargarDashboard(); cargarSelectFundos();
     // Mostrar panel admin si es administrador
     if (usuarioActual.rol?.tipo === 'Admin' || usuarioActual.rol?.idRol === 1) {
@@ -1463,7 +1517,7 @@
     const btn = document.getElementById('btn-registro');
     btn.innerHTML = '<span class="spin"></span>Registrando...'; btn.disabled = true;
     try {
-      const usuariosExistentes = await fetch(`${API}/api/usuarios`).then(r=>r.json());
+      const usuariosExistentes = await obtenerJSON(`${API}/api/usuarios`);
       if (usuariosExistentes.some(u => u.correo?.toLowerCase() === correo.toLowerCase())) {
         document.getElementById('err-reg-correo').textContent = 'Este correo ya está registrado';
         document.getElementById('err-reg-correo').style.display = 'block';
@@ -1536,9 +1590,9 @@
     verificarEstadoSistema(); // ← agregar esta línea
     try {
       const [todasPreds,fundos,provs] = await Promise.all([
-        fetch(`${API}/api/predicciones`).then(r=>r.json()),
-        fetch(`${API}/api/fundos`).then(r=>r.json()),
-        fetch(`${API}/api/provincias`).then(r=>r.json()),
+        obtenerJSON(`${API}/api/predicciones`),
+        obtenerJSON(`${API}/api/fundos`),
+        obtenerJSON(`${API}/api/provincias`),
       ]);
       const preds = todasPreds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);
       document.getElementById('st-pred').textContent = preds.length;
@@ -1576,34 +1630,45 @@
 
   // ── SELECTS FUNDO ──
   async function cargarSelectFundos() {
+    const sf = document.getElementById('pred-fundo');
+    const seleccionado = sf.value;
+    sf.disabled = true;
     try {
-      const todosFundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
-      const esAdmin = usuarioActual.rol?.tipo === 'Admin' || usuarioActual.rol?.idRol === 1;
-      const fundos = esAdmin
-              ? todosFundos
-              : todosFundos.filter(f => f.usuario?.idUsuario === usuarioActual.idUsuario);      fundosCache = fundos;
-      const sf = document.getElementById('pred-fundo');
+      const todos = await obtenerJSON(`${API}/api/fundos`);
+      const propios = esAdminActual() ? todos : todos.filter(f => String(f.usuario?.idUsuario) === String(usuarioActual.idUsuario));
+      fundosCache = propios.filter(f => {
+        const nombre = nombreFundoPermitido(f.nombreFundo);
+        return nombre && provinciaCanonica(f.provincia?.nombreProvincia) === FUNDOS_PERMITIDOS[nombre].provincia;
+      });
       sf.innerHTML = '<option value="">Seleccionar fundo...</option>';
-      fundos.forEach(f=>{ const o=document.createElement('option'); o.value=f.idFundo; o.textContent=f.nombreFundo; sf.appendChild(o); });
-    } catch(e){ console.error('Selects:',e) }
+      fundosCache.forEach(f => { const o = document.createElement('option'); o.value=f.idFundo; o.textContent=f.nombreFundo; sf.appendChild(o); });
+      sf.value = fundosCache.some(f => String(f.idFundo) === seleccionado) ? seleccionado : '';
+      onFundoChange();
+    } catch(e) {
+      fundosCache = [];
+      sf.innerHTML = '<option value="">No se pudieron cargar los fundos</option>';
+      onFundoChange();
+      mostrarToast('No se pudieron cargar los fundos. Vuelve a intentar.', 'error');
+    } finally { sf.disabled = false; }
   }
 
+
+
   function onFundoChange() {
-    const idFundo = document.getElementById('pred-fundo').value;
-    const fundo = fundosCache.find(f => f.idFundo == idFundo);
-    if (fundo?.provincia?.nombreProvincia) {
-      document.getElementById('pred-provincia').value = fundo.provincia.nombreProvincia;
-      precargarClima();
-    } else {
-      document.getElementById('pred-provincia').value = '';
-      document.getElementById('aviso-clima').style.display = 'none';
-    }
+    const id = document.getElementById('pred-fundo').value;
+    const fundo = fundosCache.find(f => String(f.idFundo) === String(id));
+    document.getElementById('pred-provincia').value = fundo ? (provinciaCanonica(fundo.provincia?.nombreProvincia) || '') : '';
+    limpiarDatosClimaticos();
+    precargarClima();
   }
+
+
 
   function precargarClima() {
     const provincia = document.getElementById('pred-provincia').value;
     const mes       = parseInt(document.getElementById('pred-mes').value);
     const aviso     = document.getElementById('aviso-clima');
+    if (!provincia || !mes) limpiarDatosClimaticos();
     if (!provincia && !mes) { aviso.style.display='none'; return; }
     if (!provincia) {
       aviso.style.display = 'block';
@@ -1626,6 +1691,7 @@
       aviso.innerHTML = `✅ Datos climáticos precargados para <strong>${provincia} — ${meses[mes]}</strong> (fuente: SENAMHI) — puedes ajustarlos si tienes datos más precisos.`;
     } else {
       aviso.style.display = 'block';
+      limpiarDatosClimaticos();
       aviso.innerHTML = `⚠️ No hay datos climáticos disponibles para esta provincia y mes.`;
     }
   }
@@ -1636,7 +1702,7 @@
     const anio       = parseInt(document.getElementById('pred-anio').value);
     const mes        = parseInt(document.getElementById('pred-mes').value);
     const area_ha    = parseFloat(document.getElementById('pred-area').value);
-    const edad_anios = parseInt(document.getElementById('pred-edad').value);
+    const edad_anios = Number(document.getElementById('pred-edad').value.trim() || NaN);
     const ph_suelo   = parseFloat(document.getElementById('pred-ph').value);
     const temp_c     = parseFloat(document.getElementById('pred-temp').value);
     const prec_mm    = parseFloat(document.getElementById('pred-precip').value);
@@ -1652,27 +1718,39 @@
     }
 
     if (area_ha < 1 || area_ha > 100) { alert('El área debe estar entre 1 y 100 ha.'); return; }
-    if (edad_anios < 1 || edad_anios > 30) { alert('La edad del cultivo debe estar entre 1 y 30 años.'); return; }
+    if (!Number.isInteger(edad_anios) || edad_anios < 1 || edad_anios > 30) { alert('La edad del cultivo debe estar entre 1 y 30 años.'); return; }
+    if (!Number.isInteger(anio) || anio < 2022 || anio > 2035 || !Number.isInteger(mes) || mes < 1 || mes > 12) { alert('Verifica el año de campaña y el mes.'); return; }
     if (ph_suelo < 3 || ph_suelo > 10) { alert('El pH debe estar entre 3 y 10.'); return; }
     if (hum_rel < 0 || hum_rel > 100) { alert('La humedad relativa debe estar entre 0 y 100 %.'); return; }
 
-    let fundoNombre = '';
-    if (idFundo) {
-      const todosFundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
-      const fundos = usuarioActual.rol?.tipo === 'Admin'
-              ? todosFundos
-              : todosFundos.filter(f => f.usuario?.idUsuario === usuarioActual.idUsuario);      fundoNombre = fundos.find(f=>f.idFundo==idFundo)?.nombreFundo || '';
+    const fundo = fundosCache.find(f => String(f.idFundo) === String(idFundo));
+    const fundoNombre = fundo && nombreFundoPermitido(fundo.nombreFundo);
+    if (!fundoNombre || provinciaCanonica(fundo.provincia?.nombreProvincia) !== FUNDOS_PERMITIDOS[fundoNombre].provincia) {
+      mostrarErrorPrediccion('Selecciona un fundo permitido con su provincia correcta.'); return;
     }
-
+    if (!esAdminActual() && String(fundo.usuario?.idUsuario) !== String(usuarioActual?.idUsuario)) {
+      mostrarErrorPrediccion('El fundo seleccionado no pertenece a tu cuenta.'); return;
+    }
+    const claveModelo = modeloSeleccionado;
+    let calculoObtenido = false;
+    let guardada = false;
+    let controladorML;
+    let temporizadorML;
     const btn = document.getElementById('btn-pred');
     btn.innerHTML='<span class="spin"></span>Procesando...'; btn.disabled=true;
 
     try {
-      const mlUrl = `https://anticipalta.onrender.com/predecir?modelo=${modeloSeleccionado}`;
+      const mods = await obtenerJSON(`${API}/api/modelos-ml`);
+      const idModelo = idModeloSeleccionado(mods, claveModelo);
+      const idSuelo = await obtenerIdTipoSuelo(tipo_suelo);
+      if (!idSuelo) throw new Error('El tipo de suelo no está disponible en el catálogo.');
+      controladorML = new AbortController();
+      temporizadorML = setTimeout(() => controladorML.abort(), 90000);
+      const mlUrl = `https://anticipalta.onrender.com/predecir?modelo=${claveModelo}`;
       const res = await fetch(mlUrl, {
-        method:'POST', headers:{'Content-Type':'application/json'},
+        method:'POST', headers:{'Content-Type':'application/json'}, signal:controladorML.signal,
         body: JSON.stringify({
-          Anio:anio, Mes:mes, Fundo:fundoNombre||'Fundo San Fernando',
+          Anio:anio, Mes:mes, Fundo:fundoNombre,
           Lote:'Lote_01', Provincia:provincia,
           Area_Ha:area_ha, Edad_Anios:edad_anios,
           Prec_mm:prec_mm, Rad_Solar:rad_solar,
@@ -1687,21 +1765,23 @@
         return;
       }
       const r = await res.json();
+      clearTimeout(temporizadorML);
       const toneladas = r.rendimiento_toneladas ?? r.prediccion;
       if (typeof toneladas !== 'number' || !isFinite(toneladas) || toneladas <= 0) {
         mostrarErrorPrediccion('El modelo no pudo estimar una producción válida para ' + area_ha + ' ha, ' + edad_anios + ' años y suelo ' + tipo_suelo + '. Prueba con otros valores de área o edad.');
         return;
       }
       ocultarErrorPrediccion();
-      const modelo = MODELOS[modeloSeleccionado];
+      calculoObtenido = true;
+      const modelo = MODELOS[claveModelo];
 
       document.getElementById('res-v').textContent = toneladas;
       document.getElementById('res-d').textContent = `Provincia: ${provincia} · Año: ${anio} · Mes: ${mes} · Área: ${area_ha} ha · Suelo: ${tipo_suelo} · Temp: ${temp_c}°C · Precip: ${prec_mm} mm`;
       document.getElementById('res-modelo').textContent = `Modelo: ${modelo.nombre} · R²=${modelo.r2} · MAE=${modelo.mae} t`;
-      document.getElementById('res-box').classList.add('vis');
+      // El resultado se muestra después de confirmar el guardado.
 
       // Indicador de confianza
-      const confianza = await calcularConfianza(fundoNombre, toneladas, area_ha);
+      const confianza = await calcularConfianza(idFundo, toneladas, area_ha);
       const confDiv = document.getElementById('res-confianza');
       if (confianza) {
         confDiv.style.display='block'; confDiv.style.background=confianza.bg;
@@ -1710,32 +1790,37 @@
 
       // Guardar en BD
       if (usuarioActual) {
-        const mods = await fetch(`${API}/api/modelos-ml`).then(r=>r.json());
-        const idModelo = mods[0]?.idModelo;
-        const idSuelo  = await obtenerIdTipoSuelo(tipo_suelo);
-        await fetch(`${API}/api/predicciones`, {
+        const respuestaGuardado = await fetch(`${API}/api/predicciones`, {
           method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({
             anio, mes, areaHa:area_ha, edadAnios:edad_anios,
             tempC:temp_c, precMm:prec_mm, radSolar:rad_solar,
             phSuelo:ph_suelo, humRel:hum_rel,
             rendimientoEstimado:toneladas,
-            modeloNombre:MODELOS[modeloSeleccionado].nombre,
+            modeloNombre:MODELOS[claveModelo].nombre,
             fechaEjecucion:fechaLocalISO(),
             usuario:{idUsuario:usuarioActual.idUsuario},
             fundo:{idFundo:parseInt(idFundo)},
             modelo:{idModelo},
             tipoSuelo:{idTipoSuelo:idSuelo}
           })
-        }).catch(()=>{});
+        });
+        if (!respuestaGuardado.ok) throw new Error('La API rechazó el guardado (HTTP ' + respuestaGuardado.status + ').');
+        guardada = true;
       }
 
+      document.getElementById('res-box').classList.add('vis');
+      mostrarToast('Predicción guardada correctamente');
       await cargarDashboard();
 
     } catch(e) {
       console.error(e);
-            mostrarErrorPrediccion('No se pudo conectar con el microservicio ML. Intenta de nuevo en unos segundos (Render puede tardar en despertar).');
+      mostrarErrorPrediccion(guardada ? 'La predicción quedó guardada, pero no se pudo actualizar la vista. Consulta el Historial antes de repetir.' :
+        calculoObtenido ? 'La predicción se calculó, pero no se confirmó su guardado. Consulta el Historial antes de reintentar. ' + e.message :
+        e.name === 'AbortError' ? 'El microservicio ML tardó demasiado en responder. Intenta nuevamente.' :
+        'No se pudo completar la predicción. ' + (e.message || 'Revisa la conexión e intenta nuevamente.'));
     } finally {
+      clearTimeout(temporizadorML);
       btn.innerHTML='🔮 Generar predicción'; btn.disabled=false;
     }
   }
@@ -1751,15 +1836,15 @@
   }
 
   async function obtenerIdTipoSuelo(descripcion) {
-        const suelos = await fetch(`${API}/api/tipos-suelo`).then(r=>r.json());
+        const suelos = await obtenerJSON(`${API}/api/tipos-suelo`);
     return suelos.find(s=>s.descripcion===descripcion)?.idTipoSuelo || null;
   }
 
-    async function calcularConfianza(fundoNombre, rendimiento, areaHa) {
+    async function calcularConfianza(idFundo, rendimiento, areaHa) {
     try {
-      const preds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      const preds = await obtenerJSON(`${API}/api/predicciones`);
       const delFundo = preds
-        .filter(p => p.fundo?.nombreFundo === fundoNombre && p.rendimientoEstimado > 0 && p.areaHa > 0)
+        .filter(p => String(p.fundo?.idFundo) === String(idFundo) && p.rendimientoEstimado > 0 && p.areaHa > 0)
         .map(p => p.rendimientoEstimado / p.areaHa);          // t/ha
       if (delFundo.length < 3 || !(areaHa > 0)) return null;
 
@@ -1783,12 +1868,19 @@
   // ── HISTORIAL ──
   async function cargarHistorial() {
     try {
-      const todasPreds = await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      const todasPreds = await obtenerJSON(`${API}/api/predicciones`);
       const preds = (usuarioActual.rol?.tipo === 'Admin' || usuarioActual.rol?.idRol === 1)
               ? todasPreds
               : todasPreds.filter(p => p.usuario?.idUsuario === usuarioActual.idUsuario);
       document.getElementById('st-pred').textContent = preds.length;
       predsCache = preds.sort((a,b) => (new Date(b.fechaEjecucion||0) - new Date(a.fechaEjecucion||0)) || (b.idPrediccion - a.idPrediccion));
+      const filtroFundo = document.getElementById('fil-fundo');
+      const anterior = filtroFundo.value;
+      filtroFundo.innerHTML='<option value="">Todos los fundos</option>';
+      [...new Set(preds.map(p=>p.fundo?.nombreFundo).filter(Boolean))].sort().forEach(nombre=>{
+        const o=document.createElement('option'); o.value=nombre; o.textContent=nombre; filtroFundo.appendChild(o);
+      });
+      filtroFundo.value=[...filtroFundo.options].some(o=>o.value===anterior)?anterior:'';
       document.getElementById('btn-export-historial').disabled = !predsCache.length;
       filtrarHistorial();
     } catch(e){ console.error(e) }
@@ -1914,7 +2006,8 @@
     const btn = document.getElementById('btn-confirmar-eliminar-pred');
     btn.textContent = 'Eliminando...'; btn.disabled = true;
     try {
-      await fetch(`${API}/api/predicciones/${prediccionEliminandoId}`,{method:'DELETE'});
+      const respuesta = await fetch(`${API}/api/predicciones/${prediccionEliminandoId}`,{method:'DELETE'});
+      if (!respuesta.ok) throw new Error('No se pudo eliminar la predicción.');
       cerrarModalEliminarPred();
       mostrarToast('Predicción eliminada correctamente');
       cargarHistorial();
@@ -1943,7 +2036,7 @@
     try {
       const res = await fetch(`${API}/api/predicciones/${prediccionRealId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({rendimientoReal:real,notas:notas||null})});
       if (!res.ok) throw new Error();
-      cerrarModalReal(); cargarHistorial();
+      cerrarModalReal(); await cargarHistorial(); await cargarDashboard();
     } catch(e){ errDiv.textContent='Error al guardar.'; errDiv.style.display='block'; }
     finally { btn.innerHTML='Guardar'; btn.disabled=false; }
   }
@@ -2022,7 +2115,7 @@
   // ── FUNDOS ──
   async function cargarFundos() {
     try {
-      const todosFundos = await fetch(`${API}/api/fundos`).then(r=>r.json());
+      const todosFundos = await obtenerJSON(`${API}/api/fundos`);
       const fundos = usuarioActual.rol?.tipo === 'Admin'
               ? todosFundos
               : todosFundos.filter(f => f.usuario?.idUsuario === usuarioActual.idUsuario);
@@ -2065,8 +2158,8 @@
   async function cargarProvinciasModal() {
     const sel=document.getElementById('nf-provincia');
     sel.innerHTML='<option value="">Seleccionar...</option>';
-    const provs=await fetch(`${API}/api/provincias`).then(r=>r.json());
-    provs.forEach(p=>{ const o=document.createElement('option'); o.value=p.idProvincia; o.textContent=p.nombreProvincia; sel.appendChild(o); });
+    const provs=await obtenerJSON(`${API}/api/provincias`);
+    provs.filter(p=>provinciaCanonica(p.nombreProvincia)).forEach(p=>{ const o=document.createElement('option'); o.value=p.idProvincia; o.textContent=p.nombreProvincia; sel.appendChild(o); });
   }
 
   function cerrarModalFundo() { document.getElementById('modal-fundo').style.display='none'; }
@@ -2077,15 +2170,30 @@
     const idProv=document.getElementById('nf-provincia').value;
     const errDiv=document.getElementById('nf-error');
     errDiv.style.display='none';
-    if(!nombre||!idProv){ errDiv.textContent='Nombre y provincia son obligatorios.'; errDiv.style.display='block'; return; }
+    if(!nombre||!ubicacion||!idProv){ errDiv.textContent='Nombre, ubicación y provincia son obligatorios.'; errDiv.style.display='block'; return; }
+    const nombreCanonico = nombreFundoPermitido(nombre);
+    if (!nombreCanonico) { errDiv.textContent='Selecciona uno de los fundos permitidos: El Mirador, San Fernando, La Palmera o La Quebrada.'; errDiv.style.display='block'; return; }
+    const provinciaElegida = document.getElementById('nf-provincia').selectedOptions[0]?.textContent;
+    if (provinciaCanonica(provinciaElegida) !== FUNDOS_PERMITIDOS[nombreCanonico].provincia) {
+      errDiv.textContent='La provincia no corresponde al fundo. San Fernando y La Palmera: Chincha. El Mirador y La Quebrada: Yauyos (Catahuasi).'; errDiv.style.display='block'; return;
+    }
     const btn=document.getElementById('btn-guardar-fundo');
     btn.innerHTML='<span class="spin"></span>Guardando...'; btn.disabled=true;
     try {
       const url=fundoEditandoId?`${API}/api/fundos/${fundoEditandoId}`:`${API}/api/fundos`;
       const method=fundoEditandoId?'PUT':'POST';
-      const res=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify({nombreFundo:nombre,ubicacion:ubicacion||null,provincia:{idProvincia:parseInt(idProv)},usuario:{idUsuario:usuarioActual.idUsuario}})});
+      const payload={nombreFundo:nombreCanonico,ubicacion,provincia:{idProvincia:parseInt(idProv)}};
+      if (!fundoEditandoId) payload.usuario={idUsuario:usuarioActual.idUsuario};
+      else {
+        const existentes=await obtenerJSON(`${API}/api/fundos`);
+        const original=existentes.find(f=>String(f.idFundo)===String(fundoEditandoId));
+        if (!original?.usuario?.idUsuario) throw new Error('No se pudo verificar el propietario del fundo.');
+        payload.usuario={idUsuario:original.usuario.idUsuario};
+      }
+      const res=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       if(!res.ok) throw new Error();
-      cerrarModalFundo(); cargarFundos(); cargarSelectFundos();
+      cerrarModalFundo(); await cargarFundos(); await cargarSelectFundos();
+      mostrarToast(fundoEditandoId ? 'Fundo actualizado correctamente' : 'Fundo registrado correctamente');
     } catch(e){ errDiv.textContent='Error al guardar. Intenta nuevamente.'; errDiv.style.display='block'; }
     finally { btn.innerHTML=fundoEditandoId?'Actualizar fundo':'Guardar fundo'; btn.disabled=false; }
   }
@@ -2097,7 +2205,8 @@
     const btn=document.getElementById('btn-confirmar-eliminar');
     btn.textContent='Eliminando...'; btn.disabled=true;
     try {
-      await fetch(`${API}/api/fundos/${fundoEliminandoId}`,{method:'DELETE'});
+      const respuesta = await fetch(`${API}/api/fundos/${fundoEliminandoId}`,{method:'DELETE'});
+      if (!respuesta.ok) throw new Error('No se pudo eliminar el fundo.');
       cerrarModalEliminar();
       mostrarToast('Fundo eliminado correctamente');
       cargarFundos();
@@ -2109,7 +2218,7 @@
   // ── PERFIL ──
   async function cargarEstadisticasPerfil() {
     try {
-      const todasPreds=await fetch(`${API}/api/predicciones`).then(r=>r.json());
+      const todasPreds=await obtenerJSON(`${API}/api/predicciones`);
       const preds=todasPreds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);      const misPreds=preds.filter(p=>p.usuario?.idUsuario===usuarioActual.idUsuario);
       document.getElementById('p-total-preds').textContent = misPreds.length ? misPreds.length : '—';
       if(misPreds.length){
@@ -2117,7 +2226,7 @@
         const vals=misPreds.map(p=>p.rendimientoEstimado).filter(v=>v!=null);
         document.getElementById('p-rend-prom').textContent=vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):'—';
         document.getElementById('p-rend-max').textContent=vals.length?Math.max(...vals).toFixed(1):'—';
-        const ultima=misPreds.at(-1);
+        const ultima=[...misPreds].sort((a,b)=>(new Date(b.fechaEjecucion||0)-new Date(a.fechaEjecucion||0)) || (Number(b.idPrediccion)-Number(a.idPrediccion)))[0];
         document.getElementById('p-ultima-pred').textContent=ultima?.fechaEjecucion?new Date(ultima.fechaEjecucion).toLocaleDateString('es-PE',{day:'2-digit',month:'short',year:'numeric'}):'—';
       } else {
         document.getElementById('p-rend-prom').textContent='—';
@@ -2131,6 +2240,9 @@
   // ── LOGOUT ──
   function cerrarSesion() {
     usuarioActual = null;
+    fundosCache = []; predsCache = []; historialFiltrado = []; reportesPredsCache = [];
+    usuariosAdminCache = []; predsAdminCache = []; usuariosFiltradosAdmin = [];
+    document.getElementById('nav-admin').style.display='none';
     localStorage.removeItem('anticipalta_sesion');
     document.getElementById('app').classList.remove('activa');
     document.getElementById('login').classList.add('activa');
@@ -2143,7 +2255,7 @@
   // ── REPORTES ──
   async function cargarReportes() {
     try {
-      const preds = (await fetch(`${API}/api/predicciones`).then(r=>r.json()))
+      const preds = (await obtenerJSON(`${API}/api/predicciones`))
               .filter(p =>
                       (usuarioActual.rol?.tipo === 'Admin' || usuarioActual.rol?.idRol === 1)
                               ? true
@@ -2151,6 +2263,7 @@
               );
       const btnExport = document.getElementById('btn-export-reportes');
       if(!preds.length) {
+        reportesPredsCache = [];
         document.getElementById('reportes-sin-datos').style.display='block';
         document.getElementById('reportes-contenido').style.display='none';
         if(btnExport) btnExport.disabled = true;
