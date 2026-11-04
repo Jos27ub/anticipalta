@@ -1250,7 +1250,16 @@
     return String(valor ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase().replace(/\s+/g, ' ');
   }
   function nombreFundoPermitido(nombre) {
-    return Object.keys(FUNDOS_PERMITIDOS).find(n => normalizarTexto(n) === normalizarTexto(nombre)) || null;
+    const valor = normalizarTexto(nombre);
+    return Object.keys(FUNDOS_PERMITIDOS).find(n =>
+      normalizarTexto(n) === valor || normalizarTexto(FUNDOS_PERMITIDOS[n].nombreModelo) === valor
+    ) || null;
+  }
+  function etiquetaFundo(fundo, fundos) {
+    const nombre = nombreFundoPermitido(fundo.nombreFundo);
+    const repetido = fundos.some(f => String(f.idFundo) !== String(fundo.idFundo) &&
+      nombreFundoPermitido(f.nombreFundo) === nombre);
+    return repetido ? `${nombre} · ID ${fundo.idFundo}` : nombre;
   }
   function provinciaCanonica(nombre) {
     const valor = normalizarTexto(nombre);
@@ -1641,7 +1650,7 @@
         return nombre && provinciaCanonica(f.provincia?.nombreProvincia) === FUNDOS_PERMITIDOS[nombre].provincia;
       });
       sf.innerHTML = '<option value="">Seleccionar fundo...</option>';
-      fundosCache.forEach(f => { const o = document.createElement('option'); o.value=f.idFundo; o.textContent=f.nombreFundo; sf.appendChild(o); });
+      fundosCache.forEach(f => { const o = document.createElement('option'); o.value=f.idFundo; o.textContent=etiquetaFundo(f, fundosCache); sf.appendChild(o); });
       sf.value = fundosCache.some(f => String(f.idFundo) === seleccionado) ? seleccionado : '';
       onFundoChange();
     } catch(e) {
